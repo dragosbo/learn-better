@@ -1,2 +1,2 @@
 # learn-better
-useful minimalist tools and techniques for learning using free technical solutions
+useful minimalist free learning solutions

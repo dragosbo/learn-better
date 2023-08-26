@@ -158,3 +158,9 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# My personal folders
+# 01_explore - where I will do work, when ready it will be moved out
+# 02_ignore - code, ideas no longer useful
+01_explore/*  
+02_ignore/*

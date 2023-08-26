@@ -164,3 +164,4 @@ cython_debug/
 # 02_ignore - code, ideas no longer useful
 01_explore/*  
 02_ignore/*
+audio/*

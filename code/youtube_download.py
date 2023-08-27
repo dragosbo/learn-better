@@ -12,6 +12,9 @@ def yt2mp3(youtube_video, output_path="audio"):
         audio_stream = youtube_video.streams.filter(only_audio=True).first()
         audio_stream.download(output_path=output_path)
         print(f"DOWNLOADED -> {youtube_video.title}")
+        print(
+            f"DOWNLOADED -> {youtube_video.author}, {youtube_video.length},{youtube_video.views}, {youtube_video.rating}"
+        )
 
     except Exception as e:
         print(f"SKIPPED -> {youtube_video.title}")
@@ -21,15 +24,18 @@ def yt2mp3(youtube_video, output_path="audio"):
 for youtube_video in yt.Search("Manolis Kellis Lex Friedman").results[:2]:
     yt2mp3(youtube_video)
 
-# get audio from the top 2 videos in playlist (my playlist)
-# for youtube_video in yt.Playlist(
-#     "https://www.youtube.com/playlist?list=PLsWyhklHwjExuXrXjJktcdYkCFL0PNdW7"
-# ).videos:
-#     yt2mp3(youtube_video)
+
+# get audio from the top 2 videos in playlist (my playlist). The playlist needs to be PUBLIC
+for youtube_video in yt.Playlist(
+    "https://www.youtube.com/playlist?list=PLsWyhklHwjExuXrXjJktcdYkCFL0PNdW7"
+).videos:
+    yt2mp3(youtube_video)
 
 
-get audio of specified videos
-youtube_video1 = yt.YouTube("https://www.youtube.com/watch?v=JctmnczWg0U")  # long URL version
+# get audio of specified videos
+youtube_video1 = yt.YouTube(
+    "https://www.youtube.com/watch?v=JctmnczWg0U"
+)  # long URL version
 youtube_video2 = yt.YouTube("https://youtu.be/v=cHymMt1SQn8")  # short URL version
 
 yt2mp3(youtube_video1)

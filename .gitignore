@@ -1,3 +1,5 @@
+repos/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -165,3 +167,4 @@ cython_debug/
 01_explore/*  
 02_ignore/*
 audio/*
+secrets.json

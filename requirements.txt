@@ -1,5 +1,5 @@
 google-api-python-client
 scrapetube
-youtoube_transcript_api
+youtoube-transcript-api
 pytube
 pandas

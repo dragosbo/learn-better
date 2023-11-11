@@ -1,0 +1,5 @@
+google-api-python-client
+scrapetube
+youtoube_transcript_api
+pytube
+pandas

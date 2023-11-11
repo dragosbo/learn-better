@@ -1,0 +1,11 @@
+this in the cloud in Azure
+
+# find out about the instance in code space
+cat /etc/os-release
+
+# see the memory we have
+free -m
+
+# see python version
+python --version
+

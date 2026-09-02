@@ -36,7 +36,7 @@ for youtube_video in yt.Playlist(
 youtube_video1 = yt.YouTube(
     "https://www.youtube.com/watch?v=JctmnczWg0U"
 )  # long URL version
-youtube_video2 = yt.YouTube("https://youtu.be/v=cHymMt1SQn8")  # short URL version
+youtube_video2 = yt.YouTube("https://youtu.be/cHymMt1SQn8")  # short URL version
 
 yt2mp3(youtube_video1)
 yt2mp3(youtube_video2)

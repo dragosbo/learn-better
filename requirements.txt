@@ -1,5 +1,39 @@
-google-api-python-client
-scrapetube
-youtoube-transcript-api
-pytube
-pandas
+# Core dependencies for the YouTube learning tools.
+# Pinned to known-good major versions for reproducibility.
+#
+# SYSTEM DEPENDENCY (NOT installable via pip): ffmpeg
+#   yt-dlp needs the ffmpeg binary to convert/merge audio (e.g. to real .mp3).
+#   Install it separately, then confirm with `ffmpeg -version`:
+#     conda:  conda install -c conda-forge ffmpeg -y   (installs into this env)
+#     winget: winget install ffmpeg                    (system-wide)
+#     choco:  choco install ffmpeg -y                  (admin, system-wide)
+#     macOS:  brew install ffmpeg
+#     Debian/Ubuntu: sudo apt install ffmpeg
+
+# YouTube Data API (channel/playlist metadata)
+google-api-python-client>=2.100,<3
+
+# Enumerate videos in a playlist without the official API
+scrapetube>=2.5,<3
+
+# Fetch video transcripts/subtitles (fixed typo: was "youtoube-transcript-api")
+youtube-transcript-api>=0.6,<1
+
+# Audio/video download. pytube breaks often against YouTube changes;
+# yt-dlp is the actively maintained, more robust downloader.
+# The [default,curl-cffi] extra pulls in curl_cffi, which yt-dlp uses for
+# browser "impersonation" (a real TLS fingerprint). Without it, YouTube now
+# blocks subtitle/format fetches ("Sign in to confirm you're not a bot",
+# empty subtitle responses). This is REQUIRED for downloads/transcripts to work.
+yt-dlp[default,curl-cffi]>=2024.4.9
+pytube>=15.0,<16
+
+# curl_cffi is also listed explicitly so `import curl_cffi` is guaranteed
+# present even if the extra name changes across yt-dlp versions.
+curl_cffi>=0.7
+
+# Data wrangling for metadata tables
+pandas>=2.0,<3
+
+# Jupyter kernel, so the notebooks can run in this environment
+ipykernel>=6.29,<7

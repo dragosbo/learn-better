@@ -1,0 +1,4 @@
+{
+  "_comment": "Subtitle languages to download, in order of preference. Use YouTube language codes: en (English), fr (French), ro (Romanian). Add en-US/en-GB if you want regional English variants. Only languages that actually exist for a video are downloaded.",
+  "languages": ["en", "fr", "ro"]
+}

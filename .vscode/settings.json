@@ -1,7 +1,6 @@
 {
     "print.colourScheme": "Google Code",
     "workbench.colorCustomizations": {
-        "activityBarBadge.background": "#00BCD4",
         "list.activeSelectionForeground": "#00BCD4",
         "list.inactiveSelectionForeground": "#00BCD4",
         "list.highlightForeground": "#00BCD4",
@@ -10,7 +9,6 @@
         "textLink.foreground": "#00BCD4",
         "progressBar.background": "#00BCD4",
         "pickerGroup.foreground": "#00BCD4",
-        "tab.activeBorder": "#00BCD4",
         "notificationLink.foreground": "#00BCD4",
         "editorWidget.resizeBorder": "#00BCD4",
         "editorWidget.border": "#00BCD4",
@@ -19,10 +17,7 @@
         "panelTitle.activeBorder": "#00BCD4",
         "breadcrumb.activeSelectionForeground": "#00BCD4",
         "menu.selectionForeground": "#00BCD4",
-        "menubar.selectionForeground": "#00BCD4",
-        "activityBar.background": "#0C3422",
-        "titleBar.activeBackground": "#11492F",
-        "titleBar.activeForeground": "#F4FDF9"
+        "menubar.selectionForeground": "#00BCD4"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"

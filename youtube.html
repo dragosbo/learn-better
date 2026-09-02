@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>learn-better — YouTube to Learning Material</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #171e2e;
+    --panel-2: #1e2740;
+    --text: #e7ecf5;
+    --muted: #9aa7bd;
+    --accent: #4f9cff;
+    --accent-2: #38d39f;
+    --warn: #ffb454;
+    --border: #2a3550;
+    --code-bg: #0b0f18;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #1a2340 0%, #0f1420 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 36px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 2.4rem; letter-spacing: -0.02em; }
+  header p { margin: 4px 0; color: var(--muted); font-size: 1.05rem; }
+  .badges { margin-top: 16px; }
+  .badge {
+    display: inline-block; padding: 3px 10px; margin: 3px;
+    border-radius: 999px; font-size: 0.8rem; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--muted);
+  }
+  .layout { display: flex; max-width: 1180px; margin: 0 auto; }
+  nav {
+    position: sticky; top: 0; align-self: flex-start;
+    width: 220px; padding: 24px 12px; height: 100vh; overflow-y: auto;
+    border-right: 1px solid var(--border); font-size: 0.92rem;
+  }
+  nav a { display: block; color: var(--muted); text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+  nav a:hover { background: var(--panel-2); color: var(--text); }
+  main { flex: 1; padding: 32px 28px 80px; min-width: 0; }
+  section { margin-bottom: 48px; scroll-margin-top: 16px; }
+  h2 { font-size: 1.6rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-top: 0; }
+  h3 { font-size: 1.2rem; color: var(--accent-2); margin-top: 28px; }
+  p, li { color: var(--text); }
+  code {
+    background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", Consolas, Menlo, monospace; font-size: 0.88em; color: #ffd28a;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; overflow-x: auto;
+  }
+  pre code { background: none; color: #d7e2f5; padding: 0; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin: 18px 0; }
+  .mermaid { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin: 18px 0; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--accent); font-weight: 600; }
+  tr:hover td { background: var(--panel-2); }
+  .status { font-weight: 600; white-space: nowrap; }
+  .done { color: var(--accent-2); }
+  .partial { color: var(--warn); }
+  .todo { color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .card h4 { margin: 0 0 8px; color: var(--accent); }
+  .card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .tag { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); color: var(--muted); margin-left: 6px; }
+  .note { border-left: 3px solid var(--accent); background: var(--panel-2); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .note.warn { border-left-color: var(--warn); }
+  kbd { background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; font-family: monospace; font-size: 0.85em; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 24px; border-top: 1px solid var(--border); }
+  @media (max-width: 860px) { nav { display: none; } main { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>learn-better</h1>
+  <p>Minimalist, free tools that turn YouTube content into study material.</p>
+  <p>Audio &rarr; transcripts &rarr; summaries &rarr; knowledge.</p>
+  <div class="badges">
+    <span class="badge">Python 3.12</span>
+    <span class="badge">yt-dlp</span>
+    <span class="badge">no API key needed</span>
+    <span class="badge">Windows / macOS / Linux</span>
+    <span class="badge">Dev Container ready</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#usecases">Use cases</a>
+  <a href="#logic">How it works</a>
+  <a href="#pipeline">Data pipeline</a>
+  <a href="#install">Installation</a>
+  <a href="#run">Running the tools</a>
+  <a href="#summaries">Summaries workflow</a>
+  <a href="#status">Implemented vs. remaining</a>
+  <a href="#layout">Repository layout</a>
+  <a href="#troubleshoot">Troubleshooting</a>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p>
+    <strong>learn-better</strong> is a small toolkit for converting YouTube videos into
+    study material. It downloads <strong>audio</strong> and <strong>transcripts</strong>,
+    then feeds downstream steps like <strong>summarization</strong>, mind-maps, and
+    Obsidian-based knowledge consolidation. The core downloader works
+    <strong>without a Google API key</strong> by using <code>yt-dlp</code>.
+  </p>
+  <div class="cards">
+    <div class="card"><h4>Download audio</h4><p>Grab audio (mp3 via ffmpeg) from a playlist, channel, or search.</p></div>
+    <div class="card"><h4>Fetch transcripts</h4><p>Save cleaned, timestamped transcripts per language (en/fr/ro).</p></div>
+    <div class="card"><h4>Summarize</h4><p>Turn transcripts into structured summaries using a reusable skill.</p></div>
+    <div class="card"><h4>Learn</h4><p>Roadmap toward speech-to-text, translation, TTS, and word clouds.</p></div>
+  </div>
+</section>
+
+<section id="usecases">
+  <h2>Use cases</h2>
+  <p>Who uses this and what they get out of it:</p>
+  <div class="mermaid">
+graph LR
+  U[Learner / Content creator]
+  U --> A["Download audio<br/>from a playlist"]
+  U --> B["Fetch transcripts<br/>in multiple languages"]
+  U --> C["Summarize a video<br/>(TOC + strengths/weaknesses)"]
+  U --> D["Build study notes<br/>(Obsidian / mindmap)"]
+  A --> R1[["audio/*.mp3"]]
+  B --> R2[["transcripts/*.txt"]]
+  C --> R3[["summaries/*.summary.md"]]
+  D --> R4[["Knowledge base"]]
+  style U fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style R1 fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style R2 fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style R3 fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style R4 fill:#0b0f18,stroke:#9aa7bd,color:#d7e2f5
+  </div>
+
+  <table>
+    <tr><th>Goal</th><th>Tool</th><th>Command</th></tr>
+    <tr><td>Audio + transcripts for a source</td><td><code>test_read_channel.py</code></td><td><kbd>r</kbd></td></tr>
+    <tr><td>Transcripts only, per language</td><td><code>test_read_transcript.py</code></td><td><kbd>t</kbd></td></tr>
+    <tr><td>Prepare summaries (hand off to AI)</td><td><code>make_summaries.py</code></td><td><kbd>s</kbd></td></tr>
+  </table>
+</section>
+
+<section id="logic">
+  <h2>How it works (logic)</h2>
+  <p>
+    The recommended entry point, <code>test_read_channel.py</code>, runs three steps for
+    each clip (capped at <code>LIMIT</code>, default 5). Files already on disk are skipped,
+    so re-running only fetches what is missing.
+  </p>
+  <div class="mermaid">
+flowchart TD
+  Start([Run r.bat]) --> Cfg{"Which source is set?"}
+  Cfg -->|PLAYLIST_ID| S1
+  Cfg -->|CHANNEL| S1
+  Cfg -->|SEARCH| S1
+  S1["STEP 1 - list videos<br/>(yt-dlp, extract_flat)"] --> Loop{"For each clip<br/>up to LIMIT"}
+  Loop --> S2["STEP 2 - transcript<br/>(yt-dlp subtitles &rarr; VTT &rarr; clean .txt)"]
+  S2 --> HasT{"Transcript<br/>available?"}
+  HasT -->|yes| SaveT[["transcripts/*.txt"]]
+  HasT -->|no| Flag["Flag as NO TRANSCRIPT"]
+  Loop --> S3{"DOWNLOAD<br/>enabled?"}
+  S3 -->|yes| S3d["STEP 3 - audio<br/>(yt-dlp bestaudio &rarr; mp3 via ffmpeg)"]
+  S3d --> SaveA[["audio/*.mp3"]]
+  S3 -->|no| Skip[skip]
+  SaveT --> Done([Summary report])
+  Flag --> Done
+  SaveA --> Done
+  Skip --> Done
+  style Start fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style Done fill:#1e2740,stroke:#38d39f,color:#e7ecf5
+  style SaveT fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style SaveA fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style Flag fill:#0b0f18,stroke:#ffb454,color:#ffd28a
+  </div>
+  <div class="note">
+    <strong>Why yt-dlp everywhere?</strong> <code>scrapetube</code> silently returns zero
+    videos (broken), and <code>youtube-transcript-api</code> hits empty-body errors on
+    proxied networks. <code>yt-dlp</code> handles listing, subtitles, and audio with the
+    same cookie / proxy / browser-impersonation options, so it is far more reliable.
+  </div>
+</section>
+
+<section id="pipeline">
+  <h2>Data pipeline</h2>
+  <p>How raw video becomes knowledge, and where each artifact lands:</p>
+  <div class="mermaid">
+flowchart LR
+  YT([YouTube]) --> DL["yt-dlp"]
+  DL --> AUD[["audio/ (git-ignored)"]]
+  DL --> VTT["subtitles (VTT)"]
+  VTT --> CLEAN["clean + timestamp"]
+  CLEAN --> TR[["transcripts/ (git-ignored)"]]
+  TR --> MS["make_summaries.py<br/>(lists what needs a summary)"]
+  MS --> KIRO{{"Kiro (AI)<br/>applies skill_summary.md"}}
+  KIRO --> SUM[["summaries/ (tracked)"]]
+  SUM --> OBS([Obsidian / mindmap])
+  style YT fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style KIRO fill:#1e2740,stroke:#ffb454,color:#ffd28a
+  style OBS fill:#1e2740,stroke:#9aa7bd,color:#e7ecf5
+  </div>
+</section>
+
+<section id="install">
+  <h2>Installation</h2>
+  <p>Follow in order. The Python-version check (step 2) prevents the most common failure.</p>
+
+  <h3>0. Prerequisites</h3>
+  <ul>
+    <li><strong>Python 3.12</strong> (3.10+ works). Do not use Python 3.7 (old Anaconda base).</li>
+    <li>One of: <strong>conda</strong>, Python 3.12 from python.org, or a <strong>Dev Container / Codespaces</strong>.</li>
+    <li><code>git</code> to clone the repo.</li>
+  </ul>
+<pre><code>git clone https://github.com/dragosbo/learn-better.git
+cd learn-better</code></pre>
+
+  <h3>1. Create an isolated environment</h3>
+  <p><strong>conda (recommended):</strong></p>
+<pre><code>conda create -n learn-better python=3.12 -y
+conda activate learn-better</code></pre>
+  <p><strong>venv (Windows):</strong></p>
+<pre><code>py -3.12 -m venv .venv
+.venv\Scripts\activate</code></pre>
+
+  <h3>2. Verify the interpreter BEFORE installing</h3>
+<pre><code>python --version   :: must print Python 3.12.x</code></pre>
+
+  <h3>3. Install dependencies</h3>
+<pre><code>python -m pip install --upgrade pip
+pip install -r requirements.txt</code></pre>
+
+  <h3>3b. Install ffmpeg (needed to convert audio to mp3)</h3>
+  <p>ffmpeg is a system binary, not a pip package:</p>
+<pre><code>conda install -c conda-forge ffmpeg -y   :: recommended (into the conda env)
+winget install ffmpeg                     :: Windows, system-wide
+brew install ffmpeg                       :: macOS
+sudo apt install ffmpeg                    :: Debian / Ubuntu</code></pre>
+
+  <h3>4. Verify the install</h3>
+<pre><code>python -c "import googleapiclient, scrapetube, youtube_transcript_api, yt_dlp, pytube, pandas, curl_cffi, ipykernel; print('all imports OK')"</code></pre>
+
+  <div class="note">
+    <strong>No API key needed.</strong> Every active tool uses <code>yt-dlp</code> and works
+    without a Google API key. The old API-key workflow (<code>get_my_playlists.py</code>)
+    has been retired to the git-ignored <code>ignore/</code> folder.
+  </div>
+</section>
+
+<section id="run">
+  <h2>Running the tools</h2>
+  <p>Activate the environment, then use the helper batch files from the repo root:</p>
+  <table>
+    <tr><th>Command</th><th>Runs</th><th>What it does</th></tr>
+    <tr><td><kbd>c</kbd></td><td><code>c.bat</code></td><td>Activate the <code>learn-better</code> conda env.</td></tr>
+    <tr><td><kbd>r</kbd></td><td><code>test_read_channel.py</code></td><td>Audio + transcripts for a playlist/channel/search.</td></tr>
+    <tr><td><kbd>t</kbd></td><td><code>test_read_transcript.py</code></td><td>Transcripts only, one file per language.</td></tr>
+    <tr><td><kbd>s</kbd></td><td><code>make_summaries.py</code></td><td>List transcripts needing a summary; print AI instruction.</td></tr>
+  </table>
+  <p>Configure the source at the top of the script (set ONE, leave the others <code>None</code>):</p>
+<pre><code>PLAYLIST_ID = "PLxxxxxxxx"          # a playlist
+CHANNEL     = "@your_handle"        # or a channel (handle or UC... id)
+SEARCH      = "some search terms"   # or a search
+LIMIT       = 5                     # max clips to process</code></pre>
+  <div class="note warn">
+    <strong>Bot-check ("Sign in to confirm you're not a bot"):</strong> export a
+    <code>cookies.txt</code> while logged into YouTube and set
+    <code>COOKIES_FILE = "code/cookies.txt"</code>. That file is git-ignored.
+  </div>
+</section>
+
+<section id="summaries">
+  <h2>Summaries workflow</h2>
+  <p>
+    Summaries are authored by the AI, not a script (a batch file cannot reason about
+    content). <code>s.bat</code> does the deterministic prep and hands off to Kiro.
+  </p>
+  <div class="mermaid">
+sequenceDiagram
+  participant You
+  participant s as s.bat / make_summaries.py
+  participant Kiro as Kiro (AI)
+  You->>s: run "s"
+  s->>s: scan transcripts/*.en.txt
+  s->>s: check summaries/ for matches
+  s-->>You: list done vs. missing + paste-ready instruction
+  You->>Kiro: paste instruction (apply skill_summary.md)
+  Kiro->>Kiro: read each transcript
+  Kiro-->>You: write summaries/*.summary.md
+  </div>
+  <p>
+    Typical flow for a new video: <kbd>t</kbd> (download transcript) &rarr;
+    <kbd>s</kbd> (see what needs summarizing) &rarr; paste the instruction into Kiro.
+    The format lives once in <code>skill_summary.md</code> (TOC, sections, strengths,
+    weaknesses) and is reused for every video.
+  </p>
+</section>
+
+<section id="status">
+  <h2>Implemented vs. remaining</h2>
+  <p>Derived from <code>plan.md</code> and <code>todo.md</code>.</p>
+
+  <h3>Foundation &amp; fixes <span class="tag">done</span></h3>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>No-API-key downloader + transcripts (<code>test_read_channel.py</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Transcript-only tool per language (<code>test_read_transcript.py</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Output folders <code>audio/</code>, <code>transcripts/</code> (git-ignored)</td><td class="status done">Done</td></tr>
+    <tr><td><code>requirements.txt</code> fixed, pinned, ffmpeg documented</td><td class="status done">Done</td></tr>
+    <tr><td>Dev Container aligned to Python 3.12</td><td class="status done">Done</td></tr>
+    <tr><td>Short-URL and output-folder bug fixes</td><td class="status done">Done</td></tr>
+    <tr><td>Helper batch files (<code>c/r/t/s</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Summary skill + summaries for English transcripts</td><td class="status done">Done</td></tr>
+    <tr><td>Minimalist <code>.gitignore</code>; cookies ignored</td><td class="status done">Done</td></tr>
+  </table>
+
+  <h3>In progress / partial <span class="tag">partial</span></h3>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>Migrate downloads off <code>pytube</code>/<code>scrapetube</code> to <code>yt-dlp</code></td><td class="status partial">Partial — done in the active tools; <code>get_my_playlists.py</code> retired to <code>ignore/</code>; notebook still pending</td></tr>
+  </table>
+
+  <h3>Remaining <span class="tag">todo</span></h3>
+  <table>
+    <tr><th>Item</th><th>Source</th><th>Status</th></tr>
+    <tr><td>Reusable <code>lib/</code> module (download, transcript, transcribe, tts)</td><td>plan Phase 0</td><td class="status todo">To do</td></tr>
+    <tr><td>Consolidate outputs under a single <code>data/</code> root</td><td>plan Phase 0</td><td class="status todo">To do</td></tr>
+    <tr><td>Speech to text (Whisper)</td><td>todo #1</td><td class="status todo">To do</td></tr>
+    <tr><td>Speech to translated text</td><td>todo #2</td><td class="status todo">To do</td></tr>
+    <tr><td>Text to speech</td><td>todo #3</td><td class="status todo">To do</td></tr>
+    <tr><td>Audio to audio at a different bit rate</td><td>todo #4</td><td class="status todo">To do</td></tr>
+    <tr><td>Text summarization notebook</td><td>todo #5</td><td class="status todo">To do (skill-based summary exists as a manual step)</td></tr>
+    <tr><td>Text to speech with special voices</td><td>todo #6</td><td class="status todo">To do</td></tr>
+    <tr><td>Create word cloud</td><td>todo #7</td><td class="status todo">To do</td></tr>
+    <tr><td>Video &rarr; mindmap recording &amp; Obsidian doc</td><td>todo notes</td><td class="status todo">To do</td></tr>
+    <tr><td>Prompt-building logic doc</td><td>todo notes</td><td class="status todo">To do</td></tr>
+    <tr><td>Codespaces doc (fold in <code>learning_codspaces.txt</code>)</td><td>todo notes</td><td class="status todo">To do</td></tr>
+    <tr><td>Optional Streamlit front-end; light CI</td><td>plan Phase 5</td><td class="status todo">Optional</td></tr>
+  </table>
+
+  <h3>Roadmap phases</h3>
+  <div class="mermaid">
+graph TD
+  P0["Phase 0 - Foundation<br/>downloader + transcripts (mostly done)"]
+  P1["Phase 1 - Audio to Text<br/>Whisper STT + translate, bitrate"]
+  P2["Phase 2 - Text to Knowledge<br/>summarization, word cloud"]
+  P3["Phase 3 - Text to Speech<br/>edge-tts, special voices"]
+  P4["Phase 4 - Consolidation<br/>mindmap, Obsidian, prompt docs"]
+  P5["Phase 5 - Polish<br/>Streamlit, CI (optional)"]
+  P0 --> P1 --> P2 --> P3 --> P4 --> P5
+  style P0 fill:#123024,stroke:#38d39f,color:#e7ecf5
+  style P1 fill:#171e2e,stroke:#4f9cff,color:#e7ecf5
+  style P2 fill:#171e2e,stroke:#4f9cff,color:#e7ecf5
+  style P3 fill:#171e2e,stroke:#4f9cff,color:#e7ecf5
+  style P4 fill:#171e2e,stroke:#4f9cff,color:#e7ecf5
+  style P5 fill:#171e2e,stroke:#9aa7bd,color:#e7ecf5
+  </div>
+  <div class="note">
+    <strong>Recommended next step (from plan.md):</strong> build
+    <code>01_speech_to_text.ipynb</code> to run Whisper over <code>audio/</code>, filling
+    transcripts for clips whose subtitles are disabled. That unblocks summarization and
+    translation.
+  </div>
+</section>
+
+<section id="layout">
+  <h2>Repository layout</h2>
+<pre><code>learn-better/
+&#9500;&#9472; code/                      # scripts
+&#9474;  &#9500;&#9472; test_read_channel.py    # no-API-key: audio + transcripts (recommended)
+&#9474;  &#9500;&#9472; test_read_transcript.py # no-API-key: transcripts only (per language)
+&#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s.bat)
+&#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader
+&#9474;  &#9492;&#9472; languages.json          # subtitle languages to fetch (en, fr, ro)
+&#9500;&#9472; notebooks/                 # yt_download.ipynb
+&#9500;&#9472; .devcontainer/             # Codespaces / Dev Container (Python 3.12)
+&#9500;&#9472; audio/                     # downloaded audio (git-ignored)
+&#9500;&#9472; transcripts/               # saved transcripts (git-ignored)
+&#9500;&#9472; summaries/                 # AI-generated summaries (tracked)
+&#9500;&#9472; ignore/                    # retired code (git-ignored): get_my_playlists.py, secrets.example.json
+&#9500;&#9472; skill_summary.md           # reusable summary format/procedure
+&#9500;&#9472; c.bat r.bat t.bat s.bat    # helper runners
+&#9500;&#9472; requirements.txt
+&#9500;&#9472; plan.md                    # roadmap and analysis
+&#9500;&#9472; todo.md
+&#9492;&#9472; README.md</code></pre>
+</section>
+
+<section id="troubleshoot">
+  <h2>Troubleshooting</h2>
+  <table>
+    <tr><th>Symptom</th><th>Fix</th></tr>
+    <tr><td><code>No matching distribution found for yt-dlp</code></td><td>You are on Python &lt; 3.10. Create/activate a 3.12 env; verify with <code>python --version</code>.</td></tr>
+    <tr><td><code>ModuleNotFoundError</code> running a script</td><td>Wrong interpreter. Activate the env, re-run install.</td></tr>
+    <tr><td><code>ffmpeg not found</code> / can't convert to mp3</td><td>Install ffmpeg; open a new terminal; check <code>ffmpeg -version</code>. Or set <code>AUDIO_FORMAT = None</code>.</td></tr>
+    <tr><td>yt-dlp: <code>Sign in to confirm you're not a bot</code></td><td>Provide cookies (<code>COOKIES_FILE = "code/cookies.txt"</code>); update yt-dlp with <code>pip install -U yt-dlp</code>.</td></tr>
+    <tr><td><code>NO TRANSCRIPT</code> for a clip</td><td>That video has subtitles disabled. Whisper STT (roadmap) will cover these.</td></tr>
+  </table>
+</section>
+
+</main>
+</div>
+
+<footer>
+  learn-better &middot; generated project guide &middot; open <code>youtube.html</code> in any browser.
+</footer>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "dark",
+    themeVariables: {
+      background: "#171e2e",
+      primaryColor: "#1e2740",
+      primaryTextColor: "#e7ecf5",
+      primaryBorderColor: "#4f9cff",
+      lineColor: "#9aa7bd",
+      fontSize: "14px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis" }
+  });
+</script>
+</body>
+</html>

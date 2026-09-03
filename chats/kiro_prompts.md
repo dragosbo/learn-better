@@ -311,3 +311,84 @@ remove th eprefix test_ from teh python scripts. adapt all fiels whey they were 
 
 ## 74
 update the chats folder with the kiro changes
+
+## 75
+the transcribe_audio.py works. compare the output from lola_transcript.txt with the english transcript downlaode from youtube. are they similar mayb eignore the timstamps for these. what is the quality of the whisperer give me a percentage and some recommendations
+
+## 76
+ok incorporate your findings in readme and youtube and describe how ere they obtained and key recommendations
+
+## 77
+evaluate how many subtasks from Phase C in mini_todo were solved
+
+## 78
+ok we need to deal with C2 and elimnate the generic lola-transcript.txt create proper names that depend on teh name of teh audio file. stored them into a new folder called generated_transcripts. Most liekly in thi sphase it is only one language fo rth is transcription. tell me how to test
+
+## 79
+cool 1,2,3 all work. how would i adapt the code to allow to specify what audio files needs to be processed. I am guessing this should depned based on teh name o fth efile  or audio an dwhat i sin the json file in the data folder. reflect on this an dpropose something simple
+
+## 80
+teh proposed modes ar egood but testing mode 1 will be too time consuming. try to impement mode 2 and mode 3 first and tell me how to test
+
+## 81
+create some config files for testing like config_transcribe.json and populate them in case they ar emultiple with something that makes sense and give the equivalent bat file fo rtesting that they work
+
+## 82
+ok I tested 1,2,3 they worked nicely. update the mini_todo to reflect the progress maybe we did a little bit more then expected. etll me what else remain to do from pahse C.
+
+## 83
+ok implement C3 and tell me how to test
+
+## 84
+1 works but i get tsome warnings. leme know if the y make sense  and if we can get reed o fthem [WARNING: [youtube] No supported JavaScript runtime could be found ...]
+
+## 85
+ok i tried option B and instaleld teh dependency. update the installation guide to reflect it so filese readme and youtube
+
+## 86
+[yes - mark C3 done in mini_todo]
+
+## 87
+ok try to implement c4 . us ethe same config file an dlet's see if you can conver to french or ro. tell me ho wto test
+
+## 88
+ok 1 worked. for 2 maybe create a new config file to test easily go. give me the command to test also similiraly for 3 a nd 4 simple test comamnds
+
+## 89
+ok i tried all 4 tests they work. update mini_todo to reflect this and extend it to cover th euses case and details. tell me if tehre is a remaining subtask from phase C
+
+## 90
+implement C5 analyze if there are several ways to do it an dprsent me your recommendation befor eproceedeing
+
+## 91
+ok option A
+
+## 92
+ok update mini_todo to reflect all capabilities implemented
+
+## 93
+ok incorporate all teh important task capabilities and sucecsses from mini_todo into plan.md  and adjust also accordingly readme and youtube. once done move th efile mini_todo into the ignore folder
+
+## 94
+summarize what was achieved from plan.md and what remains to be done
+
+## 95
+create a folder called config. move all the config json filese there. adapt all the tests doen with BAT file to correctly refer to these files properly. create a new file in the root called how_to_test.md listing all the tests we did based on BAT file, add comments to make it easy tounderstand. present the tests chronologically like we had created them
+
+## 96
+give small examples on how to run the tests, not all but some. I need to see the command to run on teh command line
+
+## 97
+but i want these examples in the markdown file
+
+## 98
+but add teh examples also for phase A and B
+
+## 99
+ok betterreview that the files are insynch and there are no contradictions or missalignments. if yes signal them and if possible fix them
+
+## 100
+ok how much from plan.md has been solved give me a percentage
+
+## 101
+ok update the kiro markdown files in chats to reflect latest prompts and conversation

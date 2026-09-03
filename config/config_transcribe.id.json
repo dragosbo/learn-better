@@ -1,0 +1,13 @@
+{
+  "_comment": "Mode 'id': transcribe audio files by YouTube video id (the [<id>] in the file name). These ids are the F2DBSH2VoHQ (VSCode) and 9llCMADxvzI (GitLab) clips; copy ids from data/playlists.json.",
+  "select_by": "id",
+  "select": [
+    "F2DBSH2VoHQ",
+    "9llCMADxvzI"
+  ],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "transcribe",
+  "language": null
+}

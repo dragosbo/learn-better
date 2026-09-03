@@ -4,67 +4,142 @@ This is the "option 2" helper: a plain script CANNOT write the analytical
 summaries (table of contents, strengths, weaknesses) - that requires an LLM
 reading each transcript. So instead this script does the deterministic part:
 
-  1. finds every English transcript in transcripts/  (*.en.txt),
-  2. works out its expected summary path in summaries/,
-  3. reports which transcripts already have a summary and which don't,
-  4. prints a single ready-to-paste instruction you give to Kiro in chat,
+  1. finds every English transcript, from BOTH sources:
+       - transcripts/<base>.en.txt            (YouTube captions)
+       - generated_transcripts/<base>.whisper.en.txt  (Whisper, Phase C)
+  2. picks ONE per video (base): a caption transcript is preferred; a Whisper
+     transcript is used only when that video has no caption transcript
+     (captions-first, Whisper fills the gaps - mirrors the C3 source flow),
+  3. works out its expected summary path in summaries/,
+  4. reports which videos already have a summary and which don't (tagging the
+     source, caption vs. whisper),
+  5. prints a single ready-to-paste instruction you give to Kiro in chat,
      which applies skill_summary.md to the missing ones.
 
 Nothing here calls a paid API or needs a key. Run it via s.bat (or
 `python code/make_summaries.py`), then paste the printed instruction into Kiro.
 
-Base name rule (must match skill_summary.md):
-    "<title> [<id>].en.txt"  ->  "summaries/<title> [<id>].summary.md"
+Base name rule (must match skill_summary.md), for BOTH sources:
+    transcripts/<title> [<id>].en.txt                  -> summaries/<title> [<id>].summary.md
+    generated_transcripts/<title> [<id>].whisper.en.txt -> summaries/<title> [<id>].summary.md
+Both map to the SAME summary file, so a video summarized from Whisper and later
+gaining captions never produces a duplicate/orphan summary.
 """
 
 import os
+import re
+import sys
+
+# Transcript filenames can contain non-ASCII characters (e.g. accented or
+# non-Latin video titles). On Windows the console defaults to cp1252, which
+# raises UnicodeEncodeError when printing those. Force UTF-8 output so the
+# report never crashes on an exotic filename.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except (AttributeError, ValueError):
+    pass
+
+# Make the repo root importable so `from lib import paths` works when this
+# script is run as `python code/make_summaries.py`.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from lib import paths  # noqa: E402
 
 # Resolve folders relative to the repo root (this file lives in code/).
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TRANSCRIPT_DIR = os.path.join(_REPO_ROOT, "transcripts")
+TRANSCRIPT_DIR = os.path.join(_REPO_ROOT, paths.TRANSCRIPT_DIR)
+GENERATED_DIR = os.path.join(_REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR)
 SUMMARY_DIR = os.path.join(_REPO_ROOT, "summaries")
 SKILL_FILE = "skill_summary.md"          # relative path, for the printed hint
-LANG_SUFFIX = ".en.txt"                  # only summarize English transcripts
+
+CAPTION_SUFFIX = ".en.txt"               # transcripts/<base>.en.txt
+WHISPER_SUFFIX = ".whisper.en.txt"       # generated_transcripts/<base>.whisper.en.txt
+
+# The `[<id>]` YouTube id embedded in a transcript file name. This is the true
+# per-video identity, and it survives filename sanitizing (the caption and
+# Whisper names for the same video can differ elsewhere, e.g. stripped `?`/`|`,
+# but the id in brackets is identical).
+_ID_IN_NAME_RE = re.compile(r"\[([A-Za-z0-9_-]{11})\]")
 
 
-def _summary_path_for(transcript_name):
-    """'<base>.en.txt' -> absolute 'summaries/<base>.summary.md'."""
-    base = transcript_name[: -len(LANG_SUFFIX)]   # strip ".en.txt"
+def _video_key(base):
+    """Return the video id for a base name if present, else the base itself.
+
+    Keying on the id makes captions-first dedupe work even when the caption and
+    Whisper file names for the same video are spelled differently.
+    """
+    m = _ID_IN_NAME_RE.search(base)
+    return m.group(1) if m else base
+
+
+def _summary_path_for(base):
+    """'<base>' -> absolute 'summaries/<base>.summary.md'."""
     return os.path.join(SUMMARY_DIR, f"{base}.summary.md")
 
 
-def find_transcripts():
-    """Return sorted English transcript filenames (just the names)."""
-    if not os.path.isdir(TRANSCRIPT_DIR):
-        return []
-    return sorted(
-        name for name in os.listdir(TRANSCRIPT_DIR)
-        if name.endswith(LANG_SUFFIX)
-    )
+def find_candidates():
+    """Return {video_key: (base, source, rel_path)} with captions preferred.
+
+    Keyed on the video id (see _video_key) so the same video is never listed
+    twice. source is "caption" or "whisper"; rel_path is repo-relative for the
+    paste-ready instruction. A video present as a caption is never overridden by
+    a Whisper transcript (captions-first); Whisper is added only for videos with
+    no caption.
+    """
+    candidates = {}
+
+    # 1) Captions first (win on conflict). Note: .whisper.en.txt also ends with
+    #    .en.txt, so guard against it here even though it lives in another dir.
+    if os.path.isdir(TRANSCRIPT_DIR):
+        for name in sorted(os.listdir(TRANSCRIPT_DIR)):
+            if name.endswith(WHISPER_SUFFIX):
+                continue
+            if name.endswith(CAPTION_SUFFIX):
+                base = name[: -len(CAPTION_SUFFIX)]
+                candidates[_video_key(base)] = ("caption", base,
+                                                f"transcripts/{name}")
+
+    # 2) Whisper fills gaps: add only videos not already covered by a caption.
+    if os.path.isdir(GENERATED_DIR):
+        for name in sorted(os.listdir(GENERATED_DIR)):
+            if name.endswith(WHISPER_SUFFIX):
+                base = name[: -len(WHISPER_SUFFIX)]
+                key = _video_key(base)
+                if key not in candidates:
+                    candidates[key] = ("whisper", base,
+                                       f"generated_transcripts/{name}")
+
+    return candidates
 
 
 def main():
     os.makedirs(SUMMARY_DIR, exist_ok=True)
 
-    transcripts = find_transcripts()
-    if not transcripts:
-        print(f"No '*{LANG_SUFFIX}' transcripts found in {TRANSCRIPT_DIR}/.")
-        print("Run t.bat first to download some transcripts.")
+    candidates = find_candidates()
+    if not candidates:
+        print(f"No English transcripts found in transcripts/ (*{CAPTION_SUFFIX}) "
+              f"or generated_transcripts/ (*{WHISPER_SUFFIX}).")
+        print("Run t.bat (captions) or w.bat (Whisper) first.")
         return
 
     done, missing = [], []
-    for name in transcripts:
-        (done if os.path.exists(_summary_path_for(name)) else missing).append(name)
+    for key in candidates:
+        source, base, rel = candidates[key]
+        entry = (base, source, rel)
+        (done if os.path.exists(_summary_path_for(base)) else missing).append(entry)
 
-    print(f"Found {len(transcripts)} English transcript(s) in transcripts/:")
-    for name in done:
-        print(f"  [have summary] {name}")
-    for name in missing:
-        print(f"  [NEEDS summary] {name}")
+    done.sort()
+    missing.sort()
+
+    print(f"Found {len(candidates)} video(s) with an English transcript "
+          f"(captions preferred, Whisper fills gaps):")
+    for base, source, _ in done:
+        print(f"  [have summary]  ({source}) {base}")
+    for base, source, _ in missing:
+        print(f"  [NEEDS summary] ({source}) {base}")
     print()
 
     if not missing:
-        print("All English transcripts already have a summary in summaries/.")
+        print("All videos already have a summary in summaries/.")
         print("To force-refresh one, delete its summaries/*.summary.md and re-run.")
         return
 
@@ -73,14 +148,15 @@ def main():
     print("=" * 70)
     print("NEXT STEP - paste this into Kiro (the AI writes the summaries):")
     print("=" * 70)
-    rel_paths = [f"transcripts/{name}" for name in missing]
     print(f"Apply {SKILL_FILE} to these transcripts and save each to "
           f"summaries/<base>.summary.md:")
-    for rel in rel_paths:
+    for base, source, rel in missing:
         print(f"  - {rel}")
     print()
     print("(Kiro reads each transcript and writes a summary following "
-          f"{SKILL_FILE}.)")
+          f"{SKILL_FILE}. Whisper transcripts live in generated_transcripts/, "
+          "caption transcripts in transcripts/; both map to the same summary "
+          "base name.)")
 
 
 if __name__ == "__main__":

@@ -38,3 +38,10 @@ pandas>=2.0,<3
 
 # Jupyter kernel, so the notebooks can run in this environment
 ipykernel>=6.29,<7
+
+# Speech-to-text (Phase C): transcribe audio whose YouTube captions are
+# disabled. faster-whisper (CTranslate2 backend) is lighter/faster than
+# openai-whisper, CPU-friendly (int8), and can also translate. It downloads
+# the model weights from Hugging Face on first use, and needs ffmpeg (already
+# a system dependency above).
+faster-whisper>=1.0

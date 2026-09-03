@@ -1,0 +1,12 @@
+{
+  "_comment": "C4 test 3: French audio -> FRENCH text (task 'transcribe' with language pinned to 'fr'). This is NOT translation, it is a same-language transcript of French audio. Output is named .whisper.fr.txt. Searches for a short French clip.",
+  "select_by": "source",
+  "search": "apprendre le francais court",
+  "limit": 2,
+  "languages": ["en"],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "transcribe",
+  "language": "fr"
+}

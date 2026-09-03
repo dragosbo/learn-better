@@ -19,6 +19,7 @@ roadmap.
 | `yt-dlp[default,curl-cffi]` | Core, actively-maintained downloader for audio, video listing, and subtitles. |
 | `curl_cffi` | Powers yt-dlp's browser **impersonation** (TLS fingerprint). Required, without it YouTube blocks subtitle/format fetches (bot-check, empty subtitle responses). |
 | `youtube-transcript-api` | Fetch video transcripts/subtitles. |
+| `faster-whisper` | Local, no-API-key speech-to-text (and translate-to-English) for clips whose captions are disabled. CPU-friendly (`int8`); needs `ffmpeg`. Used by `transcribe_audio.py` (`w.bat`). |
 | `pandas` | Metadata tables/dataframes. |
 | `ipykernel` | Lets the Jupyter notebooks run inside this environment. |
 
@@ -61,19 +62,36 @@ ffmpeg -version
 Once ffmpeg is on your PATH (or in your active conda env), yt-dlp finds it
 automatically.
 
-### Optional: a JavaScript runtime (silences a yt-dlp warning)
+### Recommended: a JavaScript runtime (Deno)
 
-Recent yt-dlp prints `No supported JavaScript runtime could be found`. It still
-works (impersonation via `curl_cffi` covers the important cases), but installing
-a JS runtime removes the warning and can restore some formats. Optional:
+Recent yt-dlp prints `No supported JavaScript runtime could be found` and warns
+that "YouTube extraction without a JS runtime has been deprecated." The tools
+still work without one (impersonation via `curl_cffi` covers subtitles and
+audio), but YouTube increasingly relies on JS in its player, so installing a
+runtime is **recommended**: it removes the warning and can restore some formats
+yt-dlp would otherwise skip.
+
+Install **Deno** once (it is the runtime yt-dlp enables by default):
 
 ```cmd
-winget install DenoLand.Deno   :: Windows (open a new terminal afterwards)
+winget install DenoLand.Deno   :: Windows (open a NEW terminal afterwards)
 ```
 
 ```bash
 brew install deno              # macOS
+curl -fsSL https://deno.land/install.sh | sh   # Linux
 ```
+
+Open a new terminal so `deno` is on your PATH, then verify:
+
+```cmd
+deno --version
+```
+
+yt-dlp finds it automatically on the next run; the JS-runtime warning is gone.
+The code also passes `no_warnings` to yt-dlp on the transcript/audio paths, so
+the message is suppressed even if a runtime is missing, but installing Deno is
+still the proper fix.
 
 ---
 
@@ -287,7 +305,7 @@ Notes for Colab:
 ## Running the tools
 
 Activate your environment first (step 1), then run any of the scripts below.
-Two helper batch files are provided for convenience:
+Helper batch files are provided for convenience (run them from the repo root):
 
 - `c.bat` — activates the `learn-better` conda env (`c` from the repo root).
 - `r.bat` — activates the env and runs `code\read_channel.py` (`r`).
@@ -296,6 +314,9 @@ Two helper batch files are provided for convenience:
   transcript summaries (`s`); see "Summarize transcripts" below.
 - `p.bat` — activates the env and runs `code\list_playlists.py` (`p`); see
   "List your playlists" below.
+- `w.bat` — activates the env and runs `code\transcribe_audio.py` for Whisper
+  speech-to-text (`w`, or `w config\config_transcribe.<mode>.json`); see
+  "Transcribe audio with Whisper" below.
 
 ### List your playlists (no API key)
 
@@ -376,6 +397,58 @@ Notes:
   `COOKIES_FILE = "code/cookies.txt"`. The cookies.txt option is also the only
   one that helps the transcript step.
 
+### Transcribe audio with Whisper (`w.bat`)
+
+For clips whose YouTube captions are disabled (the ones the tools flag as
+`NO TRANSCRIPT`), generate a transcript from the audio using
+[`faster-whisper`](https://github.com/SYSTRAN/faster-whisper) — a fast,
+CPU-friendly, no-API-key speech-to-text engine. `code/transcribe_audio.py` writes
+to `generated_transcripts/<title> [<id>].whisper.<lang>.txt` (named from the audio
+file), and **skips** any transcript already present.
+
+It is driven by small JSON config files in the `config/` folder, passed to `w`:
+
+```cmd
+w                                   :: uses config\config_transcribe.json (or in-file defaults)
+w config\config_transcribe.name.json  :: pick files by name substring
+w config\config_transcribe.id.json    :: pick files by YouTube video id
+w config\config_transcribe.source.json:: playlist/channel/search, captions-first
+```
+
+Each config sets `select_by` and the Whisper options:
+
+- **`select_by = "name"`** — `select` is a list of case-insensitive substrings
+  matched against audio file names.
+- **`select_by = "id"`** — `select` is a list of YouTube video ids (the `[<id>]`
+  in each audio file name; copy them from `data/playlists.json`).
+- **`select_by = "all"`** — every audio file in `audio/` (slow).
+- **`select_by = "source"`** — the real "fill the gaps" use case: give a
+  `playlist_id` / `channel` / `search`, and for each video it uses the YouTube
+  caption transcript if one exists, and **only** Whisper-transcribes the
+  caption-less clips (reusing or downloading their audio; the model loads only if
+  a clip actually needs it).
+
+**Transcribe vs. translate** (the `task` key):
+
+- `task = "transcribe"` — text in the audio's original language. Pin `language`
+  (e.g. `"fr"`, `"ro"`) for a same-language transcript, or leave it `null` to
+  auto-detect.
+- `task = "translate"` — Whisper translates to **English only** (a fixed model
+  capability; it cannot target French/Romanian). Output is always
+  `.whisper.en.txt`.
+
+Model/quality knobs (`model_size`, `device`, `compute_type`) default to
+`base` / `cpu` / `int8`. Bump `model_size` to `"small"`/`"medium"` for better
+accuracy (slower). On the sample clip, `base` scored ~95% word accuracy against
+YouTube's captions (see "Whisper transcription quality" below).
+
+```cmd
+w config\config_transcribe.source.json
+```
+
+Output goes to `generated_transcripts/` (git-ignored). Re-running skips clips that
+already have a transcript.
+
 ### Summarize transcripts (`s.bat`)
 
 Turn the downloaded English transcripts into concise, structured summaries
@@ -392,28 +465,36 @@ s
 
 `code/make_summaries.py` then:
 
-1. finds every English transcript (`transcripts/*.en.txt`),
-2. checks which already have a matching `summaries/<base>.summary.md`,
-3. prints which are done vs. missing, and
-4. for the missing ones, prints a single ready-to-paste instruction.
+1. finds every English transcript from **both** sources — YouTube captions
+   (`transcripts/*.en.txt`) and Whisper output
+   (`generated_transcripts/*.whisper.en.txt`),
+2. picks **one per video** (captions preferred; a Whisper transcript is used only
+   when that video has no caption), deduplicating by the `[<id>]` video id so the
+   same clip is never listed twice,
+3. checks which already have a matching `summaries/<base>.summary.md`,
+4. prints which are done vs. missing (tagging each `(caption)` or `(whisper)`), and
+5. for the missing ones, prints a single ready-to-paste instruction whose paths
+   point at the correct folder.
 
 You copy that printed instruction into the Kiro chat, e.g.:
 
 > Apply skill_summary.md to these transcripts and save each to
 > summaries/<base>.summary.md:
 > - transcripts/Some Video [abc123].en.txt
+> - generated_transcripts/Another Video [def456].whisper.en.txt
 
 Kiro reads each transcript and writes the summary following `skill_summary.md`.
 Existing summaries are left alone, so re-running only surfaces new transcripts.
 To regenerate one, delete its `summaries/*.summary.md` and run `s` again.
 
-Typical flow for a new video: `t` (download its transcript) → `s` (list what
-needs summarizing) → paste the instruction into Kiro.
+Typical flow for a new video: `t` or `w` (get a transcript, caption or Whisper) →
+`s` (list what needs summarizing) → paste the instruction into Kiro.
 
-Note: only English (`.en.txt`) transcripts are summarized. Summaries are saved
-to `summaries/` (this folder **is** tracked by git, unlike `audio/` and
-`transcripts/`, since summaries are authored content rather than regenerated
-downloads).
+Note: only English transcripts are summarized, and both a caption and a Whisper
+transcript for the same video map to the same `summaries/<base>.summary.md`.
+Summaries are saved to `summaries/` (this folder **is** tracked by git, unlike
+`audio/`, `transcripts/`, and `generated_transcripts/`, since summaries are
+authored content rather than regenerated downloads).
 
 ### Download audio from YouTube (legacy)
 
@@ -442,6 +523,72 @@ jupyter notebook notebooks\yt_download.ipynb
 
 ---
 
+## Whisper transcription quality (validation)
+
+Before generalizing the speech-to-text step, we validated it on one clip.
+`code/transcribe_audio.py` transcribes *Git and GitHub Tutorial for Beginners*
+with `faster-whisper` (model `base`, CPU, `int8`) to
+`generated_transcripts/...whisper.en.txt`. We then compared that output against
+YouTube's own English captions for the same video.
+
+### How the numbers were obtained
+
+`code/compare_transcripts.py` reads both files, strips the `[HH:MM:SS]`
+timestamps from the captions, lowercases everything, and reduces each text to a
+stream of word tokens (punctuation removed). It then computes:
+
+- **Sequence similarity** (`difflib`, order-sensitive) and an approximate
+  **word error rate (WER)** from the insert/delete/replace opcodes, using the
+  YouTube captions as the reference.
+- **Bag-of-words overlap** (order-insensitive multiset intersection): Jaccard
+  and reference-vocabulary coverage.
+- The **top divergent words** in each direction, to see *what* actually differs.
+
+Reproduce it with:
+
+```cmd
+python code\compare_transcripts.py
+```
+
+### Result: ~95% quality
+
+| Metric | Result | Meaning |
+|---|---|---|
+| Sequence similarity (order-sensitive) | **96.4%** | Same words, same order |
+| Word accuracy (1 − approx. WER) | **~95.4%** | ~4.6% raw word error rate |
+| Bag-of-words coverage of reference | **97.6%** | Nearly all real words captured |
+| Jaccard overlap (multiset) | 94.0% | Overall vocabulary agreement |
+
+For the `base` model on CPU this is a solid, usable result. Crucially, almost
+none of the divergences are genuine mis-hearings, they are formatting and
+spelling conventions:
+
+- **"git" heard as "get"** (the single biggest contributor to WER) — cosmetic.
+- **"GitHub" split into "Git Hub"**, `fixtemp` vs. "fix temp", etc. — spacing.
+- **Spoken symbols spelled out:** "dash" for `-`, "dot" for `.`, "e mail" for
+  "email". Whisper transcribes speech; the captions render symbols.
+- **Minor filler swaps** ("can" vs. "could"/"will") that don't change meaning.
+
+So the *semantic* error rate is well below the raw 4.6%. For the summary
+pipeline, which cares about meaning, the `base` output is already good enough.
+
+### Key recommendations
+
+1. **Bump the model** in `transcribe_audio.py`: `MODEL_SIZE = "small"` (or
+   `"medium"`) drops the raw WER toward 2–3% and better handles "git"/"GitHub".
+   Tradeoff: `small` is ~2–3x slower, `medium` much slower on CPU.
+2. **Prime domain vocabulary** with `initial_prompt` on
+   `model.transcribe(..., initial_prompt="Git, GitHub, git config, gitignore,
+   git commit, repository, branch")` — the cheapest fix for the
+   "get/git/GitHub" errors without a larger model.
+3. **Pin the language** to `LANGUAGE = "en"` for known-English clips to avoid
+   auto-detection slips and shave a little time.
+4. **Optional post-processing** if you want output closer to the captions: map
+   " dash " → " -", " dot " → ".", "git hub" → "GitHub". Not needed for
+   summaries, where meaning is already intact.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -454,6 +601,7 @@ jupyter notebook notebooks\yt_download.ipynb
 | `pytube` errors / downloads failing | `pytube` breaks often against YouTube changes. | `yt-dlp` is installed as the robust alternative; prefer it (migration is on the roadmap in `plan.md`). |
 | `ffmpeg not found` / yt-dlp can't convert to mp3 | ffmpeg not installed or not on PATH. | Install ffmpeg (step 3b / Dependencies section); open a new terminal; check `ffmpeg -version`. |
 | yt-dlp: `Sign in to confirm you're not a bot` | YouTube is blocking anonymous downloads. | Pass browser cookies to yt-dlp (`cookiesfrombrowser`) or an exported `cookies.txt`; update yt-dlp with `pip install -U yt-dlp`. |
+| yt-dlp: `No supported JavaScript runtime could be found` | No JS runtime installed. Harmless (subtitles/audio still work). | Install Deno (`winget install DenoLand.Deno`; see "Recommended: a JavaScript runtime"), open a new terminal. The code also sets `no_warnings`, so it stays quiet even without Deno. |
 | VS Code asks to install `ipykernel` for the notebook | Kernel package missing in this env. | `pip install -r requirements.txt` (includes `ipykernel`), then pick the env as the notebook kernel. |
 
 ---
@@ -466,22 +614,29 @@ learn-better/
 │   ├── read_channel.py        # no-API-key: audio + transcripts (recommended)
 │   ├── read_transcript.py     # no-API-key: transcripts only (per language)
 │   ├── list_playlists.py      # no-API-key: list a channel's public playlists (p.bat)
+│   ├── transcribe_audio.py    # Whisper speech-to-text + translate (w.bat)
+│   ├── compare_transcripts.py # Whisper-vs-captions quality check
 │   ├── make_summaries.py      # lists transcripts needing a summary (used by s.bat)
 │   ├── youtube_download.py    # legacy pytube audio downloader
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
+├── lib/                 # reusable helpers: net, textutil, paths, youtube
 ├── notebooks/           # yt_download.ipynb (reusable helpers + metadata)
 ├── .devcontainer/       # Codespaces / Dev Container (Python 3.12)
 ├── audio/               # downloaded audio (git-ignored)
-├── transcripts/         # saved transcripts (git-ignored)
+├── transcripts/         # saved caption transcripts (git-ignored)
+├── generated_transcripts/ # Whisper transcripts (git-ignored)
 ├── summaries/           # AI-generated summaries (tracked by git)
+├── data/                # e.g. playlists.json (git-ignored)
+├── config/              # Whisper run configs: config_transcribe*.json (name/id/all/source/translate/fr/ro)
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
-├── ignore/              # git-ignored: retired code + todo.md, learning_codspaces.txt
+├── ignore/              # git-ignored: retired code + todo.md, mini_todo.md, notes
 ├── skill_summary.md     # reusable summary format/procedure
 ├── c.bat                # activate the learn-better conda env
 ├── r.bat                # activate env + run read_channel.py
 ├── t.bat                # activate env + run read_transcript.py
 ├── s.bat                # activate env + run make_summaries.py (prep summaries)
 ├── p.bat                # activate env + run list_playlists.py
+├── w.bat                # activate env + run transcribe_audio.py (Whisper)
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

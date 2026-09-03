@@ -1,0 +1,10 @@
+{
+  "_comment": "Mode 'all': transcribe every audio file in audio/ (select is ignored). Slow; skip-if-exists means already-done files are skipped, so re-running only processes new audio.",
+  "select_by": "all",
+  "select": [],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "transcribe",
+  "language": null
+}

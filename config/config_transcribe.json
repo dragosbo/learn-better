@@ -1,0 +1,12 @@
+{
+  "_comment": "Default transcription config. select_by is one of name|id|all. For 'name', select is a list of case-insensitive substrings matched against audio file names. For 'id', select is a list of 11-char YouTube ids matched against the [<id>] in each audio file name (copy ids straight from data/playlists.json). For 'all', select is ignored and every audio file is transcribed. model_size/device/compute_type/task/language mirror the faster-whisper settings.",
+  "select_by": "name",
+  "select": [
+    "Git and GitHub"
+  ],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "transcribe",
+  "language": null
+}

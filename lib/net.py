@@ -71,16 +71,22 @@ def impersonate_opts():
 
 
 def apply_no_proxy_env():
-    """If NO_PROXY, strip proxy env vars for this process.
+    """If NO_PROXY (this module's flag), strip proxy env vars for this process.
 
     yt-dlp's own "proxy": "" opt only affects yt-dlp's requests; libraries that
     read HTTP_PROXY/HTTPS_PROXY from the environment (and lowercase variants)
     would still use the proxy. Clearing them here makes ALL code bypass it.
+
+    We also clear the NO_PROXY / no_proxy *environment* vars: some corporate
+    setups ship a MALFORMED value (e.g. "10:29.178.29;localhost") that crashes
+    httpx-based clients like huggingface_hub with
+    `httpx.InvalidURL: Invalid port`. Since we're forcing a direct connection,
+    an empty NO_PROXY is the right state anyway.
     """
     if not NO_PROXY:
         return
     for var in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
-                "ALL_PROXY", "all_proxy"):
+                "ALL_PROXY", "all_proxy", "NO_PROXY", "no_proxy"):
         os.environ.pop(var, None)
 
 

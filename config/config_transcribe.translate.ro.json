@@ -1,0 +1,12 @@
+{
+  "_comment": "C4 test 2: Romanian audio -> ENGLISH text (Whisper translate only outputs English). Searches for a short Romanian clip; language:null auto-detects the source. Output is always .whisper.en.txt. To force the Whisper path, these clips should have no English caption (the source flow uses captions first).",
+  "select_by": "source",
+  "search": "cum sa inveti ceva scurt in romana",
+  "limit": 2,
+  "languages": ["en"],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "translate",
+  "language": null
+}

@@ -632,6 +632,222 @@ exchanges (summarized) to this file.
 
 ---
 
+## 75. User
+> the transcribe_audio.py works. compare the output from lola_transcript.txt with the english transcript downloaded from youtube ... quality of the whisper, give me a percentage and recommendations
+
+**Kiro:** Read the Whisper output and the YouTube caption transcript, then wrote
+`code/compare_transcripts.py` (strip timestamps, lowercase, tokenize; difflib +
+bag-of-words). Result: **~95% word accuracy** (96.4% sequence similarity, 97.6%
+coverage). Explained most divergences are cosmetic (git↔get, "GitHub"↔"Git Hub",
+spoken symbols). Recommended: bump model size, `initial_prompt` for domain terms,
+pin `LANGUAGE="en"`, optional post-processing.
+
+## 76. User
+> incorporate your findings in readme and youtube ... how they were obtained and key recommendations
+
+**Kiro:** Added a "Whisper transcription quality (validation)" section to README
+(method, results table, cosmetic-divergence note, 4 recommendations) and a
+matching "Whisper transcription quality" section to youtube.html (with a Mermaid
+comparison-flow diagram, results table, nav link).
+
+## 77. User
+> evaluate how many subtasks from Phase C in mini_todo were solved
+
+**Kiro:** Checked the code against C0-C5. Reported C0 (dep) and C1 (transcribe
+one file) done; C2-C5 not yet. Score: 2/4 core (50%), 2/6 all (~33%). Noted C2
+(proper naming + folder) was the natural next step.
+
+## 78. User
+> deal with C2: eliminate the generic lola-transcript.txt, name outputs from the audio file, store in a new generated_transcripts/ folder. one language for now. tell me how to test
+
+**Kiro:** Added `GENERATED_TRANSCRIPT_DIR` to `lib/paths.py`; rewrote
+`transcribe_audio.py` to derive the output name from the audio file
+(`<base>.whisper.<lang>.txt`) into `generated_transcripts/`, with skip-if-exists.
+Git-ignored the new folder, deleted `audio/lola_transcript.txt`, repointed
+`compare_transcripts.py`. Gave first-run / skip / compare test commands.
+
+## 79. User
+> 1,2,3 all work. how would I adapt the code to specify which audio files to process (by file name or the data/ json)? reflect and propose something simple
+
+**Kiro:** Read `data/playlists.json`. Proposed (analysis only) three selection
+modes: all files, name substring, and video id (the shared key with the JSON),
+recommending an explicit `SELECT_BY` flag and keeping the JSON out of the core
+loop for this phase. Asked before implementing.
+
+## 80. User
+> the modes are good but testing mode 1 is too time-consuming. implement mode 2 and mode 3 first and tell me how to test
+
+**Kiro:** Implemented `SELECT_BY = "name" | "id" | "all"` with `pick_audio_files()`
+and a batch loop over `transcribe_one()`. Verified the selection logic against the
+real `audio/` folder (name and id modes) without loading Whisper. Gave per-mode
+test edits and commands.
+
+## 81. User
+> create config files like config_transcribe.json ... and the equivalent bat file for testing
+
+**Kiro:** Created `config_transcribe.json` (default) + `.name/.id/.all` variants,
+made `transcribe_audio.py` load a JSON config (CLI arg or auto-load default;
+omitted keys keep defaults), and added `w.bat` that forwards an optional config
+path. Verified all four configs parse and resolve to the right files.
+
+## 82. User
+> tested 1,2,3 - update mini_todo (maybe we did more than expected). what remains in Phase C?
+
+**Kiro:** Marked C0/C1/C2 done in `mini_todo.md` (C2 "exceeded" with the
+selection + config + `w.bat` extras) and added a Phase C status block. Reported
+remaining: C3 (core), C4/C5 (optional).
+
+## 83. User
+> implement C3 and tell me how to test
+
+**Kiro:** Read `lib/youtube.py`, then added `SELECT_BY = "source"`:
+`run_source_flow()` lists a playlist/channel/search, tries the caption transcript
+first, and only Whisper-transcribes caption-less clips (audio reused/downloaded,
+lazy model load, end-of-run tally). Added `config_transcribe.source.json`.
+Verified compile + config parse + search-URL build. Gave source-flow test steps.
+
+## 84. User
+> 1 works but I get warnings [No supported JavaScript runtime]. do they make sense, can we remove them?
+
+**Kiro:** Explained the warning is yt-dlp wanting a JS runtime; harmless for
+subtitles/audio (the run succeeded, all 3 had captions). Added `no_warnings` to
+`download_transcript`/`download_audio` in `lib/youtube.py` (Option A) and noted
+installing Deno (Option B) as the proper fix.
+
+## 85. User
+> I installed Deno. update the installation guide (readme and youtube)
+
+**Kiro:** Reframed the README section from "Optional" to "Recommended: a
+JavaScript runtime (Deno)" (install, verify, note the `no_warnings` safety net),
+added a matching "3c" install step to youtube.html, and added a troubleshooting
+row for the warning in both.
+
+## 86. User
+> [yes, mark C3 done]
+
+**Kiro:** Marked C3 `[x] DONE` in `mini_todo.md` with a detailed note (source
+flow, config, `w`, warning cleanup) and updated the Phase C status block to
+100% core (C0-C3) + C4/C5 optional remaining.
+
+## 87. User
+> implement c4. use the same config file and see if you can convert to french or ro. tell me how to test
+
+**Kiro:** Verified (web) that Whisper's `translate` outputs **English only** - it
+cannot target fr/ro. Made `task` config-driven and fixed the output-language
+naming (translate always `en`) via `known_output_language()`. Added
+`config_transcribe.translate.json`. Flagged the English-only constraint clearly
+and explained the transcribe-with-pinned-language alternative.
+
+## 88. User
+> 1 worked. for 2 create a new config to test easily; give the commands for 3 and 4 too
+
+**Kiro:** Added `config_transcribe.translate.ro.json` (Romanian→English),
+`config_transcribe.fr.json` (French→French) and `config_transcribe.ro.json`
+(Romanian→Romanian). Validated all parse. Gave one-command test lines for each,
+with the captions-first caveat.
+
+## 89. User
+> all 4 tests work. update mini_todo, cover the use cases and details. any remaining Phase C subtask?
+
+**Kiro:** Marked C4 done in `mini_todo.md` with the three use cases, the
+English-only constraint, the naming fix, and the four test configs. Reported only
+the optional C5 (summary hook) remaining.
+
+## 90. User
+> implement C5, analyze if there are several ways, present your recommendation before proceeding
+
+**Kiro:** Read `make_summaries.py`. Presented four options (fallback / union /
+whisper-only / config flag) and recommended **Option A** (captions preferred,
+Whisper fills gaps, one summary per video), matching the C3 design. Asked before
+implementing.
+
+## 91. User
+> ok option A
+
+**Kiro:** Reworked `make_summaries.py` to scan both `transcripts/` and
+`generated_transcripts/`, captions preferred, one per video. Discovered a
+real edge (caption vs. Whisper filenames differ for the same clip), so keyed the
+dedupe on the **video id** instead of the filename. Added a UTF-8 stdout fix so
+non-ASCII titles don't crash. Verified live: 10 videos, correct caption/whisper
+tagging, no duplicates.
+
+## 92. User
+> update mini_todo to reflect all capabilities implemented
+
+**Kiro:** Marked C5 done, set the Phase C status block to 100% (all 6), added a
+"Capabilities delivered" summary and an "ALL THREE PHASES COMPLETE" note, and
+checked off the suggested-order table.
+
+## 93. User
+> incorporate all the important capabilities and successes from mini_todo into plan.md, adjust readme and youtube, then move mini_todo into ignore/
+
+**Kiro:** Updated `plan.md` (state table + fixes list + roadmap: Phase 0-1 and
+summarization prep marked done as scripts; recommended-next-step rewritten). Added
+a "Transcribe audio with Whisper" section to README, updated the summaries section
+(dual-source), the dependency table (`faster-whisper`), and layout. Added a
+"Whisper speech-to-text" section + diagram to youtube.html, flipped status rows,
+recolored the roadmap. Moved `mini_todo.md` into `ignore/`.
+
+## 94. User
+> summarize what was achieved from plan.md and what remains
+
+**Kiro:** Summarized: done = Phase 0 foundation, Phase 1 audio→text (STT +
+translation + source flow), summarization prep, Codespaces doc. Remaining = TTS,
+word cloud, bitrate helper, mindmap/prompt docs, optional Streamlit/CI, `data/`
+consolidation.
+
+## 95. User
+> create a config folder, move the config json files there, adapt the bat-file tests to refer to them. create how_to_test.md listing all the bat-file tests chronologically with comments
+
+**Kiro:** Created `config/` and moved all 9 `config_transcribe*.json` there.
+Updated `transcribe_audio.py`'s default path to `config/config_transcribe.json`
+(CLI-arg paths pass through). Updated `w.bat` comments and the doc references to
+`config\...`. Verified path resolution. Wrote `how_to_test.md` with the tests in
+build order (A, B, C1-C5) plus reference tables.
+
+## 96. User
+> give small examples on how to run the tests ... the command to run on the command line
+
+**Kiro:** Gave a handful of copy-paste `cmd` examples (activate, C1, C2, C3, C4,
+C5) with the `.bat`/`python` fallback forms.
+
+## 97. User
+> but i want these examples in the markdown file
+
+**Kiro:** Added a "Quick copy-paste examples" block near the top of
+`how_to_test.md` with the representative commands and the fallback forms.
+
+## 98. User
+> add the examples also for phase A and B
+
+**Kiro:** Extended the quick-examples block with Phase A (`p`) and Phase B
+(`t`, `r`), grouped by phase in chronological order.
+
+## 99. User
+> review that the files are in sync and there are no contradictions/misalignments. signal and fix them
+
+**Kiro:** Cross-checked README, youtube.html, plan.md, how_to_test.md against the
+real repo. Found and fixed: stale `audio/lola_transcript.txt` references (→
+`generated_transcripts/...whisper.en.txt`); plan.md "configs at repo root" (→
+`config/`); plan.md's outdated "Suggested repository layout"; README's "Two helper
+batch files" (→ "Helper batch files"); a slash-consistency nit in how_to_test.
+Confirmed bat files, `.gitignore`, `config/`, and dependency claims all match.
+
+## 100. User
+> how much from plan.md has been solved, give me a percentage
+
+**Kiro:** Counted the 19 roadmap checkboxes: 10 done, 2 partial, 7 open → **~55-58%**
+overall (~53% counting only full done; ~69% excluding optional Phase 5). The whole
+audio→text half is done; TTS, word cloud, docs, and polish remain.
+
+## 101. User
+> update the kiro markdown files in chats to reflect latest prompts and conversation
+
+**Kiro:** Appended prompts 75-101 (verbatim) to `kiro_prompts.md` and these
+exchanges (summarized) to this file.
+
+---
+
 ## How to regenerate this file on demand
 
 Kiro has no button that exports a chat transcript to disk, but you can trigger a

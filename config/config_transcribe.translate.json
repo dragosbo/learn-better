@@ -1,0 +1,12 @@
+{
+  "_comment": "Mode 'source' + task 'translate' (C4). IMPORTANT: Whisper's translate task ONLY outputs English, regardless of source language. It CANNOT target French/Romanian, that would need a separate translation model. So this takes a non-English clip and writes an ENGLISH transcript, always named .whisper.en.txt. Here we search for a short French clip; language:null lets Whisper auto-detect the source. Change 'search' to a Romanian clip to test 'ro' -> English. Keep 'limit' small; each translation is slow on CPU.",
+  "select_by": "source",
+  "search": "apprendre le francais court",
+  "limit": 2,
+  "languages": ["en"],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "translate",
+  "language": null
+}

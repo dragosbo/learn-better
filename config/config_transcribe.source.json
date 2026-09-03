@@ -1,0 +1,12 @@
+{
+  "_comment": "Mode 'source' (C3): take a playlist/channel/search, use the YouTube caption transcript when it exists, and only Whisper-transcribe clips that have NO caption. Set ONE of playlist_id / channel / search; leave the others out. 'limit' caps how many videos are considered. 'languages' are the caption languages tried before Whisper (omit to use code/languages.json). Most videos have captions, so a run may Whisper nothing, that is the correct 'only fill gaps' behavior. Keep 'limit' small; each Whisper fallback is slow.",
+  "select_by": "source",
+  "search": "no captions subtitles disabled test video",
+  "limit": 3,
+  "languages": ["en"],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "transcribe",
+  "language": "en"
+}

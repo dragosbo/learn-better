@@ -225,6 +225,7 @@ def download_transcript(video_id, title, languages, output_dir=None):
     url = f"https://www.youtube.com/watch?v={video_id}"
     opts = {
         "quiet": True,
+        "no_warnings": True,   # hush yt-dlp's "no JS runtime" style warnings
         "skip_download": True,
         "writesubtitles": True,
         "writeautomaticsub": True,
@@ -292,6 +293,7 @@ def download_audio(video_id, output_dir=None, audio_format="mp3",
     url = f"https://www.youtube.com/watch?v={video_id}"
     opts = {
         "quiet": True,
+        "no_warnings": True,   # hush yt-dlp's "no JS runtime" style warnings
         "format": "bestaudio/best",
         "outtmpl": os.path.join(output_dir, "%(title)s [%(id)s].%(ext)s"),
         **net.cookie_opts(),

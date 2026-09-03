@@ -1,0 +1,13 @@
+{
+  "_comment": "Mode 'name': transcribe audio files whose name contains any of these case-insensitive substrings. Two entries here match the VSCode and GitLab clips in audio/.",
+  "select_by": "name",
+  "select": [
+    "VSCode",
+    "GitLab Pipeline"
+  ],
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "int8",
+  "task": "transcribe",
+  "language": null
+}

@@ -12,6 +12,7 @@ env/
 repos/
 audio/
 transcripts/
+generated_transcripts/
 timestamped/
 data/
 ignore/
@@ -21,3 +22,6 @@ cookies.txt
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Local scratch / diagnostics
+_proxchk.txt

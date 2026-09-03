@@ -14,7 +14,7 @@ single source of truth for what remains to be done.
 
 | Area | State | Notes |
 |------|-------|-------|
-| `code/test_read_channel.py` | **working** | No-API-key workflow (`yt-dlp` + `youtube-transcript-api`): lists a playlist/channel/search, saves audio + transcripts, skips already-downloaded files, caps at `LIMIT`. Recommended entry point. |
+| `code/read_channel.py` | **working** | No-API-key workflow (`yt-dlp`): lists a playlist/channel/search, saves audio + transcripts, skips already-downloaded files, caps at `LIMIT`. Recommended entry point. (Logic now lives in `lib/`.) |
 | `code/youtube_download.py` | working (fragile) | Simple `pytube` audio downloader (search / playlist / single video). |
 | `get_my_playlists.py` | **retired** | Old YouTube Data API + `scrapetube` script. Depended on an API key and the broken `scrapetube`; superseded by the no-key `yt-dlp` tools. Moved to the git-ignored `ignore/` folder rather than deleted. |
 | `notebooks/yt_download.ipynb` | working | Cleaner refactor with `vl` / `y2a` / `vm` helpers and metadata DataFrame. |
@@ -35,7 +35,7 @@ single source of truth for what remains to be done.
   in the script and the notebook; auto-create the `timestamped/` output folder in
   `get_my_playlists.py`.
 - Added `code/secrets.example.json` to document the required `YOUTUBE_API_KEY` shape.
-- **New no-API-key tool** `code/test_read_channel.py`: reads a playlist/channel/search
+- **New no-API-key tool** `code/read_channel.py`: reads a playlist/channel/search
   with `yt-dlp`, saves each clip's audio to `audio/` and transcript to
   `transcripts/`, skips files already present, signals clips with no transcript,
   and processes up to `LIMIT` (default 5) clips. Handles the YouTube bot-check via
@@ -78,7 +78,7 @@ isolation.
   — these are pointers to other work, not tasks in this repo.
 
 ### Observations
-- **The download + transcript foundation now exists.** `test_read_channel.py`
+- **The download + transcript foundation now exists.** `read_channel.py`
   already downloads audio and saves transcripts (with skip-if-exists and a clip
   cap) without an API key. This is the base the ASR/summarization work can build on.
 - **Model choices unstated.** `openai-whisper` (or faster `faster-whisper`) covers
@@ -95,14 +95,15 @@ isolation.
 ## 3. Proposed roadmap
 
 ### Phase 0 — Foundation (enables everything else)
-- [x] Working no-API-key downloader + transcript fetcher (`test_read_channel.py`),
+- [x] Working no-API-key downloader + transcript fetcher (`read_channel.py`),
       with skip-if-exists and a clip cap.
 - [x] Output folders in use: `audio/`, `transcripts/` (git-ignored).
 - [x] Retired the API-key/`scrapetube` script (`get_my_playlists.py`) to
       `ignore/` instead of migrating it; the no-key `yt-dlp` tools supersede it.
-- [ ] Refactor the working logic from `test_read_channel.py` into a small reusable
-      `lib/` module: `download_audio()`, `get_transcript()`, later `transcribe()`,
-      `translate()`, `synthesize()` — so notebooks stay short.
+- [x] Refactored the working logic from `read_channel.py` into a reusable `lib/`
+      package (`lib/net`, `lib/textutil`, `lib/paths`, `lib/youtube`); the entry
+      scripts are now thin config + `main()` wrappers. (Phase B of mini_todo.md.)
+      Later additions: `transcribe()`, `translate()`, `synthesize()`.
 - [ ] Optionally consolidate outputs under a single `data/` root
       (`data/audio/`, `data/transcripts/`, `data/summaries/`).
 - [ ] Decide models: `faster-whisper` for STT+translation, `edge-tts` (free) for TTS.
@@ -158,7 +159,7 @@ learn-better/
 
 ## 5. Recommended next step
 
-The download + transcript foundation is now working (`test_read_channel.py`), so
+The download + transcript foundation is now working (`read_channel.py`), so
 the next high-value move is **`01_speech_to_text.ipynb`**: run Whisper over the
 audio in `audio/` to produce transcripts for the clips whose subtitles are
 disabled (the ones the tool currently flags as `NO TRANSCRIPT`). That closes the

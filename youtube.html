@@ -224,8 +224,8 @@ graph LR
 
   <table>
     <tr><th>Goal</th><th>Tool</th><th>Command</th></tr>
-    <tr><td>Audio + transcripts for a source</td><td><code>test_read_channel.py</code></td><td><kbd>r</kbd></td></tr>
-    <tr><td>Transcripts only, per language</td><td><code>test_read_transcript.py</code></td><td><kbd>t</kbd></td></tr>
+    <tr><td>Audio + transcripts for a source</td><td><code>read_channel.py</code></td><td><kbd>r</kbd></td></tr>
+    <tr><td>Transcripts only, per language</td><td><code>read_transcript.py</code></td><td><kbd>t</kbd></td></tr>
     <tr><td>List a channel's public playlists</td><td><code>list_playlists.py</code></td><td><kbd>p</kbd></td></tr>
     <tr><td>Prepare summaries (hand off to AI)</td><td><code>make_summaries.py</code></td><td><kbd>s</kbd></td></tr>
   </table>
@@ -234,7 +234,7 @@ graph LR
 <section id="logic">
   <h2>How it works (logic)</h2>
   <p>
-    The recommended entry point, <code>test_read_channel.py</code>, runs three steps for
+    The recommended entry point, <code>read_channel.py</code>, runs three steps for
     each clip (capped at <code>LIMIT</code>, default 5). Files already on disk are skipped,
     so re-running only fetches what is missing.
   </p>
@@ -379,7 +379,7 @@ flowchart LR
     <li>Open the repo and choose <strong>Reopen in Container</strong>.</li>
     <li>After the build, run directly (deps are already installed):</li>
   </ol>
-<pre><code>python code/test_read_channel.py</code></pre>
+<pre><code>python code/read_channel.py</code></pre>
   <div class="note">Add ffmpeg in the container with <code>sudo apt install ffmpeg</code> (or set <code>AUDIO_FORMAT = None</code> to skip mp3 conversion).</div>
 
   <h3>3. GitHub Codespaces (nothing to install)</h3>
@@ -390,7 +390,7 @@ flowchart LR
     <li>In the terminal:</li>
   </ol>
 <pre><code>sudo apt install -y ffmpeg          # once, for mp3 conversion
-python code/test_read_channel.py</code></pre>
+python code/read_channel.py</code></pre>
 
   <h3>4. Google Colab</h3>
   <p>No checkout by default, so clone inside a cell:</p>
@@ -398,7 +398,7 @@ python code/test_read_channel.py</code></pre>
 %cd learn-better
 !pip install -r requirements.txt
 !apt-get -qq install -y ffmpeg
-!python code/test_read_transcript.py</code></pre>
+!python code/read_transcript.py</code></pre>
   <div class="note warn">
     Cloud IPs hit the YouTube <strong>bot-check</strong> more often. If you see
     "Sign in to confirm you're not a bot", upload a <code>cookies.txt</code> and set
@@ -413,8 +413,8 @@ python code/test_read_channel.py</code></pre>
   <table>
     <tr><th>Command</th><th>Runs</th><th>What it does</th></tr>
     <tr><td><kbd>c</kbd></td><td><code>c.bat</code></td><td>Activate the <code>learn-better</code> conda env.</td></tr>
-    <tr><td><kbd>r</kbd></td><td><code>test_read_channel.py</code></td><td>Audio + transcripts for a playlist/channel/search.</td></tr>
-    <tr><td><kbd>t</kbd></td><td><code>test_read_transcript.py</code></td><td>Transcripts only, one file per language.</td></tr>
+    <tr><td><kbd>r</kbd></td><td><code>read_channel.py</code></td><td>Audio + transcripts for a playlist/channel/search.</td></tr>
+    <tr><td><kbd>t</kbd></td><td><code>read_transcript.py</code></td><td>Transcripts only, one file per language.</td></tr>
     <tr><td><kbd>p</kbd></td><td><code>list_playlists.py</code></td><td>List a channel's public playlists to <code>data/playlists.json</code>.</td></tr>
     <tr><td><kbd>s</kbd></td><td><code>make_summaries.py</code></td><td>List transcripts needing a summary; print AI instruction.</td></tr>
   </table>
@@ -464,8 +464,8 @@ sequenceDiagram
   <h3>Foundation &amp; fixes <span class="tag">done</span></h3>
   <table>
     <tr><th>Item</th><th>Status</th></tr>
-    <tr><td>No-API-key downloader + transcripts (<code>test_read_channel.py</code>)</td><td class="status done">Done</td></tr>
-    <tr><td>Transcript-only tool per language (<code>test_read_transcript.py</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>No-API-key downloader + transcripts (<code>read_channel.py</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Transcript-only tool per language (<code>read_transcript.py</code>)</td><td class="status done">Done</td></tr>
     <tr><td>Output folders <code>audio/</code>, <code>transcripts/</code> (git-ignored)</td><td class="status done">Done</td></tr>
     <tr><td><code>requirements.txt</code> fixed, pinned, ffmpeg documented</td><td class="status done">Done</td></tr>
     <tr><td>Dev Container aligned to Python 3.12</td><td class="status done">Done</td></tr>
@@ -528,8 +528,8 @@ graph TD
   <h2>Repository layout</h2>
 <pre><code>learn-better/
 &#9500;&#9472; code/                      # scripts
-&#9474;  &#9500;&#9472; test_read_channel.py    # no-API-key: audio + transcripts (recommended)
-&#9474;  &#9500;&#9472; test_read_transcript.py # no-API-key: transcripts only (per language)
+&#9474;  &#9500;&#9472; read_channel.py         # no-API-key: audio + transcripts (recommended)
+&#9474;  &#9500;&#9472; read_transcript.py      # no-API-key: transcripts only (per language)
 &#9474;  &#9500;&#9472; list_playlists.py       # no-API-key: list a channel's public playlists (p.bat)
 &#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s.bat)
 &#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader

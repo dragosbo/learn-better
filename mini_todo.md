@@ -11,8 +11,9 @@ each step is small, runnable, and testable before moving on:
 Everything is a **plain `.py` script** — no Jupyter notebooks yet. Each phase ends
 with a concrete "test it" you can run from the repo root (env active, e.g. `c.bat`).
 
-Grounding: the working download/transcript logic already lives in
-`code/test_read_channel.py` (functions `step1_list_videos`, `step2_transcript`,
+Grounding: the working download/transcript logic now lives in `lib/` (extracted
+in Phase B). It originated in `code/read_channel.py` (functions
+`step1_list_videos`, `step2_transcript`,
 `step3_download_audio`, plus helpers `_build_url`, `_cookie_opts`, `_proxy_opts`,
 `_impersonate_opts`, `load_languages`, `_vtt_to_text`, `_safe_filename`). The old
 API-key playlist enumeration lives in `ignore/get_my_playlists.py` (retired). We
@@ -26,7 +27,7 @@ reuse ideas from both, key-free.
 with its title, id, and video count. No API key (yt-dlp `extract_flat`).
 
 Why first: it is self-contained, read-only, fast to test, and reuses the network
-options already written in `test_read_channel.py`.
+options already written in `read_channel.py` (now in `lib/net.py`).
 
 ### [x] A0. Confirm the approach (5 min, no code) — DONE
 - yt-dlp can list a channel's playlists via the URL
@@ -40,7 +41,7 @@ options already written in `test_read_channel.py`.
 - Config block at top (same style as the other scripts):
   `CHANNEL = "@your_handle"` (or a `UC...` id, or full URL).
 - Build the playlists URL from `CHANNEL` (mirror `_build_url` logic).
-- Copy the network helpers from `test_read_channel.py`:
+- Copy the network helpers from `read_channel.py`:
   `_proxy_opts`, `_cookie_opts`, `_impersonate_opts`, and `_apply_no_proxy_env`
   (Phase B will de-duplicate these; for now copy so the script stands alone).
 - Run yt-dlp with `{"quiet": True, "extract_flat": True, "skip_download": True}`
@@ -87,14 +88,14 @@ API key, and the result is saved to `data/playlists.json`.
 
 ## Phase B — Refactor the proven logic into a reusable `lib/` (medium)
 
-**Goal:** extract the working functions from `test_read_channel.py` (and the new
+**Goal:** extract the working functions from `read_channel.py` (and the new
 `list_playlists.py`) into a small, importable package so future scripts stay
 short. This is Phase 0 of `plan.md` ("small reusable `lib/` module").
 
 Why second: it touches multiple files and changes imports, so it is riskier than
 Phase A — but doing it now keeps Phase C (Whisper) clean.
 
-### B1. Create the package skeleton
+### [x] B1. Create the package skeleton — DONE
 - New folder `lib/` with `lib/__init__.py`.
 - New module `lib/net.py` holding the shared network helpers, moved verbatim:
   `apply_no_proxy_env()`, `proxy_opts()`, `cookie_opts()`, `impersonate_opts()`
@@ -107,20 +108,20 @@ Phase A — but doing it now keeps Phase C (Whisper) clean.
   ```
   Expect a dict (e.g. `{'proxy': ''}`), no import error.
 
-### B2. Move text/util helpers to `lib/textutil.py`
+### [x] B2. Move text/util helpers to `lib/textutil.py` — DONE
 - Move `_safe_filename`, `_clean_text`, `_vtt_to_text`, `_TIMING_RE`, and
   `load_languages` (+ `LANGUAGES_CONFIG`) here as public functions.
 - **Test:** a one-liner that feeds a tiny fake VTT string to `vtt_to_text` and
   prints the cleaned lines.
 
-### B3. Create `lib/youtube.py` — the core operations
+### [x] B3. Create `lib/youtube.py` — the core operations — DONE
 - Public functions, each a thin move of the existing logic:
   - `build_url(playlist_id=None, channel=None, search=None, limit=5)`
     (from `_build_url`).
   - `list_videos(url, limit=5)` (from `step1_list_videos`).
   - `list_playlists(channel)` (from Phase A).
   - `download_transcript(video_id, title, languages, out_dir)`
-    (from `step2_transcript` / the `test_read_transcript.py` version).
+    (from `step2_transcript` / the `read_transcript.py` version).
   - `download_audio(video_id, out_dir, audio_format="mp3", quality="192")`
     (from `step3_download_audio`).
 - These import from `lib.net` and `lib.textutil`. Keep behavior identical.
@@ -130,8 +131,8 @@ Phase A — but doing it now keeps Phase C (Whisper) clean.
   ```
   Expect the same 3 videos the current tool prints.
 
-### B4. Rewrite the entry scripts to use `lib/`
-- Slim `code/test_read_channel.py`, `code/test_read_transcript.py`, and
+### [x] B4. Rewrite the entry scripts to use `lib/` — DONE
+- Slim `code/read_channel.py`, `code/read_transcript.py`, and
   `code/list_playlists.py` down to: config block + `main()` that calls `lib`
   functions. Delete the now-duplicated helper bodies from them.
 - Keep the `c/r/t/s` batch files working unchanged (they still call the same
@@ -140,7 +141,7 @@ Phase A — but doing it now keeps Phase C (Whisper) clean.
   refactor (same videos listed, transcripts saved to `transcripts/`, existing
   files skipped). This is the key check — behavior must not change.
 
-### B5. (Optional) tiny `lib/paths.py` for output layout
+### [x] B5. tiny `lib/paths.py` for output layout — DONE
 - Centralize `AUDIO_DIR`, `TRANSCRIPT_DIR`, and a new `DATA_DIR="data"` so all
   scripts agree on where things go (sets up the eventual `data/` consolidation).
 - **Test:** import it and print the paths.
@@ -148,6 +149,20 @@ Phase A — but doing it now keeps Phase C (Whisper) clean.
 **Phase B done when:** all entry scripts import from `lib/`, no logic is
 duplicated across scripts, and `r` / `t` produce byte-for-byte the same results
 as before.
+
+> **STATUS: Phase B = complete, USER-VALIDATED.** Created `lib/` (`__init__`,
+> `net`, `textutil`, `paths`, `youtube`); all three entry scripts
+> (`read_channel.py`, `read_transcript.py`, `list_playlists.py`) are
+> now thin config + `main()` wrappers importing from `lib/`, with no duplicated
+> helpers. (Scripts were renamed from `test_read_*` to `read_*`.)
+>
+> Validated by the user (all passed, no errors):
+>   1. `python code/read_transcript.py` - lists videos, skips existing.
+>   2. `t` (read_transcript.py) - same.
+>   3. `p` (list_playlists.py) - playlists listed + saved to data/playlists.json.
+>   4. `r` (read_channel.py) - lists videos, transcripts + audio steps run.
+>
+> Behavior preserved after the refactor. Next: Phase C (Whisper).
 
 ---
 

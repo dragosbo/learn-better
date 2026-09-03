@@ -16,7 +16,7 @@ fraction of the transcript length, not a rewrite.
 ## Inputs
 
 - **Transcript**: a `.txt` file, usually timestamped as `[HH:MM:SS] text`
-  (as produced by `code/test_read_transcript.py`). Timestamps are used to
+  (as produced by `code/read_transcript.py`). Timestamps are used to
   anchor the table of contents; they are not copied line by line.
 
 ## Output

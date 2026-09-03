@@ -192,8 +192,8 @@ python -c "import youtube_transcript_api, yt_dlp, pandas, curl_cffi, ipykernel; 
 You should see `all imports OK`. If any import fails, re-check step 2 (you are
 almost certainly on the wrong interpreter).
 
-> **No API key needed.** The active tools (`test_read_channel.py`,
-> `test_read_transcript.py`, the notebook) all use `yt-dlp` and work without a
+> **No API key needed.** The active tools (`read_channel.py`,
+> `read_transcript.py`, the notebook) all use `yt-dlp` and work without a
 > Google API key. The old API-key workflow (`get_my_playlists.py`) has been
 > retired to the git-ignored `ignore/` folder.
 
@@ -231,7 +231,7 @@ Python + Jupyter extensions.
    to running the tools:
 
    ```bash
-   python code/test_read_channel.py
+   python code/read_channel.py
    ```
 
    (The `.bat` helpers assume a conda env named `learn-better`; inside the
@@ -252,7 +252,7 @@ setup at all.
 
    ```bash
    sudo apt install -y ffmpeg          # once, for mp3 conversion
-   python code/test_read_channel.py
+   python code/read_channel.py
    ```
 
 Edit the `PLAYLIST_ID` / `CHANNEL` / `SEARCH` config at the top of the script
@@ -272,7 +272,7 @@ There is no repo checkout by default, so clone it inside a cell:
 !apt-get -qq install -y ffmpeg          # for mp3 conversion
 
 # Edit the source in the file, or set it inline, then run:
-!python code/test_read_transcript.py
+!python code/read_transcript.py
 ```
 
 Notes for Colab:
@@ -290,8 +290,8 @@ Activate your environment first (step 1), then run any of the scripts below.
 Two helper batch files are provided for convenience:
 
 - `c.bat` — activates the `learn-better` conda env (`c` from the repo root).
-- `r.bat` — activates the env and runs `code\test_read_channel.py` (`r`).
-- `t.bat` — activates the env and runs `code\test_read_transcript.py` (`t`).
+- `r.bat` — activates the env and runs `code\read_channel.py` (`r`).
+- `t.bat` — activates the env and runs `code\read_transcript.py` (`t`).
 - `s.bat` — activates the env and runs `code\make_summaries.py` to prepare
   transcript summaries (`s`); see "Summarize transcripts" below.
 - `p.bat` — activates the env and runs `code\list_playlists.py` (`p`); see
@@ -334,7 +334,7 @@ per playlist. But it's quick, via YouTube Studio:
 
 ### Read a channel/playlist: download audio + transcripts (no API key)
 
-**Recommended starting point.** `code/test_read_channel.py` reads a playlist,
+**Recommended starting point.** `code/read_channel.py` reads a playlist,
 channel, or search using `yt-dlp` + `youtube-transcript-api`, no Google API key
 needed. For each clip it saves the audio and the transcript, and clearly flags
 clips that have no transcript.
@@ -363,7 +363,7 @@ Run it:
 r
 ```
 
-(or `python code\test_read_channel.py`). Output goes to `audio/` and
+(or `python code\read_channel.py`). Output goes to `audio/` and
 `transcripts/` (both git-ignored).
 
 Notes:
@@ -463,8 +463,8 @@ jupyter notebook notebooks\yt_download.ipynb
 ```
 learn-better/
 ├── code/                # scripts
-│   ├── test_read_channel.py   # no-API-key: audio + transcripts (recommended)
-│   ├── test_read_transcript.py # no-API-key: transcripts only (per language)
+│   ├── read_channel.py        # no-API-key: audio + transcripts (recommended)
+│   ├── read_transcript.py     # no-API-key: transcripts only (per language)
 │   ├── list_playlists.py      # no-API-key: list a channel's public playlists (p.bat)
 │   ├── make_summaries.py      # lists transcripts needing a summary (used by s.bat)
 │   ├── youtube_download.py    # legacy pytube audio downloader
@@ -478,8 +478,8 @@ learn-better/
 ├── ignore/              # git-ignored: retired code + todo.md, learning_codspaces.txt
 ├── skill_summary.md     # reusable summary format/procedure
 ├── c.bat                # activate the learn-better conda env
-├── r.bat                # activate env + run test_read_channel.py
-├── t.bat                # activate env + run test_read_transcript.py
+├── r.bat                # activate env + run read_channel.py
+├── t.bat                # activate env + run read_transcript.py
 ├── s.bat                # activate env + run make_summaries.py (prep summaries)
 ├── p.bat                # activate env + run list_playlists.py
 ├── requirements.txt

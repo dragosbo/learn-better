@@ -465,6 +465,171 @@ labeled legacy deps, and cleaned the verify-install import lines.
 exchanges to this file, then updated references to the moved paths across the
 repo. Did not commit, as requested.
 
+## 50. User
+> are you ok
+
+**Kiro:** Confirmed, and recapped Phase A status before continuing.
+
+## 51. User
+> create a mini_todo.md detailing: detect all my YouTube playlists, the Phase 0 lib/ refactor, and the Whisper speech-to-text next step. Scripts only, no notebook. Order by increasing complexity so we evolve and test gradually.
+
+**Kiro:** Read `plan.md` and the retired `get_my_playlists.py` for grounding,
+then wrote `mini_todo.md` with three phases ordered by complexity: A (list
+playlists, no API key), B (extract logic into a reusable `lib/`), C (Whisper
+STT for caption-less clips). Each subtask has a concrete "test it" step, plus a
+10-row smallest-increment table. Recommended `faster-whisper` for Phase C.
+
+## 52. User
+> implement phase A. tell me how and when to test.
+
+**Kiro:** Built `code/list_playlists.py` (yt-dlp `extract_flat` on the channel's
+`/playlists` page, no API key): resolves `@handle`/`UC..`/URL, lists playlists,
+saves `data/playlists.json`, optional per-playlist video listing. Added `data/`
+to `.gitignore`. Verified syntax + URL building; left the live run as the user's
+test.
+
+## 53. User
+> [404 for @dragosboros_rapid/playlists] on youtube I use @dragosborosgpt
+
+**Kiro:** Root cause: the default `CHANNEL` used a stale wrong handle from an old
+comment. Fixed it to `@dragosborosgpt` and added an actionable 404 error hint.
+
+## 54. User
+> order playlists alphabetically. what about private ones - are they detectable?
+
+**Kiro:** Added case-insensitive alphabetical sort. Explained that only PUBLIC
+playlists are enumerable; private/unlisted don't appear on the public tab and
+can't be seen without authentication.
+
+## 55. User
+> for the private ones try the YouTube API key in ignore/secrets.json
+
+**Kiro:** Explained (honestly) that an API *key* cannot list private playlists -
+only OAuth can, since a key authenticates the app, not the user. Offered options:
+public-only API lister, full OAuth, or skip.
+
+## 56-57. User
+> try it with cookies first / chrome
+
+**Kiro:** Wired `COOKIES_FROM_BROWSER = ("chrome", None)` and added an
+`availability` field so private/unlisted would be visible if cookies surfaced
+them. Flagged the Windows Chrome-DB-lock caveat up front.
+
+## 58-59. User
+> [ran p] Could not copy Chrome cookie database (#7271) [twice]
+
+**Kiro:** Diagnosed the known Chrome-lock issue; recommended exporting a
+cookies.txt instead (works while Chrome is open). Improved the error message to
+point there.
+
+## 60. User
+> how do i get the playlists again
+
+**Kiro:** Reverted the default to no cookies (cookies were only for the private
+experiment) so plain `p` lists public playlists cleanly.
+
+## 61. User
+> add this guidance in readme [YouTube Studio steps to make playlists public]
+
+**Kiro:** Added a "List your playlists" section to the README with a "Making
+playlists visible to the tool" subsection: the verbatim YouTube Studio steps,
+plus the public/unlisted/private caveat.
+
+## 62. User
+> create a p.bat for testing it
+
+**Kiro:** Created `p.bat` (activate env + run `list_playlists.py`) and added it to
+the helper lists and layout blocks in README and youtube.html.
+
+## 63. User
+> count the videos in each playlist and print it near its name
+
+**Kiro:** Added an accurate per-playlist count (the flat listing's count is
+unreliable) by opening each playlist with `extract_flat`, behind a
+`COUNT_VIDEOS` flag.
+
+## 64. User
+> why 58 playlists now, they were 70 before
+
+**Kiro:** Explained it's yt-dlp pagination variance (a continuation request
+failing mid-scroll), not lost playlists; the parse-warning run was likely the
+unreliable one. Added retries, dedupe, and an "incomplete run" note; pointed at
+Studio for the authoritative total.
+
+## 65. User
+> [ran p] it goes forever, I stopped it [KeyboardInterrupt stuck in curl_cffi]
+
+**Kiro:** Two fixes: the counting call had no timeout (one hung request stalled
+the whole run) - added `socket_timeout` + bounded retries; and added a live
+in-place progress line so it no longer looks frozen.
+
+## 66. User
+> add the video names in each playlist to the json
+
+**Kiro:** Renamed the count helper to `fetch_playlist_videos` returning
+`[{id, title}]`; each playlist's JSON entry now includes a `videos` array
+(counts are just its length). No extra requests.
+
+## 67. User
+> what are the warnings for? hidden videos - countable? accessible?
+
+**Kiro:** Explained the two warnings: "N unavailable videos are hidden" =
+deleted/private videos, not accessible and correctly excluded from counts; and
+"unable to extract yt initial data" = a parse failure (usually outdated yt-dlp),
+which makes that run's count unreliable. Silenced the harmless one, surfaced the
+real one.
+
+## 68. User
+> I updated yt-dlp so stop proposing it
+
+**Kiro:** Acknowledged. Hardened the playlist listing (retries, dedupe,
+incomplete-run note) instead.
+
+## 69. User
+> evaluate Phase A completion %, mark subtasks in mini_todo.md
+
+**Kiro:** Assessed Phase A at 100% (A0-A3 all done, A1-A3 exceeded spec) and
+marked each subtask `[x] ... DONE` with a status banner in `mini_todo.md`.
+
+## 70. User
+> commit phase A, then proceed with Phase B
+
+**Kiro:** Confirmed nothing sensitive staged, committed Phase A (`f39710f`) and
+pushed. Then implemented Phase B: created `lib/` (`net`, `textutil`, `paths`,
+`youtube`, `__init__`) extracting the proven logic, and rewrote the three entry
+scripts as thin config + `main()` wrappers importing from `lib/`. Verified
+imports + a live `read_transcript` run.
+
+## 71. User
+> summarize changes and how to test. Marking mini_todo for Phase B before I validated was premature - don't do that again. tell me how to test.
+
+**Kiro:** Acknowledged the mistake (won't mark a phase done before user
+validation). Gave a short change summary and 4 concrete test commands
+(`read_transcript.py`, `t`, `p`, `r`) with expected output.
+
+## 72. User
+> all 1,2,3,4 worked. signal this in mini_todo. how much of Phase B is solved?
+
+**Kiro:** Updated the `mini_todo.md` banner to "USER-VALIDATED" with the four
+passing tests listed. Reported Phase B = 100%, nothing outstanding (the `data/`
+consolidation is separate future work, not Phase B).
+
+## 73. User
+> remove the test_ prefix from the python scripts. adapt all files that referred to them (bat, html, md, ...).
+
+**Kiro:** Renamed `test_read_channel.py` -> `read_channel.py` and
+`test_read_transcript.py` -> `read_transcript.py`, and updated every reference in
+`r.bat`, `t.bat`, README, youtube.html, plan.md, mini_todo.md, skill_summary.md,
+`lib/net.py`, and the scripts' own docstrings/comments. Left the `chats/` history
+logs verbatim (they record the old names as used at the time). Verified the
+renamed scripts parse + import.
+
+## 74. User
+> update the chats folder with the kiro changes
+
+**Kiro:** Appended prompts 50-74 (verbatim) to `kiro_prompts.md` and these
+exchanges (summarized) to this file.
+
 ---
 
 ## How to regenerate this file on demand

@@ -236,3 +236,78 @@ ok we ar eporgressing.let's do some cleanup. make sure that all key ideas from t
 
 ## 49
 do not commit yet. creat a folder called chats. move in it the kiro and claude md file. extend teh kiro markdown files to capture the latest prompts and chat. update all erferences afetrwards
+
+## 50
+are you ok
+
+## 51
+create a mini_tood.md where you details teh steps of: how todetect all teh playlist I have in youtube, from pase0 how to refactor the logic as descibed and finally how to implement th erecommendation next step about sppech to tesxt with whisper. just that i do not want a notebook yet, everrything should be python script. create this dtailed paln of tasks. arrange them in teh increasing complexity so that we can gradually evolve an dtest
+
+## 52
+ok looks sound. implement phase A from mini_todo. tell me how to test and when after you finish your development.
+
+## 53
+I believe there si something wrong as I get this [yt-dlp 404: Requested entity was not found for @dragosboros_rapid/playlists]. on youtube when i go I use https://www.youtube.com/@dragosborosgpt/playlists
+
+## 54
+order the play list alphabetically. what happens with teh prvate ones. are they detectable
+
+## 55
+for the private one you can try to use the youtube api key. i added it in the file ignore/secrets.json
+
+## 56
+ok try it with cokkies first
+
+## 57
+chrome
+
+## 58
+[ran p] ERROR: Could not copy Chrome cookie database (yt-dlp #7271)
+
+## 59
+[re-ran p, same Chrome cookie DB error]
+
+## 60
+how do i get the playlists again
+
+## 61
+add this guidance in readme [YouTube Studio steps to make each playlist public]
+
+## 62
+create a p.bat for testing it
+
+## 63
+can you count the list of videos available in each play list and print it near its name
+
+## 64
+why i have 58 playlists now, they were 70 before [output showed 58 vs earlier 70]
+
+## 65
+the thing starts but goes for ever so I stopped it. not sure if I have to wait, before it was showing the progress, maybe now everything popups at the end. let me know if I should retry [+ KeyboardInterrupt traceback stuck in curl_cffi header_recved.wait]
+
+## 66
+ok much better. can you add also teh name of teh videos in each playlist when creating the json file ?
+
+## 67
+what are the warnings for ? are there hiden videos, what does it mean can tehy be counted, are they accesible or not [re: "N unavailable videos are hidden" and "unable to extract yt initial data" warnings]
+
+## 68
+I have run the update of yt-dlp so stop proposing it
+
+## 69
+great evaluate how much we fixed from phas A from mini_todo.md give me a percentage and marked in that file the subtasks acomplished
+
+## 70
+yes commit phase A work and then proceed wih Phase B
+
+## 71
+give a short summary of what you change. tell me how I can test that the code is still working and that you have not destroyed something. modifying mini_todo for pahse B was a little bit prenmature without me validating that this works before. please do not do such things in teh future. tell me how to test
+
+## 72
+ok all 1,2,3,4 worked without errors signal this in mini_todo. tell me ho wmuch of phase B ws solved. is there anything to solve fo rit
+
+## 73
+remove th eprefix test_ from teh python scripts. adapt all fiels whey they were refrerred bat, html, md,...
+
+## 74
+update the chats folder with the kiro changes

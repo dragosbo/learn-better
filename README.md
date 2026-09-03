@@ -12,16 +12,21 @@ roadmap.
 
 ### Python packages (installed via `requirements.txt`)
 
+**Active packages** (the current workflow):
+
 | Package | Purpose |
 |---|---|
-| `google-api-python-client` | YouTube Data API v3 client. Only used by the retired `ignore/get_my_playlists.py`; not needed by the active tools. |
-| `scrapetube` | Older way to list playlist/channel videos. **Broken** (returns 0 videos); only referenced by the retired `ignore/get_my_playlists.py`. `yt-dlp` replaces it. |
-| `youtube-transcript-api` | Fetch video transcripts/subtitles. |
-| `yt-dlp[default,curl-cffi]` | Robust, actively-maintained downloader for audio/video, listing, and subtitles. |
+| `yt-dlp[default,curl-cffi]` | Core, actively-maintained downloader for audio, video listing, and subtitles. |
 | `curl_cffi` | Powers yt-dlp's browser **impersonation** (TLS fingerprint). Required, without it YouTube blocks subtitle/format fetches (bot-check, empty subtitle responses). |
-| `pytube` | Older downloader (kept for the legacy scripts; breaks often). |
+| `youtube-transcript-api` | Fetch video transcripts/subtitles. |
 | `pandas` | Metadata tables/dataframes. |
 | `ipykernel` | Lets the Jupyter notebooks run inside this environment. |
+
+**Legacy packages** (kept only for older/archived scripts, not the active tools):
+`pytube` is still imported by `code/youtube_download.py` (fragile; superseded by
+yt-dlp), and `google-api-python-client` is only used by the retired
+`ignore/get_my_playlists.py`. `scrapetube` was **dropped** (broken since 2025;
+no active code uses it) — `yt-dlp` replaces it.
 
 Install them all with (see step 3 for the full flow):
 
@@ -155,8 +160,9 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-This installs the YouTube API client, transcript API, `scrapetube`, `yt-dlp`,
-`pytube`, `pandas`, and `ipykernel`. Pinned versions live in `requirements.txt`.
+This installs `yt-dlp`, `youtube-transcript-api`, `curl_cffi`, `pandas`, and
+`ipykernel` (the active stack), plus the legacy `pytube` and
+`google-api-python-client`. Pinned versions live in `requirements.txt`.
 
 ### 3b. Install ffmpeg (needed to download/convert audio)
 
@@ -180,7 +186,7 @@ Skip this only if you never download/convert audio with `yt-dlp`.
 Confirm every core package imports cleanly:
 
 ```cmd
-python -c "import googleapiclient, scrapetube, youtube_transcript_api, yt_dlp, pytube, pandas, curl_cffi, ipykernel; print('all imports OK')"
+python -c "import youtube_transcript_api, yt_dlp, pandas, curl_cffi, ipykernel; print('all imports OK')"
 ```
 
 You should see `all imports OK`. If any import fails, re-check step 2 (you are
@@ -190,6 +196,91 @@ almost certainly on the wrong interpreter).
 > `test_read_transcript.py`, the notebook) all use `yt-dlp` and work without a
 > Google API key. The old API-key workflow (`get_my_playlists.py`) has been
 > retired to the git-ignored `ignore/` folder.
+
+---
+
+## How to run it (local or remote)
+
+You can run this project four ways. They all end up at the same place: a Python
+3.12 environment with `requirements.txt` installed. Pick whichever fits.
+
+| Where | Best for | Setup effort |
+|---|---|---|
+| **Local** | Everyday use on your own machine. | Manual env (above). |
+| **Dev Container** | Reproducible local env in VS Code + Docker. | One click. |
+| **GitHub Codespaces** | Zero local install; runs in the cloud/browser. | One click. |
+| **Google Colab** | Quick experiments, free GPU for later ASR work. | Paste a cell. |
+
+### 1. Local
+
+Follow **Environment setup** above (conda or venv), then run the tools with the
+`c` / `r` / `t` / `s` batch files (Windows) or `python code/<script>.py`
+(any OS). This is the default path and what the batch helpers assume.
+
+### 2. Dev Container (VS Code + Docker)
+
+The repo ships a `.devcontainer/` built on **Python 3.12-bullseye** that installs
+`requirements.txt` automatically (via `postCreateCommand`) and preloads the
+Python + Jupyter extensions.
+
+1. Install [Docker](https://www.docker.com/) and the VS Code
+   **Dev Containers** extension.
+2. Open the repo in VS Code and choose **Reopen in Container**
+   (or run *Dev Containers: Reopen in Container* from the command palette).
+3. Wait for the build. Dependencies install themselves, so you can skip straight
+   to running the tools:
+
+   ```bash
+   python code/test_read_channel.py
+   ```
+
+   (The `.bat` helpers assume a conda env named `learn-better`; inside the
+   container just call `python` directly.)
+
+You still need **ffmpeg** for mp3 conversion; add it in the container with
+`sudo apt install ffmpeg` (or set `AUDIO_FORMAT = None` to skip conversion).
+
+### 3. GitHub Codespaces (nothing to install)
+
+Codespaces runs the same `.devcontainer/` in the cloud, so there is no local
+setup at all.
+
+1. On the GitHub repo page, click **Code &rarr; Codespaces &rarr; Create codespace on main**.
+2. Wait for it to build (it reuses the Dev Container config, so deps install
+   automatically).
+3. In the Codespaces terminal:
+
+   ```bash
+   sudo apt install -y ffmpeg          # once, for mp3 conversion
+   python code/test_read_channel.py
+   ```
+
+Edit the `PLAYLIST_ID` / `CHANNEL` / `SEARCH` config at the top of the script
+just as you would locally. Downloaded files live in the Codespace; use the file
+explorer to download them, or push non-ignored outputs to the repo.
+
+### 4. Google Colab
+
+Colab is handy for quick runs and for the future speech-to-text work (free GPU).
+There is no repo checkout by default, so clone it inside a cell:
+
+```python
+# In a Colab cell:
+!git clone https://github.com/dragosbo/learn-better.git
+%cd learn-better
+!pip install -r requirements.txt
+!apt-get -qq install -y ffmpeg          # for mp3 conversion
+
+# Edit the source in the file, or set it inline, then run:
+!python code/test_read_transcript.py
+```
+
+Notes for Colab:
+- The YouTube **bot-check** is more likely on cloud IPs. If you hit
+  "Sign in to confirm you're not a bot", upload a `cookies.txt` (see the cookies
+  note under *Running the tools*) and point `COOKIES_FILE` at it.
+- Colab sessions are ephemeral: download anything in `audio/` / `transcripts/`
+  before the runtime disconnects, or mount Google Drive to persist them.
 
 ---
 
@@ -345,7 +436,8 @@ learn-better/
 ├── audio/               # downloaded audio (git-ignored)
 ├── transcripts/         # saved transcripts (git-ignored)
 ├── summaries/           # AI-generated summaries (tracked by git)
-├── ignore/              # retired/dead code (git-ignored): get_my_playlists.py, secrets.example.json
+├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
+├── ignore/              # git-ignored: retired code + todo.md, learning_codspaces.txt
 ├── skill_summary.md     # reusable summary format/procedure
 ├── c.bat                # activate the learn-better conda env
 ├── r.bat                # activate env + run test_read_channel.py

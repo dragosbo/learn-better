@@ -1,6 +1,7 @@
 # Kiro Prompts
 
 Chronological, verbatim record of the user's prompts in this session.
+Lives in `chats/` alongside `kiro_conversation.md` and the Claude logs.
 
 ## 1
 get familiar with the repository
@@ -178,3 +179,60 @@ good update everthing accordingly an dextend the prompts and conversation files 
 > individual logged prompts above (the corresponding turns are not in Kiro's
 > current context window, so they can't be reproduced verbatim). The resulting
 > changes are reconciled in kiro_conversation.md under "Reconciliation".
+
+## 34
+are there any files that are not useful or relevant in teh repo
+
+## 35
+Remove
+cookies.txt
+and add it to .gitignore (recommended for safety),
+Delete latest.py, code/ignore/, and the duplicate dash-style GitLab transcripts,
+
+## 36
+(learn-better) D:\work3\learn-better>r
+
+STEP 1: listing up to 5 video(s) from playlist PLsWyhklHwjExuXrXjJktcdYkCFL0PNdW7 ...
+
+[STEP 1 listed 3 videos; STEP 2 for each: !! NO TRANSCRIPT ... (NameError) - subtitles likely disabled; STEP 3 audio already exists -> skip]
+
+i do not undersatnd why it says NO TRANSCRIPT  becaus e when i run t.bat i got the transcript . something is inorrcet
+
+## 37
+create a summary folder. for each english transcript create a corersponding summary. be concise and clear, creat e a table of conntent , sections with strengths and weakness. create also a file called skill_summary that i Can use later on with and transcript to generetae its summary. apply tehskill to the english transcripts
+
+## 38
+can i trigger the generation of summaries with a script like s.bat if yes do it and explain how in readme file
+
+## 39
+i think option 2 is better
+
+## 40
+proceed
+
+## 41
+create a nice youtube.html describing the content of teh repo, with nice mermaid diagrams for use cases an dlogic, installation guide, use cases. check what was implemented from todo.md and plan.md and what remains to be solved. make it easy to use
+
+## 42
+I have th efeeling that i do not use secrets.example.json if yes remove the file an dupdate th edocumentaion referring it. if not explain how is used
+
+## 43
+ok implement 2. create an ignore folder and move th edead code there instead of removing it. make sure that that folder is ignored in gitignore. update th edocumentation afterwards
+
+## 44
+are you back
+
+## 45
+upload chaned to github
+
+## 46
+create a mindmap of the key ideas based on the 3 summaries. make thsi accesible in teh youtube.html
+
+## 47
+use mermaid
+
+## 48
+ok we ar eporgressing.let's do some cleanup. make sure that all key ideas from todo.md ar ecaptured in plan.md ignore th erefrence to codeium and obsidian as tehy are no longer important. then move the todo.md into ignore folder. same for file learning_cdespaces. make a section on how to run teh code in devcontainer, github codespaces and google colab so that we can run it remotely not only locally. describe how to run it loaclly, in a container ,... Remov eth erefrences to scrapetube and pytube if they ar eno longer used. maybe just add one line to mention them inreadme file or youtube,htmle. proceed
+
+## 49
+do not commit yet. creat a folder called chats. move in it the kiro and claude md file. extend teh kiro markdown files to capture the latest prompts and chat. update all erferences afetrwards

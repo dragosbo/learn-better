@@ -100,10 +100,12 @@
 <div class="layout">
 <nav>
   <a href="#overview">Overview</a>
+  <a href="#mindmap">Key ideas mindmap</a>
   <a href="#usecases">Use cases</a>
   <a href="#logic">How it works</a>
   <a href="#pipeline">Data pipeline</a>
   <a href="#install">Installation</a>
+  <a href="#howtorun">How to run (local/remote)</a>
   <a href="#run">Running the tools</a>
   <a href="#summaries">Summaries workflow</a>
   <a href="#status">Implemented vs. remaining</a>
@@ -127,6 +129,75 @@
     <div class="card"><h4>Fetch transcripts</h4><p>Save cleaned, timestamped transcripts per language (en/fr/ro).</p></div>
     <div class="card"><h4>Summarize</h4><p>Turn transcripts into structured summaries using a reusable skill.</p></div>
     <div class="card"><h4>Learn</h4><p>Roadmap toward speech-to-text, translation, TTS, and word clouds.</p></div>
+  </div>
+</section>
+
+<section id="mindmap">
+  <h2>Key ideas mindmap</h2>
+  <p>
+    The three summarized videos together map out a version-control learning path:
+    Git fundamentals, using Git visually in an IDE, and automating delivery with a
+    CI/CD pipeline. This mindmap distills the key ideas from each
+    <code>summaries/*.summary.md</code>.
+  </p>
+  <div class="mermaid">
+mindmap
+  root((Version control learning path))
+    Git and GitHub basics
+      Concepts
+        Snapshots and history
+        Revert and compare versions
+      Local workflow
+        init, status, add, commit
+        diff, log, restore
+        gitignore
+      Branching
+        branch, switch, merge
+        Resolve merge conflicts
+      GitHub
+        Remotes and push/pull
+        Issues and pull requests
+        Releases
+    Git inside VS Code
+      Setup
+        Check git version
+        Configure name and email
+      GUI workflow
+        Stage, commit, amend
+        Timeline as visual log
+      Remote work
+        Add remote and push
+        Pull server changes
+        Clone a repo
+        Publish a branch
+    GitLab CI/CD pipeline
+      Core concepts
+        Pipeline, jobs, stages
+        Runners execute jobs
+      gitlab-ci.yml
+        Pipeline editor validates
+        Docker image and variables
+        Cache dependencies
+        Artifacts and JUnit reports
+      Run and inspect
+        Jobs run in parallel per stage
+        Console logs and test reports
+        Deploy to an environment
+      Settings
+        Self-hosted runners
+        Masked and protected variables
+        Triggers and schedules
+    Shared takeaways
+      Working then staging then commit
+      Branch, merge, collaborate
+      Remotes connect local and cloud
+      Automate build, test, deploy
+  </div>
+  <div class="note">
+    Sourced from the summaries of <em>Git and GitHub Tutorial for Beginners</em>,
+    <em>How to use Git inside of VSCode</em>, and
+    <em>What Is a GitLab Pipeline? (Part 5)</em>. Open the files in
+    <code>summaries/</code> for the full breakdown of each.
   </div>
 </section>
 
@@ -255,12 +326,83 @@ brew install ffmpeg                       :: macOS
 sudo apt install ffmpeg                    :: Debian / Ubuntu</code></pre>
 
   <h3>4. Verify the install</h3>
-<pre><code>python -c "import googleapiclient, scrapetube, youtube_transcript_api, yt_dlp, pytube, pandas, curl_cffi, ipykernel; print('all imports OK')"</code></pre>
+<pre><code>python -c "import youtube_transcript_api, yt_dlp, pandas, curl_cffi, ipykernel; print('all imports OK')"</code></pre>
 
   <div class="note">
     <strong>No API key needed.</strong> Every active tool uses <code>yt-dlp</code> and works
     without a Google API key. The old API-key workflow (<code>get_my_playlists.py</code>)
     has been retired to the git-ignored <code>ignore/</code> folder.
+  </div>
+</section>
+
+<section id="howtorun">
+  <h2>How to run it (local or remote)</h2>
+  <p>
+    Four ways to run the project. They all converge on the same target: a Python
+    3.12 environment with <code>requirements.txt</code> installed. Pick whichever fits.
+  </p>
+  <div class="mermaid">
+flowchart LR
+  L["Local<br/>conda / venv"] --> ENV
+  DC["Dev Container<br/>VS Code + Docker"] --> ENV
+  CS["GitHub Codespaces<br/>cloud, in browser"] --> ENV
+  CO["Google Colab<br/>notebook cell"] --> ENV
+  ENV{{"Python 3.12<br/>+ requirements.txt"}} --> RUN["run the tools<br/>(r / t / s)"]
+  style ENV fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style RUN fill:#123024,stroke:#38d39f,color:#e7ecf5
+  </div>
+
+  <table>
+    <tr><th>Where</th><th>Best for</th><th>Setup</th></tr>
+    <tr><td><strong>Local</strong></td><td>Everyday use on your own machine.</td><td>Manual env (see Installation).</td></tr>
+    <tr><td><strong>Dev Container</strong></td><td>Reproducible local env in VS Code + Docker.</td><td>One click.</td></tr>
+    <tr><td><strong>GitHub Codespaces</strong></td><td>Zero local install; runs in the cloud/browser.</td><td>One click.</td></tr>
+    <tr><td><strong>Google Colab</strong></td><td>Quick experiments; free GPU for later ASR work.</td><td>Paste a cell.</td></tr>
+  </table>
+
+  <h3>1. Local</h3>
+  <p>
+    Follow <a href="#install">Installation</a> (conda or venv), then run with the
+    <kbd>c</kbd>/<kbd>r</kbd>/<kbd>t</kbd>/<kbd>s</kbd> batch files or
+    <code>python code/&lt;script&gt;.py</code>.
+  </p>
+
+  <h3>2. Dev Container (VS Code + Docker)</h3>
+  <p>
+    The repo ships a <code>.devcontainer/</code> on <strong>Python 3.12-bullseye</strong>
+    that installs <code>requirements.txt</code> automatically and preloads the Python +
+    Jupyter extensions.
+  </p>
+  <ol>
+    <li>Install Docker and the VS Code <strong>Dev Containers</strong> extension.</li>
+    <li>Open the repo and choose <strong>Reopen in Container</strong>.</li>
+    <li>After the build, run directly (deps are already installed):</li>
+  </ol>
+<pre><code>python code/test_read_channel.py</code></pre>
+  <div class="note">Add ffmpeg in the container with <code>sudo apt install ffmpeg</code> (or set <code>AUDIO_FORMAT = None</code> to skip mp3 conversion).</div>
+
+  <h3>3. GitHub Codespaces (nothing to install)</h3>
+  <p>Codespaces runs the same <code>.devcontainer/</code> in the cloud.</p>
+  <ol>
+    <li>On the repo page: <strong>Code &rarr; Codespaces &rarr; Create codespace on main</strong>.</li>
+    <li>Wait for the build (deps install automatically).</li>
+    <li>In the terminal:</li>
+  </ol>
+<pre><code>sudo apt install -y ffmpeg          # once, for mp3 conversion
+python code/test_read_channel.py</code></pre>
+
+  <h3>4. Google Colab</h3>
+  <p>No checkout by default, so clone inside a cell:</p>
+<pre><code>!git clone https://github.com/dragosbo/learn-better.git
+%cd learn-better
+!pip install -r requirements.txt
+!apt-get -qq install -y ffmpeg
+!python code/test_read_transcript.py</code></pre>
+  <div class="note warn">
+    Cloud IPs hit the YouTube <strong>bot-check</strong> more often. If you see
+    "Sign in to confirm you're not a bot", upload a <code>cookies.txt</code> and set
+    <code>COOKIES_FILE</code>. Colab sessions are ephemeral, download
+    <code>audio/</code> / <code>transcripts/</code> before disconnect or mount Google Drive.
   </div>
 </section>
 
@@ -315,7 +457,7 @@ sequenceDiagram
 
 <section id="status">
   <h2>Implemented vs. remaining</h2>
-  <p>Derived from <code>plan.md</code> and <code>todo.md</code>.</p>
+  <p>Derived from <code>plan.md</code> (the original <code>todo.md</code> is archived in <code>ignore/</code>).</p>
 
   <h3>Foundation &amp; fixes <span class="tag">done</span></h3>
   <table>
@@ -349,9 +491,9 @@ sequenceDiagram
     <tr><td>Text summarization notebook</td><td>todo #5</td><td class="status todo">To do (skill-based summary exists as a manual step)</td></tr>
     <tr><td>Text to speech with special voices</td><td>todo #6</td><td class="status todo">To do</td></tr>
     <tr><td>Create word cloud</td><td>todo #7</td><td class="status todo">To do</td></tr>
-    <tr><td>Video &rarr; mindmap recording &amp; Obsidian doc</td><td>todo notes</td><td class="status todo">To do</td></tr>
+    <tr><td>Video &rarr; mindmap recording</td><td>todo notes</td><td class="status todo">To do</td></tr>
     <tr><td>Prompt-building logic doc</td><td>todo notes</td><td class="status todo">To do</td></tr>
-    <tr><td>Codespaces doc (fold in <code>learning_codspaces.txt</code>)</td><td>todo notes</td><td class="status todo">To do</td></tr>
+    <tr><td>Codespaces / remote-run doc</td><td>todo notes</td><td class="status done">Done — see "How to run it"</td></tr>
     <tr><td>Optional Streamlit front-end; light CI</td><td>plan Phase 5</td><td class="status todo">Optional</td></tr>
   </table>
 
@@ -394,12 +536,12 @@ graph TD
 &#9500;&#9472; audio/                     # downloaded audio (git-ignored)
 &#9500;&#9472; transcripts/               # saved transcripts (git-ignored)
 &#9500;&#9472; summaries/                 # AI-generated summaries (tracked)
-&#9500;&#9472; ignore/                    # retired code (git-ignored): get_my_playlists.py, secrets.example.json
+&#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
+&#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, learning_codspaces.txt
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
 &#9500;&#9472; c.bat r.bat t.bat s.bat    # helper runners
 &#9500;&#9472; requirements.txt
-&#9500;&#9472; plan.md                    # roadmap and analysis
-&#9500;&#9472; todo.md
+&#9500;&#9472; plan.md                    # roadmap and analysis (single source of truth)
 &#9492;&#9472; README.md</code></pre>
 </section>
 

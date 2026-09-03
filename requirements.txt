@@ -10,23 +10,24 @@
 #     macOS:  brew install ffmpeg
 #     Debian/Ubuntu: sudo apt install ffmpeg
 
-# YouTube Data API (channel/playlist metadata)
-google-api-python-client>=2.100,<3
-
-# Enumerate videos in a playlist without the official API
-scrapetube>=2.5,<3
-
 # Fetch video transcripts/subtitles (fixed typo: was "youtoube-transcript-api")
 youtube-transcript-api>=0.6,<1
 
-# Audio/video download. pytube breaks often against YouTube changes;
-# yt-dlp is the actively maintained, more robust downloader.
-# The [default,curl-cffi] extra pulls in curl_cffi, which yt-dlp uses for
-# browser "impersonation" (a real TLS fingerprint). Without it, YouTube now
-# blocks subtitle/format fetches ("Sign in to confirm you're not a bot",
-# empty subtitle responses). This is REQUIRED for downloads/transcripts to work.
+# Audio/video download + listing + subtitles. This is the core downloader used
+# by all active tools. The [default,curl-cffi] extra pulls in curl_cffi, which
+# yt-dlp uses for browser "impersonation" (a real TLS fingerprint). Without it,
+# YouTube now blocks subtitle/format fetches ("Sign in to confirm you're not a
+# bot", empty subtitle responses). This is REQUIRED for downloads/transcripts.
 yt-dlp[default,curl-cffi]>=2024.4.9
+
+# --- Legacy, only for archived/legacy scripts (not the active workflow) ---
+# pytube: still imported by code/youtube_download.py (fragile; superseded by
+#   yt-dlp). google-api-python-client: only used by the retired
+#   ignore/get_my_playlists.py. scrapetube was dropped entirely (broken since
+#   2025, no active code uses it). Keep pytube only while youtube_download.py
+#   remains; the others can go once the notebook is migrated to yt-dlp.
 pytube>=15.0,<16
+google-api-python-client>=2.100,<3
 
 # curl_cffi is also listed explicitly so `import curl_cffi` is guaranteed
 # present even if the extra name changes across yt-dlp versions.

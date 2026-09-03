@@ -1,11 +1,12 @@
 # learn-better — Plan
 
 Minimalist, free learning tools that turn YouTube content into study material:
-audio, transcripts, and metadata, feeding downstream steps like summarization,
-mind-maps, and Obsidian-based knowledge consolidation.
+audio, transcripts, and metadata, feeding downstream steps like summarization
+and mind-maps.
 
-This document analyzes the current `todo.md`, records the fixes already applied,
-and proposes a concrete roadmap.
+This document analyzes the original `todo.md` (now archived in `ignore/`), records
+the fixes already applied, and proposes a concrete roadmap. plan.md is now the
+single source of truth for what remains to be done.
 
 ---
 
@@ -50,7 +51,7 @@ and proposes a concrete roadmap.
 
 ---
 
-## 2. Analysis of `todo.md`
+## 2. Analysis of the original `todo.md` (archived in `ignore/`)
 
 The TODO mixes three kinds of work. Grouping them clarifies sequencing.
 
@@ -69,12 +70,10 @@ isolation.
 
 ### B. Content / documentation tasks
 - Record a video: "from a video to a mindmap".
-- Document using Obsidian with the mindmap to consolidate knowledge.
 - Document the prompt-building logic.
 - Learn/document GitHub Codespaces (the devcontainer is the practical start).
 
 ### C. Housekeeping notes
-- Concern about notebook refactoring ergonomics (script vs. notebook).
 - Scattered local paths (`C:\...\youtube`, `streamlit`, `YouTubeChapterGenerator`)
   — these are pointers to other work, not tasks in this repo.
 
@@ -127,10 +126,11 @@ isolation.
 
 ### Phase 4 — Knowledge consolidation & docs (`todo` section B)
 - [ ] "Video → mindmap" walkthrough (Markdown; link the recorded video when ready).
-- [ ] Obsidian workflow doc: how transcript → summary → mindmap → notes fit together.
 - [ ] Prompt-building doc capturing the author's logic, referenced from the
       summarization notebook.
-- [ ] Codespaces doc: fold `learning_codspaces.txt` into a proper README section.
+- [x] Codespaces / remote-run doc: covered by the "How to run it" section in the
+      README (local, Dev Container, GitHub Codespaces, Google Colab). The old
+      `learning_codspaces.txt` notes are archived in `ignore/`.
 
 ### Phase 5 — Polish (optional)
 - [~] Migrate downloads from `pytube`/`scrapetube` to `yt-dlp` for reliability.
@@ -149,7 +149,7 @@ learn-better/
 ├── lib/                 # NEW: shared helpers (download, transcribe, tts, summarize)
 ├── notebooks/           # one notebook per capability
 ├── data/                # git-ignored: audio/, transcripts/, summaries/
-├── docs/                # mindmap / Obsidian / prompt-building / codespaces
+├── docs/                # mindmap / prompt-building / codespaces
 ├── requirements.txt
 └── plan.md
 ```

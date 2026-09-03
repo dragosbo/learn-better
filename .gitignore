@@ -13,6 +13,7 @@ repos/
 audio/
 transcripts/
 timestamped/
+data/
 ignore/
 secrets.json
 cookies.txt

@@ -226,6 +226,7 @@ graph LR
     <tr><th>Goal</th><th>Tool</th><th>Command</th></tr>
     <tr><td>Audio + transcripts for a source</td><td><code>test_read_channel.py</code></td><td><kbd>r</kbd></td></tr>
     <tr><td>Transcripts only, per language</td><td><code>test_read_transcript.py</code></td><td><kbd>t</kbd></td></tr>
+    <tr><td>List a channel's public playlists</td><td><code>list_playlists.py</code></td><td><kbd>p</kbd></td></tr>
     <tr><td>Prepare summaries (hand off to AI)</td><td><code>make_summaries.py</code></td><td><kbd>s</kbd></td></tr>
   </table>
 </section>
@@ -414,6 +415,7 @@ python code/test_read_channel.py</code></pre>
     <tr><td><kbd>c</kbd></td><td><code>c.bat</code></td><td>Activate the <code>learn-better</code> conda env.</td></tr>
     <tr><td><kbd>r</kbd></td><td><code>test_read_channel.py</code></td><td>Audio + transcripts for a playlist/channel/search.</td></tr>
     <tr><td><kbd>t</kbd></td><td><code>test_read_transcript.py</code></td><td>Transcripts only, one file per language.</td></tr>
+    <tr><td><kbd>p</kbd></td><td><code>list_playlists.py</code></td><td>List a channel's public playlists to <code>data/playlists.json</code>.</td></tr>
     <tr><td><kbd>s</kbd></td><td><code>make_summaries.py</code></td><td>List transcripts needing a summary; print AI instruction.</td></tr>
   </table>
   <p>Configure the source at the top of the script (set ONE, leave the others <code>None</code>):</p>
@@ -528,6 +530,7 @@ graph TD
 &#9500;&#9472; code/                      # scripts
 &#9474;  &#9500;&#9472; test_read_channel.py    # no-API-key: audio + transcripts (recommended)
 &#9474;  &#9500;&#9472; test_read_transcript.py # no-API-key: transcripts only (per language)
+&#9474;  &#9500;&#9472; list_playlists.py       # no-API-key: list a channel's public playlists (p.bat)
 &#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s.bat)
 &#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader
 &#9474;  &#9492;&#9472; languages.json          # subtitle languages to fetch (en, fr, ro)
@@ -539,7 +542,7 @@ graph TD
 &#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
 &#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, learning_codspaces.txt
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
-&#9500;&#9472; c.bat r.bat t.bat s.bat    # helper runners
+&#9500;&#9472; c.bat r.bat t.bat s.bat p.bat  # helper runners
 &#9500;&#9472; requirements.txt
 &#9500;&#9472; plan.md                    # roadmap and analysis (single source of truth)
 &#9492;&#9472; README.md</code></pre>

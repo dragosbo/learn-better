@@ -294,6 +294,43 @@ Two helper batch files are provided for convenience:
 - `t.bat` — activates the env and runs `code\test_read_transcript.py` (`t`).
 - `s.bat` — activates the env and runs `code\make_summaries.py` to prepare
   transcript summaries (`s`); see "Summarize transcripts" below.
+- `p.bat` — activates the env and runs `code\list_playlists.py` (`p`); see
+  "List your playlists" below.
+
+### List your playlists (no API key)
+
+`code/list_playlists.py` lists a channel's **public** playlists (title, id, video
+count) and saves them to `data/playlists.json`. Set `CHANNEL` at the top of the
+script to your `@handle`, `UC...` id, or full channel URL, then:
+
+```cmd
+p
+```
+
+(or `python code\list_playlists.py`).
+
+#### Making playlists visible to the tool
+
+The tool sees only **public** playlists — private and unlisted ones don't appear
+on a channel's public playlists page, so they can't be enumerated without
+authentication (an API key can't read them either; only OAuth can, which is a
+lot of setup). The simplest fix is to make the playlists you want to process
+**public**.
+
+There's no bulk "make everything public" button in YouTube — you set visibility
+per playlist. But it's quick, via YouTube Studio:
+
+1. Go to **studio.youtube.com** → left sidebar → **Content** → **Playlists** tab.
+2. Each playlist's visibility is shown in the list. Click the playlist (or the
+   pencil/edit icon).
+3. Find the **Visibility** dropdown (Public / Unlisted / Private) → set to
+   **Public** → **Save**.
+4. Repeat for each one.
+
+> Public means anyone can find and view the playlist and its list of videos, so
+> leave anything personal private (it just won't be enumerable). Unlisted
+> playlists are still readable **if you already know the exact `PL...` id**, but
+> they won't show up when listing a channel's playlists.
 
 ### Read a channel/playlist: download audio + transcripts (no API key)
 
@@ -428,6 +465,7 @@ learn-better/
 ├── code/                # scripts
 │   ├── test_read_channel.py   # no-API-key: audio + transcripts (recommended)
 │   ├── test_read_transcript.py # no-API-key: transcripts only (per language)
+│   ├── list_playlists.py      # no-API-key: list a channel's public playlists (p.bat)
 │   ├── make_summaries.py      # lists transcripts needing a summary (used by s.bat)
 │   ├── youtube_download.py    # legacy pytube audio downloader
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
@@ -443,6 +481,7 @@ learn-better/
 ├── r.bat                # activate env + run test_read_channel.py
 ├── t.bat                # activate env + run test_read_transcript.py
 ├── s.bat                # activate env + run make_summaries.py (prep summaries)
+├── p.bat                # activate env + run list_playlists.py
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

@@ -218,96 +218,156 @@ almost certainly on the wrong interpreter).
 
 ---
 
-## How to run it (local or remote)
+## Deploying / running anywhere
 
-You can run this project four ways. They all end up at the same place: a Python
-3.12 environment with `requirements.txt` installed. Pick whichever fits.
+You can run this project locally, in a container, or in the cloud. They all end
+up at the same place: a **Python 3.12** environment with `requirements.txt`
+installed and **ffmpeg** available. Pick whichever fits.
 
-> For a deeper, comparison-driven deployment guide — 12 platforms (local
-> conda/pip/uv, Docker, Podman, dev containers, Colab, Codespaces, Gitpod) ranked
-> by complexity vs. capabilities, plus ready-to-use image scripts including
-> `Dockerfile.standalone` — see [`how_to_deploy.md`](how_to_deploy.md).
+### ⚡ 1-click deploy (zero local setup)
+
+Three targets get you a ready-to-run environment (ffmpeg + all dependencies +
+the `data/` output layout) with a single click — no manual install steps:
+
+| Target | How | What you get |
+|---|---|---|
+| **Google Colab** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dragosbo/learn-better/blob/main/notebooks/colab_setup.ipynb) → **Runtime → Run all** | Free T4 GPU (fast Whisper), notebook opens the repo and installs everything in the first cell. |
+| **GitHub Codespaces** | [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/dragosbo/learn-better) | Full VS Code in the browser; the `.devcontainer/` builds Python 3.12 + ffmpeg + deps automatically. Persists per codespace. |
+| **VS Code / Kiro Dev Container** | Open the repo → **Reopen in Container** (or *Dev Containers: Reopen in Container*) | Same `.devcontainer/` locally on Docker; one build, then everything works. |
+
+> **"1-click" = a ready-to-run env.** ffmpeg, the Python deps, and the `data/`
+> layout are all set up for you; run any tool with `python code/<script>.py`.
+> Typing the bare one-letter names (`r`, `w`, …) is a separate optional
+> convenience — see **Running the tools** for the `scripts/` + PATH step.
+
+### Platform overview
 
 | Where | Best for | Setup effort |
 |---|---|---|
-| **Local** | Everyday use on your own machine. | Manual env (above). |
-| **Dev Container** | Reproducible local env in VS Code + Docker. | One click. |
-| **GitHub Codespaces** | Zero local install; runs in the cloud/browser. | One click. |
-| **Google Colab** | Quick experiments, free GPU for later ASR work. | Paste a cell. |
+| **Local — conda** | Everyday use; conda installs ffmpeg too. | One env create. |
+| **Local — pip/venv or uv** | Minimal tooling or fast rebuilds. | Env + manual ffmpeg. |
+| **Dev Container / Codespaces** | Reproducible env, zero manual steps. | 1-click (above). |
+| **Docker / Podman** | CI, servers, scripted batch runs. | Build an image. |
+| **Google Colab** | Free GPU for Whisper; quick experiments. | 1-click (above). |
 
-### 1. Local
+### Local — conda (recommended)
 
-Follow **Environment setup** above (conda or venv), then run the tools with the
-`c` / `r` / `t` / `s` runners in `scripts/` (Windows `.bat`, Linux/macOS `.sh`)
-or `python code/<script>.py` (any OS). Add `scripts/` to your PATH to type the
-bare one-letter names from the repo root (see **Running the tools** below). This
-is the default path and what the runners assume.
+Conda is the only method that installs **ffmpeg** into the same environment, and
+it matches what the `scripts/` runners assume. Identical on Windows/Linux/macOS:
 
-### 2. Dev Container (VS Code + Docker)
+```bash
+conda create -n learn-better python=3.12 -y
+conda activate learn-better
+conda install -c conda-forge ffmpeg -y
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-The repo ships a `.devcontainer/` built on **Python 3.12-bullseye** that installs
-`requirements.txt` automatically (via `postCreateCommand`) and preloads the
-Python + Jupyter extensions.
+Verify: `python --version` (3.12.x), `ffmpeg -version`, and
+`python -c "import yt_dlp, faster_whisper, pandas; print('OK')"`.
 
-1. Install [Docker](https://www.docker.com/) and the VS Code
-   **Dev Containers** extension.
-2. Open the repo in VS Code and choose **Reopen in Container**
-   (or run *Dev Containers: Reopen in Container* from the command palette).
-3. Wait for the build. Dependencies install themselves, so you can skip straight
-   to running the tools:
+### Local — pip/venv or uv
+
+Standard `venv` (or [uv](https://docs.astral.sh/uv/) for faster installs +
+lockfiles). ffmpeg is a **separate, manual** step here (see **Dependencies**):
+`winget install ffmpeg` (Windows) · `sudo apt install ffmpeg` (Debian/Ubuntu) ·
+`brew install ffmpeg` (macOS).
+
+```bash
+py -3.12 -m venv .venv            # Windows: .venv\Scripts\activate
+python3.12 -m venv .venv          # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt   # or:  uv pip install -r requirements.txt
+```
+
+### Dev Container (VS Code / Kiro + Docker)
+
+The repo ships a `.devcontainer/` on **Python 3.12-bullseye** that **installs
+ffmpeg** (via the Dockerfile) and `requirements.txt` (via `postCreateCommand`),
+and preloads the Python + Jupyter extensions — nothing manual.
+
+1. Install [Docker](https://www.docker.com/) and the **Dev Containers** extension.
+2. Open the repo and choose **Reopen in Container**.
+3. Wait for the build. ffmpeg and deps are already there — run a tool directly:
 
    ```bash
    python code/read_channel.py
    ```
 
-   (The `.bat` helpers assume a conda env named `learn-better`; inside the
-   container just call `python` directly.)
+Inside the container use `./scripts/*.sh` runners or `python code/<script>.py`
+directly (the `.bat` files are Windows-only and won't run in the Linux container).
 
-You still need **ffmpeg** for mp3 conversion; add it in the container with
-`sudo apt install ffmpeg` (or set `AUDIO_FORMAT = None` to skip conversion).
+### GitHub Codespaces
 
-### 3. GitHub Codespaces (nothing to install)
+Codespaces runs the same `.devcontainer/` in the cloud — 1-click, no local setup.
 
-Codespaces runs the same `.devcontainer/` in the cloud, so there is no local
-setup at all.
-
-1. On the GitHub repo page, click **Code &rarr; Codespaces &rarr; Create codespace on main**.
-2. Wait for it to build (it reuses the Dev Container config, so deps install
-   automatically).
-3. In the Codespaces terminal:
+1. **Code → Codespaces → Create codespace on main** (or the badge above).
+2. It builds automatically (ffmpeg + deps included).
+3. Run in the terminal — no ffmpeg step needed:
 
    ```bash
-   sudo apt install -y ffmpeg          # once, for mp3 conversion
    python code/read_channel.py
    ```
 
-Edit the `PLAYLIST_ID` / `CHANNEL` / `SEARCH` config at the top of the script
-just as you would locally. Downloaded files live in the Codespace; use the file
-explorer to download them, or push non-ignored outputs to the repo.
+Configure the source at the top of the script as you would locally. Outputs land
+under `data/` in the codespace; download via the file explorer or push tracked
+outputs.
 
-### 4. Google Colab
+### Docker / Podman (self-hosted, CI)
 
-Colab is handy for quick runs and for the future speech-to-text work (free GPU).
-There is no repo checkout by default, so clone it inside a cell:
+A slim, IDE-free image (`Dockerfile.standalone`: Python 3.12-slim + ffmpeg,
+non-root). Mount the single `data/` folder to persist all outputs:
+
+```bash
+docker build -f Dockerfile.standalone -t learn-better .
+# Linux/macOS:
+docker run -it --rm -v "$(pwd)/data:/app/data" learn-better
+# Windows cmd:  docker run -it --rm -v "%CD%\data:/app/data" learn-better
+# Windows PS:   docker run -it --rm -v "${PWD}\data:/app/data" learn-better
+```
+
+Run a tool non-interactively, e.g.:
+
+```bash
+docker run --rm -v "$(pwd)/data:/app/data" learn-better \
+  python code/transcribe_audio.py config/config_transcribe.json
+```
+
+Podman uses the same syntax (`podman build/run`); on Windows it runs through
+WSL2, so use Linux-style volume paths (`/mnt/c/...`).
+
+### Google Colab
+
+1-click via the badge above (opens `notebooks/colab_setup.ipynb`; **Run all**).
+Or clone manually in a cell:
 
 ```python
-# In a Colab cell:
+!apt-get -qq install -y ffmpeg
 !git clone https://github.com/dragosbo/learn-better.git
 %cd learn-better
-!pip install -r requirements.txt
-!apt-get -qq install -y ffmpeg          # for mp3 conversion
-
-# Edit the source in the file, or set it inline, then run:
-!python code/read_transcript.py
+!pip install -q -r requirements.txt
+!python code/transcribe_audio.py config/config_transcribe.json
 ```
 
 Notes for Colab:
+- Free **T4 GPU** makes Whisper 5–10× faster (`Runtime → Change runtime type → T4`).
+  `faster-whisper` uses CUDA automatically when a GPU is present.
 - The YouTube **bot-check** is more likely on cloud IPs. If you hit
   "Sign in to confirm you're not a bot", upload a `cookies.txt` (see the cookies
   note under *Running the tools*) and point `COOKIES_FILE` at it.
-- Colab sessions are ephemeral: download anything in `data/audio/` /
-  `data/transcripts/` before the runtime disconnects, or mount Google Drive to
-  persist them.
+- Sessions are ephemeral: save anything in `data/` to Google Drive before the
+  runtime disconnects (see the notebook's Drive cell).
+
+### Known gotchas
+
+| Symptom | Fix |
+|---|---|
+| `ffmpeg: command not found` | ffmpeg is a **system binary**, not pip-installable. Install it (conda / winget / apt / brew) — see **Dependencies**. Only conda bundles it in-env. |
+| `No module named 'curl_cffi'` | `pip install "yt-dlp[default,curl-cffi]"` — required for the YouTube bot-check bypass. Already in `requirements.txt`. |
+| Container builds but ffmpeg missing | Use the repo's `.devcontainer/Dockerfile` / `Dockerfile.standalone` (both install ffmpeg). Don't hand-roll a base image without the ffmpeg layer. |
+| Docker volume path errors | Linux/macOS: `$(pwd)/data`; Windows cmd: `%CD%\data`; PowerShell: `${PWD}\data`; Podman on Windows (WSL2): `/mnt/c/...`. |
+| GPU not used in a container | GPU passthrough works only on **Linux host + NVIDIA** (`--gpus all`); not on Windows/macOS Docker Desktop. CPU still works. |
+| Colab lost work on disconnect | Write results to Google Drive as they complete; don't batch at the very end. |
+| conda solve is very slow | `conda config --set solver libmamba`. |
 
 ---
 

@@ -201,42 +201,65 @@ optional `init.bat`/PATH step, documented separately).
 
 ---
 
-## Phase F0 — Decide + inventory (no file changes) — TODO
-- [ ] **F0.1** Lock D1–D6 with the user.
-- [ ] **F0.2** Confirm the reference inventory above (accurate / wrong / missing /
-      open / one-click status) is complete; note anything to add or exclude.
-- [ ] **F0.3** Confirm scope boundary: Kokoro/voice-cloning (item 6) and Streamlit
-      (Phase 5) stay OUT unless explicitly requested.
-- [ ] **F0.4** Confirm the one-click definition (D6): Colab badge + Codespaces
-      badge + Dev Container action, each landing in a ready-to-run env.
+## Phase F0 — Decide + inventory (no file changes) — DONE, USER-VALIDATED
+- [x] **F0.1** D1–D6 LOCKED (user: "OK with proposal for D1 to D6"). All
+      **recommended** options: D1 split (README actionable / youtube visual /
+      plan status), D2 **condensed** (~20% actionable, not the essay prose), D3
+      **(a)** no image-script files (README copy-paste + reword plan.md), D4
+      `notebooks/colab_setup.ipynb` + badge, D5 **archive** `how_to_deploy.md` to
+      `ignore/`, D6 three README badges (Colab / Codespaces / Dev Container),
+      one-click = ready-to-run env (PATH stays a separate optional step).
+- [x] **F0.2** Reference inventory RE-VERIFIED against the repo:
+      - `YOUR_USER` placeholders — present (~8 spots: clone URLs, Gitpod link, gh
+        commands, the Colab badge markdown). CONFIRMED.
+      - `code/transcribe.py --config/--url/--output` — stale; real script is
+        `code/transcribe_audio.py` (config-path via `sys.argv[1]`, no flags).
+        CONFIRMED in the Docker/Colab/Codespaces/`setup_conda.sh` examples.
+      - `colab_setup.ipynb` / any colab file — MISSING. CONFIRMED.
+      - image scripts (`setup_conda*`, `setup_venv*`, `docker_build_run*`) — NOT
+        saved as files (inline only). CONFIRMED.
+- [x] **F0.3** Scope boundary CONFIRMED (user: "keep kokoro and streamlit out of
+      the rework, put them on hold"). Item 6 (Kokoro / voice cloning) and Phase 5
+      (Streamlit / CI) are **ON HOLD** — out of TODO4. F6 covers only Phase 4
+      docs; the self-contained summarization notebook stays an OPTIONAL F6 item.
+- [x] **F0.4** One-click definition CONFIRMED per D6.
 
-**Review & hand off (STOP):** no files changed. Deliverable = the audit + the
-six decisions. On "go", F1 edits README.
+**Verified:** grep confirmed `YOUR_USER`, `code/transcribe.py`, and the missing
+Colab notebook / image-script files. No files changed in F0 (decisions only).
 
 ---
 
-## Phase F1 — Migrate + FIX deploy guidance into `README.md` — TODO
-- [ ] **F1.1** Expand "How to run it" into "Deploying / running anywhere":
-      keep the platform table; add condensed per-platform setup (conda/pip/uv;
-      Dev Container; Docker + Podman with the **`-v <repo>/data:/app/data`** mount;
-      Codespaces; Gitpod; Colab). Real repo slug `dragosbo/learn-better`, no
-      `YOUR_USER`.
-- [ ] **F1.2** Add a **"Known gotchas"** subsection (ffmpeg is a system binary /
-      not pip-installable; `curl_cffi` for the bot-check; container ffmpeg layer;
-      Windows vs. bash volume-path syntax; GPU only on Linux+NVIDIA; Colab session
-      loss → save to Drive; `conda config --set solver libmamba`).
-- [ ] **F1.3** FIX every command example to the real interfaces: config-driven
-      `python code/transcribe_audio.py config\config_transcribe.json` (NOT
-      `--url/--config/--output`), and the `scripts/`+PATH/`init.bat` runner UX.
-- [ ] **F1.4** Remove the `> see how_to_deploy.md` pointer block.
+## Phase F1 — Migrate + FIX deploy guidance into `README.md` — DONE (awaiting user review)
+- [x] **F1.1** Replaced "How to run it" with **"Deploying / running anywhere"**:
+      platform-overview table + condensed per-platform setup (conda; pip/venv/uv;
+      Dev Container; Codespaces; Docker + Podman with `-v <repo>/data:/app/data`
+      and cmd/PS/WSL2 path variants; Colab). Real slug `dragosbo/learn-better`,
+      no `YOUR_USER`.
+- [x] **F1.2** Added a **"Known gotchas"** table (ffmpeg system binary; curl_cffi;
+      container ffmpeg layer; volume-path syntax per shell; GPU only Linux+NVIDIA;
+      Colab session loss → Drive; `conda config --set solver libmamba`).
+- [x] **F1.3** FIXED command examples to real interfaces:
+      `python code/transcribe_audio.py config/config_transcribe.json` (no
+      `--url/--config/--output`); `read_channel.py` for the container/Colab
+      quick runs; runner UX points to `scripts/` + PATH.
+- [x] **F1.4** Removed the `> see how_to_deploy.md` pointer block.
+- [x] **Bonus fix:** the old Dev Container/Codespaces sections told users to
+      `sudo apt install ffmpeg` — STALE (the `.devcontainer/Dockerfile` now
+      installs it). Rewrote to "ffmpeg already present, run a tool directly",
+      which is what makes the 1-click claim honest.
 
-**Review & hand off (STOP):** open `README.md`.
-```cmd
-type README.md | more
-```
-**Expect:** a self-contained deploy section; no `YOUR_USER`; no `code/transcribe.py`;
-Docker/Podman mount `data/`; no link to `how_to_deploy.md`. **Pass =** a newcomer
-could set up on any platform from README alone. Report back; then F2.
+**Verified:** grep of README shows no `YOUR_USER`, no `code/transcribe.py`, and
+the pointer block gone. Two `how_to_deploy.md` mentions remain ONLY in the
+repo-layout tree (the file still exists at root) — cleaned up in F4/F5.
+
+**Review & hand off (STOP for user feedback):** open `README.md` and read the new
+**"Deploying / running anywhere"** section (starts with the ⚡ 1-click deploy
+block).
+**Expect:** self-contained; 1-click block with Colab/Codespaces/Dev Container;
+correct commands; Docker/Podman mount `data/`; no how_to_deploy link (except the
+layout tree, pending F5). **Pass =** a newcomer could deploy from README alone.
+> Note: the Colab badge target `notebooks/colab_setup.ipynb` is created in F2 —
+> the link will 404 until then. Report back; then F2.
 
 ---
 

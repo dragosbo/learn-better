@@ -220,11 +220,11 @@ isolation.
       Codespaces, Gitpod; Replit/Binder noted as not-recommended). Includes
       ready-to-use `Dockerfile.standalone`, a patched `.devcontainer/Dockerfile`,
       `colab_setup.py`, `setup_codespaces.sh`, and `podman_setup.sh`.
-- [ ] **Fix the devcontainer ffmpeg gap** — `how_to_deploy.md` confirms
-      `.devcontainer/Dockerfile` does NOT install `ffmpeg` (the #1 setup-failure
-      cause). Apply the documented `apt-get install ffmpeg` layer (and consider
-      dropping the unused `azure-cli` feature + adding a HuggingFace model-cache
-      volume). Small, high-value.
+- [x] **Fix the devcontainer ffmpeg gap** — applied: `.devcontainer/Dockerfile`
+      now installs `ffmpeg` via an `apt-get install --no-install-recommends
+      ffmpeg` layer (was missing — the #1 setup-failure cause per
+      `how_to_deploy.md`). Still optional: drop the unused `azure-cli` feature and
+      add a HuggingFace model-cache volume.
 - [ ] **Add the standalone container assets to the repo** (optional) — commit
       `Dockerfile.standalone` (and a `.dockerignore`) so Docker/Podman/CI users
       have a lighter, IDE-free image, per `how_to_deploy.md` Part 4.
@@ -274,15 +274,15 @@ The next high-value moves, in order:
 1. **TTS voice extras** (`todo` item 6, optional) — a higher-quality engine
    (Kokoro) and/or voice cloning (XTTS/Chatterbox). The baseline (Piper, with
    selectable voice + speed) is done; these are deferred niceties (todo2 D4).
-2. **Fix the devcontainer ffmpeg gap** (Phase 6) — quick, high-value: the
-   `.devcontainer/Dockerfile` is missing `ffmpeg` (confirmed in
-   `how_to_deploy.md`), which breaks audio/mp3 work in Dev Containers and
-   Codespaces. A one-layer `apt-get install ffmpeg` fix.
-3. **Consolidate outputs** under a single `data/` root, or a self-contained
+2. **Consolidate outputs** under a single `data/` root, or a self-contained
    summarization notebook (local HF model / API prompt) if you want summaries
    without the manual Kiro paste step.
-4. **Docs / consolidation** — the "video → mindmap" walkthrough and the
+3. **Docs / consolidation** — the "video → mindmap" walkthrough and the
    prompt-building doc (Phase 4).
+
+(The **devcontainer ffmpeg gap** flagged in `how_to_deploy.md` is now fixed —
+`.devcontainer/Dockerfile` installs `ffmpeg` — so Dev Containers / Codespaces
+handle audio/mp3 out of the box.)
 
 (**Word cloud** (item 7), the **audio-bitrate helper** (item 4), and the **TTS
 baseline** (item 3) are now done. Word cloud: a data-only Python script writes

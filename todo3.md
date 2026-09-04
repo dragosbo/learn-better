@@ -53,28 +53,22 @@ These are the choices that shape everything below. Please confirm/adjust:
 Proposed (git-ignored unless noted):
 ```
 data/
-├── playlists.json            # (already here)
-├── wordclouds/               # (already here) *.word_cloud.json
-├── audio/                    # was audio/
-├── audio_reencoded/          # was audio_reencoded/
-├── transcripts/              # was transcripts/   (YouTube captions)
-├── generated_transcripts/    # was generated_transcripts/ (Whisper)
-└── tts_output/               # was tts_output/  (+ .voices/ cache)
+├── playlists.json            # (already here, ignored)
+├── wordclouds/               # (already here, ignored) *.word_cloud.json
+├── audio/                    # was audio/                 (ignored)
+├── audio_reencoded/          # was audio_reencoded/       (ignored)
+├── transcripts/              # was transcripts/           (ignored, captions)
+├── generated_transcripts/    # was generated_transcripts/ (ignored, Whisper)
+├── tts_output/               # was tts_output/  (+ .voices/ cache) (ignored)
+└── summaries/                # was summaries/   (TRACKED via .gitignore negation)
 ```
-- **Open question — `summaries/`?** It is currently **tracked by git** (authored
-  content, not regenerated). Options:
-  - **(a) leave `summaries/` at the root** (keep it tracked, out of the ignored
-    `data/`), OR
-  - **(b) move to `data/summaries/`** and make `data/` ignore-everything-except
-    `summaries/` (more complex `.gitignore`; mixes tracked + ignored under one
-    root). **Recommendation: (a)** — simplest, keeps the tracked/ignored split
-    clean. `data/` = regenerated/ignored; `summaries/` = tracked.
-- **Open question — migrate existing files or start fresh?** The current output
-  folders hold real files (audio, transcripts, the TTS wav, wordcloud JSONs).
-  Options: **(a) leave old files where they are** (they're git-ignored; just point
-  the code at the new dirs and re-generate as needed), or **(b) physically move**
-  existing outputs into `data/`. **Recommendation: (b)** move them, so nothing has
-  to be re-downloaded and skip-if-exists keeps working. (One-time `move`/`mv`.)
+- **`summaries/` → DECIDED: move to `data/summaries/`.** It is git-TRACKED
+  (authored content), so this needs a `.gitignore` negation to keep it tracked
+  while `data/` is otherwise ignored: `data/` + `!data/summaries/` +
+  `!data/summaries/**`, and the move uses `git mv`.
+- **Migrate existing files → DECIDED: physically move** current outputs into
+  `data/` (one-time `move`/`git mv`), so nothing re-downloads and skip-if-exists
+  keeps working.
 
 ### A2. `.voices/` cache
 Piper's voice models live in `tts_output/.voices/`. Under the new layout that
@@ -114,51 +108,84 @@ Options:
 | TTS audio (+ voices) | `tts_output/` | `data/tts_output/` |
 | Word cloud JSON | `data/wordclouds/` | `data/wordclouds/` (unchanged) |
 | Playlists | `data/playlists.json` | `data/playlists.json` (unchanged) |
-| Summaries (tracked) | `summaries/` | `summaries/` (unchanged — stays tracked) |
-| Runners | `*.bat` / `*.sh` at root | `bin/*.bat` + `bin/*.sh`, with 1-line root shims |
+| Summaries (tracked) | `summaries/` | `data/summaries/` (still tracked via a `.gitignore` negation) |
+| Runners | `*.bat` / `*.sh` at root | `scripts/*.bat` + `scripts/*.sh`, with 1-line root shims |
 
 ---
 
-## Phase T0 — Decide + prep (no behavior change yet) — TODO
+## Phase T0 — Decide + prep (no behavior change yet) — DONE PENDING USER SIGN-OFF
 
-- [ ] **T0.1** Lock the decisions above (A1 summaries, A1 migrate, B1 runner
-      approach, folder name). Write them at the top of this file once confirmed.
-- [ ] **T0.2** Inventory every reference to the output dirs and runners so nothing
-      is missed. Known reference points (from a grep):
-      - `lib/paths.py` — the 7 dir constants (single source of truth).
-      - `code/*.py` — import the constants (`read_channel`, `read_transcript`,
-        `list_playlists`, `transcribe_audio`, `make_summaries`, `make_wordcloud`,
-        `reencode_audio`, `generate_speech`) + hardcoded `"summaries"` in
-        `make_summaries.py` / `generate_speech.py`.
-      - `lib/youtube.py` — defaults `output_dir or paths.AUDIO_DIR/TRANSCRIPT_DIR`.
-      - `.gitignore`, `.dockerignore` — the ignored output folders.
-      - Docs: `README.md`, `youtube.html`, `how_to_test.md`, `plan.md` (repo
-        layout blocks + any `audio/`/`transcripts/` mentions).
-      - The notebook `notebooks/yt_download.ipynb` (paths via `lib/`, so it
-        follows automatically — verify).
+- [x] **T0.1** Decisions LOCKED (user-confirmed):
+      - **A1 summaries:** move `summaries/` → **`data/summaries/`**. Because
+        `summaries/` is git-TRACKED (authored content) and `data/` is ignored
+        wholesale, `.gitignore` must ignore `data/` **except** `data/summaries/`
+        (negation rule: `data/` + `!data/summaries/` + `!data/summaries/**`), and
+        the move uses `git mv` so git follows the tracked files. Add a
+        `paths.SUMMARY_DIR = data/summaries` constant and repoint the two
+        hardcoded `"summaries"` strings (`make_summaries.py`, `generate_speech.py`)
+        to it.
+      - **A1 migrate:** YES — physically move existing outputs into `data/`
+        (one-time) so skip-if-exists keeps working, nothing re-downloads.
+      - **B1 runners:** option (a) — move real runners to **`scripts/`**, keep
+        1-line root shims so `r`/`w`/`v`… still work from the repo root, no PATH.
+      - **Folder name:** `scripts/`.
+- [x] **T0.2** Reference inventory complete (verified by grep):
+      - **`lib/paths.py`** — the single source of truth. Constants to repoint:
+        `AUDIO_DIR`, `AUDIO_REENCODED_DIR`, `TRANSCRIPT_DIR`,
+        `GENERATED_TRANSCRIPT_DIR`, `TTS_OUTPUT_DIR`. Already under `data/`:
+        `DATA_DIR`, `WORDCLOUD_DIR`.
+      - **`code/*.py`** — all build dirs from `paths.*` (follow automatically):
+        `read_channel.py`, `read_transcript.py`, `list_playlists.py`,
+        `transcribe_audio.py`, `make_summaries.py`, `make_wordcloud.py`,
+        `reencode_audio.py`, `generate_speech.py`. **Hardcoded `"summaries"`**
+        (NOT via paths) in `make_summaries.py` and `generate_speech.py` — leave
+        as-is under option A1(a), but consider a `paths.SUMMARY_DIR` tidy-up.
+      - **`lib/youtube.py`** — defaults `output_dir or paths.AUDIO_DIR` /
+        `paths.TRANSCRIPT_DIR` (follow automatically).
+      - **`.gitignore`** — lists `audio/ audio_reencoded/ tts_output/ transcripts/
+        generated_transcripts/ data/` individually (+ `timestamped/ repos/`).
+        Collapse the moved ones under `data/` (already ignored); keep `summaries/`
+        tracked.
+      - **`.dockerignore`** — same list as `.gitignore`; collapse similarly.
+      - **Docs with output-path mentions to sweep in T5:**
+        - `README.md` — Colab note (`audio/`/`transcripts/`), read_channel output,
+          transcribe output (`generated_transcripts/`), select_by=all
+          (`audio/`), word cloud (`data/wordclouds/`), re-encode
+          (`audio/`→`audio_reencoded/`), TTS (`tts_output/`), repo layout block.
+        - `youtube.html` — Whisper STT text + Mermaid diagrams (`generated_transcripts/`,
+          `transcripts/`), summaries sequence diagram, word cloud diagram
+          (`data/wordclouds/`), status rows (item 3/4 mention `tts_output/`,
+          `audio_reencoded/`), repo-layout tree.
+        - `how_to_test.md` — expected paths in Phase C/W/R/D blocks
+          (`generated_transcripts\`, `data\wordclouds\`, `audio_reencoded\`,
+          `tts_output\`).
+        - `plan.md` — Section 4 repo-layout snippet + the Phase 0 checkbox.
+      - **`notebooks/yt_download.ipynb`** — uses `lib/` (`youtube.download_audio`
+        default dir), so it follows automatically; verify in T4.
 
-**Test & hand off (STOP for user feedback):** no code runs in T0. The deliverable
-is the locked decisions + the reference inventory. Hand the user the finalized
-decision list and grep inventory to review; wait for "looks right / go" before T1.
+**Test & hand off (STOP for user feedback):** no code ran in T0 (decisions +
+inventory only). **Deliverable = the decision list + inventory above.** Please
+review the four decisions (A1 summaries a/b, A1 migrate a/b, B1 runners a/b/c,
+folder name) and confirm or adjust. On "go", T1 edits `lib/paths.py`.
 
 ---
 
 ## Phase T1 — Repoint paths to `data/` (the core change) — TODO
 
-- [ ] **T1.1** Edit `lib/paths.py` — the single source of truth. Point the ignored
-      output dirs under `data/`:
+- [ ] **T1.1** Edit `lib/paths.py` — the single source of truth. Point ALL output
+      dirs under `data/`:
       `AUDIO_DIR = os.path.join("data","audio")`,
       `AUDIO_REENCODED_DIR = os.path.join("data","audio_reencoded")`,
       `TRANSCRIPT_DIR = os.path.join("data","transcripts")`,
       `GENERATED_TRANSCRIPT_DIR = os.path.join("data","generated_transcripts")`,
-      `TTS_OUTPUT_DIR = os.path.join("data","tts_output")`.
-      `DATA_DIR`/`WORDCLOUD_DIR` already correct. Keep `SUMMARY_DIR` at root
-      (per recommendation) — consider adding a `SUMMARY_DIR = "summaries"` constant
-      so the hardcoded `"summaries"` strings can reference `paths` too (tidy-up).
-- [ ] **T1.2** Because scripts build their dirs from `paths.*`, most update
-      automatically. Double-check the two hardcoded `"summaries"` spots
-      (`make_summaries.py`, `generate_speech.py`) and any user-facing "looked in
-      ..." messages that print folder names, so the messages match the new paths.
+      `TTS_OUTPUT_DIR = os.path.join("data","tts_output")`,
+      and add `SUMMARY_DIR = os.path.join("data","summaries")`.
+      `DATA_DIR`/`WORDCLOUD_DIR` already correct.
+- [ ] **T1.2** Repoint the two hardcoded `"summaries"` strings
+      (`make_summaries.py`, `generate_speech.py`) to `paths.SUMMARY_DIR`. Fix any
+      user-facing "looked in ..." messages that print folder names so they match
+      the new `data\...` paths. Scripts build the rest of their dirs from `paths.*`
+      so they update automatically.
 - [ ] **T1.3** Scripts `os.makedirs(..., exist_ok=True)` on their output dir, so
       `data/audio/` etc. are created on demand — confirm each tool still creates
       its dir (they use the constant, so yes; verify once).
@@ -182,58 +209,73 @@ python code\reencode_audio.py config\config_reencode.json
 
 ## Phase T2 — Move existing outputs + update ignore files — TODO
 
-- [ ] **T2.1** Physically move current outputs into `data/` (one-time), so
-      skip-if-exists keeps working and nothing re-downloads:
+- [ ] **T2.1** Physically move current git-IGNORED outputs into `data/`
+      (one-time), so skip-if-exists keeps working and nothing re-downloads:
       `audio/ audio_reencoded/ transcripts/ generated_transcripts/ tts_output/`
       → under `data/`. (These are git-ignored, so git sees no change.)
-- [ ] **T2.2** Update `.gitignore`: replace the root entries with `data/` (which
-      already ignores everything under it) — but keep `summaries/` tracked. Verify
-      `data/` still ignores the moved folders and that `data/wordclouds` +
-      `data/playlists.json` remain ignored as before.
-- [ ] **T2.3** Update `.dockerignore` similarly (it currently lists `audio/`,
-      `tts_output/`, etc. individually — collapse to `data/`).
+- [ ] **T2.2** Move the git-TRACKED `summaries/` with **`git mv summaries
+      data/summaries`** so git follows the rename (don't plain-move it, or git
+      would see a delete + untracked add that then gets ignored).
+- [ ] **T2.3** Update `.gitignore`: collapse the moved-output entries into `data/`,
+      then re-include the tracked summaries with a negation:
+      `data/` + `!data/summaries/` + `!data/summaries/**`. Keep
+      `data/wordclouds` + `data/playlists.json` ignored (they're not summaries).
+      (Order matters: the `data/` line before the `!` re-includes.)
+- [ ] **T2.4** Update `.dockerignore` similarly (collapse the individual output
+      folders to `data/`; the image doesn't need summaries either way).
 
 **Test & hand off (STOP for user feedback):** run these and report back before T3.
 ```cmd
 c
 git status
 git check-ignore data/audio/x.mp3
+git check-ignore data/summaries/foo.md
 ```
-**Expect:** `git status` shows **no new tracked output files** (the moved audio/
-transcripts/etc. stay ignored); `git check-ignore` **echoes** the path (= ignored).
-Also eyeball that the old root folders are gone and the files now live under
-`data\` (e.g. `dir data\audio`), and that `summaries\` is still at the root and
-still tracked. **Pass =** nothing tracked moved, outputs ignored under `data/`,
-`summaries/` untouched. Report back; then T3.
+**Expect:** `git status` shows the `summaries/ → data/summaries/` **renames**
+(tracked, R) and **no other new tracked output files**; `git check-ignore
+data/audio/x.mp3` **echoes** the path (ignored); `git check-ignore
+data/summaries/foo.md` prints **nothing** (NOT ignored = still tracked).
+Also eyeball `dir data\audio`, `dir data\summaries`, and that the old root
+folders are gone. **Pass =** summaries tracked under `data/summaries/`, other
+outputs ignored under `data/`, nothing tracked lost. Report back; then T3.
 
 ---
 
-## Phase T3 — Gather runners into `bin/` with root shims — TODO
+## Phase T3 — Gather runners into `scripts/` with root shims — TODO
 
-- [ ] **T3.1** Create `bin/` and move the real runners there: `bin/c.bat`,
-      `bin/r.bat`, ... and `bin/c.sh`, `bin/r.sh`, ... (all 10 of each). Update
-      each runner's internal path to the script if needed (they call
-      `python code\...` / `python code/...` from the repo root — since the shims
-      run them from root, the `code\...` paths still resolve; verify).
+- [ ] **T3.1** Create `scripts/` and move the real runners there: `scripts/c.bat`,
+      `scripts/r.bat`, ... and `scripts/c.sh`, `scripts/r.sh`, ... (all 10 of
+      each). The runners call `python code\...` / `python code/...`; since the
+      root shims invoke them from the repo root, those relative paths still
+      resolve — verify. (`conda activate` inside them is unaffected.)
 - [ ] **T3.2** Add tiny **root shims** so the one-letter UX is unchanged:
-      - `r.bat` (root) → `@echo off` + `call "%~dp0bin\r.bat" %*`
-      - `r.sh` (root) → `exec "$(dirname "$0")/bin/r.sh" "$@"`
-      (one per runner). Keep `.gitattributes` LF/CRLF rules applying to `bin/*.sh`
-      and the root `*.sh` shims.
-- [ ] **T3.3** Keep executable bits on all `.sh` (real + shim) via
-      `git update-index --chmod=+x`.
+      - `r.bat` (root) → `@echo off` + `call "%~dp0scripts\r.bat" %*`
+      - `r.sh` (root) → `#!/usr/bin/env bash` + `exec "$(dirname "$0")/scripts/r.sh" "$@"`
+      (one per runner). `.gitattributes` `*.sh`/`*.bat` rules already cover both
+      `scripts/*.sh` and the root `*.sh` shims (path-independent globs).
+- [ ] **T3.3** Keep executable bits on all `.sh` (real in `scripts/` + root shim)
+      via `git update-index --chmod=+x`.
 
-> Alternative if the user prefers **no shims** (B1 option b): move runners to
-> `bin/`, skip the shims, and document adding `bin/` to PATH. Simpler tree, but
-> `r` won't work from root until PATH is set.
+> Note (`scripts/` vs `code/`): the repo already has `code/` for the Python
+> tools; `scripts/` is only the thin runners. Keep them distinct.
 
-**Test:**
+**Test & hand off (STOP for user feedback):** run and report before T4.
 ```cmd
-r                    :: root shim -> bin\r.bat -> python code\read_channel.py
-wc config\config_wordcloud.json   :: shim forwards the arg
+r
 ```
-On Linux: `./r.sh`, `./w.sh config/config_transcribe.id.json`. Confirm the
-one-letter commands still work from the repo root and args pass through.
+```cmd
+wc config\config_wordcloud.json
+```
+On Linux/macOS:
+```cmd
+./r.sh
+```
+```cmd
+./w.sh config/config_transcribe.id.json
+```
+**Expect:** the one-letter commands still work from the repo root (root shim →
+`scripts\<x>.bat` → `python code\...`), and the config arg passes through.
+**Pass =** same behavior as before the move, from the repo root. Report back; T4.
 
 ---
 
@@ -244,8 +286,9 @@ one-letter commands still work from the repo root and args pass through.
       - `d` / `wc` → `data/wordclouds/*.word_cloud.json` (unchanged path).
       - `a config\config_reencode.json` → `data/audio_reencoded/...` (reads
         `data/audio/`).
-      - `v` → `data/tts_output/...` (reads `summaries/` + `data/transcripts/`).
-      - `s` → lists from `data/transcripts/` + `data/generated_transcripts/`.
+      - `v` → `data/tts_output/...` (reads `data/summaries/` + `data/transcripts/`).
+      - `s` → lists from `data/transcripts/` + `data/generated_transcripts/`,
+        checks `data/summaries/`.
       - `t` / `r` / `w` → write under `data/` (network-dependent; skip-if-exists
         should recognize the moved files).
 - [ ] **T4.2** Confirm skip-if-exists still triggers on the moved files (proves
@@ -298,8 +341,10 @@ nothing tracked moved unexpectedly.
 - **Single source of truth:** change `lib/paths.py` first; the scripts follow.
   Grep for the two hardcoded `"summaries"` strings — those are the only paths NOT
   routed through `paths`.
-- **`summaries/` stays tracked** (recommended) — don't bury it under the ignored
-  `data/` root, or git will stop tracking authored content.
+- **`summaries/` → `data/summaries/` but STAYS tracked** — the one subtlety:
+  `data/` is ignored, so a `.gitignore` negation (`!data/summaries/`,
+  `!data/summaries/**`) re-includes it, and the move uses `git mv`. Verify with
+  `git check-ignore data/summaries/x.md` printing NOTHING (= still tracked).
 - **Moves, not deletes:** T2 moves git-ignored outputs; never delete the
   originals. Verify with `git status` that no tracked file vanished.
 - **Preserve the one-letter UX:** whatever the runner reorg, typing `r` / `w` /

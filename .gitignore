@@ -9,14 +9,14 @@ env/
 .ipynb_checkpoints/
 
 # Project output / secrets
+# All generated outputs live under data/ and are ignored, EXCEPT data/summaries/
+# (authored content, kept tracked). We ignore data/'s CONTENTS (data/*) rather
+# than the data/ directory itself, so the negation below can re-include summaries
+# (a blanket `data/` prune would block re-inclusion). Order matters.
 repos/
-audio/
-audio_reencoded/
-tts_output/
-transcripts/
-generated_transcripts/
 timestamped/
-data/
+data/*
+!data/summaries/
 ignore/
 secrets.json
 cookies.txt

@@ -14,15 +14,10 @@ venv/
 env/
 .ipynb_checkpoints/
 
-# Regenerated outputs (git-ignored) — mount these at runtime, don't bake them in
-audio/
-audio_reencoded/
-tts_output/
-transcripts/
-generated_transcripts/
+# Outputs (all under data/) — mount at runtime, don't bake them into the image
+data/
 timestamped/
 repos/
-data/
 
 # Local-only / retired / secrets
 ignore/

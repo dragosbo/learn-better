@@ -201,22 +201,18 @@ the files haven't moved yet (T2 moves them). User confirmed the output is right.
 
 ---
 
-## Phase T2 — Move existing outputs + update ignore files — TODO
+## Phase T2 — Move existing outputs + update ignore files — DONE (awaiting user test)
 
-- [ ] **T2.1** Physically move current git-IGNORED outputs into `data/`
-      (one-time), so skip-if-exists keeps working and nothing re-downloads:
-      `audio/ audio_reencoded/ transcripts/ generated_transcripts/ tts_output/`
-      → under `data/`. (These are git-ignored, so git sees no change.)
-- [ ] **T2.2** Move the git-TRACKED `summaries/` with **`git mv summaries
-      data/summaries`** so git follows the rename (don't plain-move it, or git
-      would see a delete + untracked add that then gets ignored).
-- [ ] **T2.3** Update `.gitignore`: collapse the moved-output entries into `data/`,
-      then re-include the tracked summaries with a negation:
-      `data/` + `!data/summaries/` + `!data/summaries/**`. Keep
-      `data/wordclouds` + `data/playlists.json` ignored (they're not summaries).
-      (Order matters: the `data/` line before the `!` re-includes.)
-- [ ] **T2.4** Update `.dockerignore` similarly (collapse the individual output
-      folders to `data/`; the image doesn't need summaries either way).
+- [x] **T2.1** Moved the 5 git-IGNORED output folders into `data/`
+      (`audio audio_reencoded transcripts generated_transcripts tts_output`).
+- [x] **T2.2** `git mv summaries data/summaries` — git recorded 3 **renames** (R),
+      so the tracked summaries followed the move.
+- [x] **T2.3** `.gitignore`: used **`data/*` + `!data/summaries/`** (NOT `data/`).
+      Key fix: a blanket `data/` prune blocks re-inclusion of children, so
+      `!data/summaries/` had no effect and summaries were wrongly ignored;
+      ignoring the *contents* (`data/*`) lets the negation re-include summaries.
+- [x] **T2.4** `.dockerignore`: collapsed the individual output folders to
+      `data/` (the image mounts data at runtime; nothing under it needs baking in).
 
 **Test & hand off (STOP for user feedback):** run these and report back before T3.
 ```cmd

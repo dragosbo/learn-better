@@ -73,7 +73,7 @@ from lib import net  # noqa: E402
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSCRIPT_DIR = os.path.join(_REPO_ROOT, paths.TRANSCRIPT_DIR)
 GENERATED_DIR = os.path.join(_REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR)
-SUMMARY_DIR = os.path.join(_REPO_ROOT, "summaries")
+SUMMARY_DIR = os.path.join(_REPO_ROOT, paths.SUMMARY_DIR)
 OUTPUT_DIR = os.path.join(_REPO_ROOT, paths.TTS_OUTPUT_DIR)
 VOICE_DIR = os.path.join(OUTPUT_DIR, ".voices")  # downloaded .onnx models cache
 
@@ -381,7 +381,7 @@ def main():
     selected = pick_text(SELECT_BY, SELECT)
     if not selected:
         print(f"No text matched SELECT_BY={SELECT_BY!r} SELECT={SELECT!r}")
-        print(f"(looked in summaries\\, {paths.TRANSCRIPT_DIR}\\, "
+        print(f"(looked in {paths.SUMMARY_DIR}\\, {paths.TRANSCRIPT_DIR}\\, "
               f"{paths.GENERATED_TRANSCRIPT_DIR}\\)")
         return
 

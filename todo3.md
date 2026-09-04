@@ -170,40 +170,34 @@ folder name) and confirm or adjust. On "go", T1 edits `lib/paths.py`.
 
 ---
 
-## Phase T1 — Repoint paths to `data/` (the core change) — TODO
+## Phase T1 — Repoint paths to `data/` (the core change) — DONE, USER-VALIDATED
 
-- [ ] **T1.1** Edit `lib/paths.py` — the single source of truth. Point ALL output
-      dirs under `data/`:
-      `AUDIO_DIR = os.path.join("data","audio")`,
-      `AUDIO_REENCODED_DIR = os.path.join("data","audio_reencoded")`,
-      `TRANSCRIPT_DIR = os.path.join("data","transcripts")`,
-      `GENERATED_TRANSCRIPT_DIR = os.path.join("data","generated_transcripts")`,
-      `TTS_OUTPUT_DIR = os.path.join("data","tts_output")`,
-      and add `SUMMARY_DIR = os.path.join("data","summaries")`.
-      `DATA_DIR`/`WORDCLOUD_DIR` already correct.
-- [ ] **T1.2** Repoint the two hardcoded `"summaries"` strings
-      (`make_summaries.py`, `generate_speech.py`) to `paths.SUMMARY_DIR`. Fix any
-      user-facing "looked in ..." messages that print folder names so they match
-      the new `data\...` paths. Scripts build the rest of their dirs from `paths.*`
-      so they update automatically.
-- [ ] **T1.3** Scripts `os.makedirs(..., exist_ok=True)` on their output dir, so
-      `data/audio/` etc. are created on demand — confirm each tool still creates
-      its dir (they use the constant, so yes; verify once).
+- [x] **T1.1** Edited `lib/paths.py` (single source of truth). All output dirs now
+      under `data/`: `AUDIO_DIR=data\audio`, `AUDIO_REENCODED_DIR=data\audio_reencoded`,
+      `TRANSCRIPT_DIR=data\transcripts`, `GENERATED_TRANSCRIPT_DIR=data\generated_transcripts`,
+      `TTS_OUTPUT_DIR=data\tts_output`, added `SUMMARY_DIR=data\summaries`.
+      `DATA_DIR`/`WORDCLOUD_DIR` already correct. Docstring refreshed.
+- [x] **T1.2** Repointed the two hardcoded `"summaries"` strings
+      (`make_summaries.py`, `generate_speech.py`) to `paths.SUMMARY_DIR`, and fixed
+      the `generate_speech.py` "looked in ..." message to print `paths.SUMMARY_DIR`.
+      The rest build dirs from `paths.*` (auto-updated).
+- [x] **T1.3** Scripts `os.makedirs(..., exist_ok=True)` on their output dir (via
+      the constant), so `data/...` subdirs are created on demand. Verified paths
+      resolve; dir creation happens on first real write (T2/T4).
 
-**Test & hand off (STOP for user feedback):** I'll give you exact commands; run
-them and report back before T2.
+**Test & hand off — DONE, USER-VALIDATED.**
 ```cmd
 c
-python -c "from lib import paths; print(paths.AUDIO_DIR, paths.TRANSCRIPT_DIR, paths.GENERATED_TRANSCRIPT_DIR, paths.AUDIO_REENCODED_DIR, paths.TTS_OUTPUT_DIR)"
+python -c "from lib import paths; print(paths.AUDIO_DIR, paths.TRANSCRIPT_DIR, paths.GENERATED_TRANSCRIPT_DIR, paths.AUDIO_REENCODED_DIR, paths.TTS_OUTPUT_DIR, paths.SUMMARY_DIR)"
 ```
-**Expect:** all print the `data\...` forms (e.g. `data\audio`, `data\transcripts`,
-`data\tts_output`). Then, to confirm a tool resolves its dir under `data/`, run a
-non-destructive lister, e.g.:
+✅ Printed all `data\...` forms (`data\audio data\transcripts
+data\generated_transcripts data\audio_reencoded data\tts_output data\summaries`).
 ```cmd
 python code\reencode_audio.py config\config_reencode.json
 ```
-**Expect:** the "looked in ..." / selection line now points under `data\audio\`.
-**Pass =** paths are all under `data\`. Report back; then we do T2.
+✅ Loaded the config, then `No audio matched ... (looked in ...\data\audio\)` —
+the "looked in `data\audio\`" confirms the repoint; "no match" is correct because
+the files haven't moved yet (T2 moves them). User confirmed the output is right.
 
 ---
 

@@ -48,7 +48,7 @@ from lib import paths  # noqa: E402
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSCRIPT_DIR = os.path.join(_REPO_ROOT, paths.TRANSCRIPT_DIR)
 GENERATED_DIR = os.path.join(_REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR)
-SUMMARY_DIR = os.path.join(_REPO_ROOT, "summaries")
+SUMMARY_DIR = os.path.join(_REPO_ROOT, paths.SUMMARY_DIR)
 SKILL_FILE = "skill_summary.md"          # relative path, for the printed hint
 
 CAPTION_SUFFIX = ".en.txt"               # transcripts/<base>.en.txt

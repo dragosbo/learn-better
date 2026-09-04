@@ -209,6 +209,31 @@ isolation.
 - [ ] Optional Streamlit front-end (the author already explores Streamlit elsewhere).
 - [ ] Light CI: lint + "notebooks execute" smoke test.
 
+### Phase 6 — Deployment & packaging (reproducible setup anywhere)
+> Distinct from Phase 4's "how to run it" quick-start: this is a full,
+> comparison-driven guide to reproducibly standing up the environment on any
+> target (local, container, or cloud), plus the container/image scripts to do it.
+> Detailed research + copy-paste scripts live in `how_to_deploy.md` (repo root).
+- [x] **Deployment matrix documented** — `how_to_deploy.md` ranks 12 platforms by
+      complexity vs. capabilities: local (conda / pip+venv / uv), containers
+      (VS Code & Kiro dev containers, Docker, Podman), and cloud (Colab,
+      Codespaces, Gitpod; Replit/Binder noted as not-recommended). Includes
+      ready-to-use `Dockerfile.standalone`, a patched `.devcontainer/Dockerfile`,
+      `colab_setup.py`, `setup_codespaces.sh`, and `podman_setup.sh`.
+- [ ] **Fix the devcontainer ffmpeg gap** — `how_to_deploy.md` confirms
+      `.devcontainer/Dockerfile` does NOT install `ffmpeg` (the #1 setup-failure
+      cause). Apply the documented `apt-get install ffmpeg` layer (and consider
+      dropping the unused `azure-cli` feature + adding a HuggingFace model-cache
+      volume). Small, high-value.
+- [ ] **Add the standalone container assets to the repo** (optional) — commit
+      `Dockerfile.standalone` (and a `.dockerignore`) so Docker/Podman/CI users
+      have a lighter, IDE-free image, per `how_to_deploy.md` Part 4.
+- [ ] **Link `how_to_deploy.md` from README / youtube.html** (optional) so the
+      deployment guide is discoverable next to the "How to run it" quick-start.
+- [ ] **Note on `.bat` helpers vs. Linux** (optional) — document bash equivalents
+      (or provide `.sh` runners) since the one-letter `.bat` files don't work
+      inside the Linux containers/cloud shells.
+
 ---
 
 ## 4. Repository layout
@@ -249,10 +274,14 @@ The next high-value moves, in order:
 1. **TTS voice extras** (`todo` item 6, optional) — a higher-quality engine
    (Kokoro) and/or voice cloning (XTTS/Chatterbox). The baseline (Piper, with
    selectable voice + speed) is done; these are deferred niceties (todo2 D4).
-2. **Consolidate outputs** under a single `data/` root, or a self-contained
+2. **Fix the devcontainer ffmpeg gap** (Phase 6) — quick, high-value: the
+   `.devcontainer/Dockerfile` is missing `ffmpeg` (confirmed in
+   `how_to_deploy.md`), which breaks audio/mp3 work in Dev Containers and
+   Codespaces. A one-layer `apt-get install ffmpeg` fix.
+3. **Consolidate outputs** under a single `data/` root, or a self-contained
    summarization notebook (local HF model / API prompt) if you want summaries
    without the manual Kiro paste step.
-3. **Docs / consolidation** — the "video → mindmap" walkthrough and the
+4. **Docs / consolidation** — the "video → mindmap" walkthrough and the
    prompt-building doc (Phase 4).
 
 (**Word cloud** (item 7), the **audio-bitrate helper** (item 4), and the **TTS

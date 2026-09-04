@@ -28,7 +28,8 @@ single source of truth for what remains to be done.
 | `requirements.txt` | fixed | Typo fixed; pinned; added `yt-dlp`, `ipykernel`, `faster-whisper`; documented `ffmpeg` as a system dep. |
 | `code/make_wordcloud.py` | **working** | Transcript → `data/wordclouds/*.word_cloud.json` (data only); batch + merge + single-language guard; JSON-config driven (`d.bat` / `wc.bat`). Rendered by `wordcloud.html` (wordcloud2.js). |
 | `code/reencode_audio.py` | **working** | Re-encode `audio/` → `audio_reencoded/*.<bitrate>.<ext>` via ffmpeg (free; no new deps); name/id/all selection, skip-if-exists, failed-run handling; JSON-config driven (`a.bat`). Item 4. |
-| Remaining (TTS) | not started | The last big `todo.md` item; STT + translation + summarization prep + word cloud + audio-bitrate now exist as scripts. |
+| `code/generate_speech.py` | **working** | Text → speech via Piper (free, MIT, CPU-only): voice a summary/transcript to `tts_output/*.wav`; selectable voice + speed (`length_scale`), name/id/all selection, skip-if-exists; JSON-config driven (`v.bat`). Item 3 (baseline). |
+| Remaining (item 6 extras) | partial / optional | Baseline TTS done; higher-quality/cloning voices deferred. `data/` consolidation and a self-contained summarization notebook still open. |
 
 ### Fixes already applied
 - **`requirements.txt`**: corrected `youtoube-transcript-api` → `youtube-transcript-api`,
@@ -179,9 +180,19 @@ isolation.
       ECharts could be swapped in).
 
 ### Phase 3 — Text → Speech (`todo` items 3, 6)
-- [ ] `04_text_to_speech.ipynb` — baseline TTS (`edge-tts`, free, many voices).
-- [ ] Extend with **special / custom voices** (item 6) — voice selection, or a
-      higher-quality engine (e.g. Coqui TTS) documented as an optional heavier dep.
+> Delivered as a **script** (not a notebook), matching the rest of the repo:
+> `code/generate_speech.py` (`v.bat`). Piper chosen over edge-tts as the baseline
+> — fully local, MIT, CPU-only, no cloud/ToS caveats (see the archived `tts.md`
+> research and `todo2.md` for the decision).
+- [x] **Baseline TTS** (item 3) — `generate_speech.py` voices a summary /
+      caption / Whisper transcript to `tts_output/<base>.<voice>[.s<scale>].wav`
+      via Piper (free, CPU-only, no GPU/API). name/id/all selection (dedupe
+      preferring summary > caption > whisper), skip-if-exists, JSON-config
+      (`config/config_tts.json`). Voice model auto-downloads on first use.
+- [~] **Special / custom voices** (item 6) — partial: the **voice** and speaking
+      **speed** (`length_scale`: 0.9/1.0/1.15) are selectable now (any free Piper
+      voice, incl. `fr_FR-*`/`ro_RO-*`). A higher-quality engine (Kokoro) and
+      voice **cloning** (XTTS/Chatterbox) remain deferred (todo2 Phase D4).
 
 ### Phase 4 — Knowledge consolidation & docs (`todo` section B)
 - [ ] "Video → mindmap" walkthrough (Markdown; link the recorded video when ready).
@@ -235,17 +246,21 @@ archived in `ignore/`.)
 
 The next high-value moves, in order:
 
-1. **Text to speech** (`todo` items 3, 6) — `edge-tts` (free, many voices) as a
-   baseline; then special/custom voices.
+1. **TTS voice extras** (`todo` item 6, optional) — a higher-quality engine
+   (Kokoro) and/or voice cloning (XTTS/Chatterbox). The baseline (Piper, with
+   selectable voice + speed) is done; these are deferred niceties (todo2 D4).
 2. **Consolidate outputs** under a single `data/` root, or a self-contained
    summarization notebook (local HF model / API prompt) if you want summaries
    without the manual Kiro paste step.
+3. **Docs / consolidation** — the "video → mindmap" walkthrough and the
+   prompt-building doc (Phase 4).
 
-(**Word cloud** (`todo` item 7) and the **audio-bitrate helper** (`todo` item 4)
-are now done. Word cloud: a data-only Python script writes `word_cloud.json` and
-`wordcloud.html` renders it with wordcloud2.js, no matplotlib. Audio bitrate:
-`reencode_audio.py` (`a.bat`) re-encodes with ffmpeg into `audio_reencoded/`,
-no new deps — see the Phase 1 checklist.)
+(**Word cloud** (item 7), the **audio-bitrate helper** (item 4), and the **TTS
+baseline** (item 3) are now done. Word cloud: a data-only Python script writes
+`word_cloud.json`, rendered by `wordcloud.html` (wordcloud2.js), no matplotlib.
+Audio bitrate: `reencode_audio.py` (`a.bat`) re-encodes with ffmpeg into
+`audio_reencoded/`. TTS: `generate_speech.py` (`v.bat`) voices text with Piper
+into `tts_output/` — all free, no new heavy deps.)
 
 (The old `scrapetube`/API-key script `get_my_playlists.py` has been retired to
 `ignore/`, so no migration of it is needed; the no-key `yt-dlp` tools cover its

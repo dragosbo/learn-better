@@ -38,7 +38,15 @@ wc config\config_wordcloud.merge.json      :: merge: many transcripts -> one clo
 
 a                                          :: R1 - re-encode audio at a bitrate
 a config\config_reencode.json              :: R2 - batch re-encode (name/id/all)
+
+v                                          :: D1 - text-to-speech (summary -> wav)
+v config\config_tts.json                   :: D2 - batch TTS (name/id/all)
+v config\config_tts.speed09.json           :: faster narration (length_scale 0.9)
 ```
+
+> Tip: type these commands ALONE (no inline `::` note after them). In cmd, `::`
+> is only a comment at the start of a line, so `v :: something` passes `::` as an
+> argument. The `::` notes above are just annotations for reading, not to paste.
 
 If the `c` / `w` / `s` shortcuts are not on your PATH, use the `.bat` name or the
 script directly, e.g.:
@@ -284,6 +292,65 @@ partial output. (Delete the throwaway configs after.)
 
 ---
 
+## Phase D — Text to speech (`v` + generate_speech.py)
+
+Turns a text source (summary / caption / Whisper transcript) into narrated audio
+with **Piper** (free, MIT, CPU-only). Output goes to
+`tts_output/<base>.<voice>[.s<scale>].wav` (skip-if-exists). Inputs are never
+modified. Local prerequisite: `pip install piper-tts` (the voice model downloads
+on first use into `tts_output/.voices/`).
+
+> Type `v` ALONE (or `v config\...json`). Don't paste inline `::` notes after it.
+
+### D1 — synthesize one file
+
+```cmd
+v
+```
+**Expect:** `Selected 1 text file(s) ... voice 'en_US-lessac-medium' -> wav`,
+then (first run) a voice download, then
+`-> en_US-lessac-medium wav (speed 1.0): ...` and a written line. The file lands
+in `tts_output/` (it voices the *summary*, per summary > caption > whisper).
+Second run → `= exists, skipping`. Check it:
+```cmd
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "tts_output\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en_US-lessac-medium.wav"
+```
+→ duration > 0; open the wav in any player to hear it.
+
+### D2 — batch selection (config)
+
+```cmd
+v config\config_tts.json
+```
+**Expect:** one `.wav` per selected text file, ending with a tally like
+`2 synthesized, 0 skipped, 0 empty, 0 failed`. `select_by:"id"` picks by the
+`[<id>]`; `select_by:"all"` voices everything (slow).
+
+### Speed — length_scale (faster / slower)
+
+`length_scale` sets speaking speed: it multiplies audio *length*, so **< 1.0 =
+faster** (shorter), **> 1.0 = slower** (longer). Non-1.0 speeds add a `.s<scale>`
+tag to the name so they coexist.
+```cmd
+v config\config_tts.speed09.json
+```
+**Expect:** `... .en_US-lessac-medium.s0.9.wav` — audibly faster and shorter in
+duration than the normal-speed file (confirm with `ffprobe ... duration`).
+
+### D3 — bad input should fail cleanly (no traceback)
+
+```cmd
+v config\<length_scale=fast>.json  :: -> "!! Invalid length_scale 'fast'. ..."
+v config\<engine=nope>.json        :: -> "!! Invalid engine ... only 'piper'"
+v config\<voice=en_XX-nope>.json   :: -> "! voice download failed: ...", no partial
+v config\<select=zzz...>.json      :: -> "No text matched SELECT_BY=..."
+```
+**Expect:** each bad-input case prints a clear `!!`/`!` message and exits without
+a Python traceback; a bad voice leaves no partial file. (Delete the throwaway
+configs after.)
+
+---
+
 ## Quick reference — all runners
 
 | Cmd | Script | Purpose |
@@ -297,6 +364,7 @@ partial output. (Delete the throwaway configs after.)
 | `d` | `make_wordcloud.py` | One transcript -> `word_cloud.json` (uses the script's `INPUT`) |
 | `wc` | `make_wordcloud.py` | Batch/merge word clouds; `wc config\config_wordcloud.json` |
 | `a` | `reencode_audio.py` | Re-encode audio at a bitrate; `a config\config_reencode.json` |
+| `v` | `generate_speech.py` | Text to speech via Piper; `v config\config_tts.json` |
 
 ## Whisper config files (in `config/`)
 
@@ -324,3 +392,10 @@ partial output. (Delete the throwaway configs after.)
 | File | mode | What it tests |
 |------|------|---------------|
 | `config_reencode.json` | select_by=name, 96k mp3 | Default: re-encode the Git & GitHub clip to 96 kbps |
+
+## TTS config files (in `config/`)
+
+| File | mode | What it tests |
+|------|------|---------------|
+| `config_tts.json` | select_by=name, voice en_US-lessac-medium, 1.0 speed | Default: voice the Git & GitHub summary to wav |
+| `config_tts.speed09.json` | length_scale 0.9 | Faster narration; output name gets a `.s0.9` tag |

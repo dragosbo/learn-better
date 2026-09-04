@@ -133,7 +133,8 @@
     <div class="card"><h4>Whisper STT</h4><p>Speech-to-text (and translate-to-English) for caption-less clips, no API key.</p></div>
     <div class="card"><h4>Summarize</h4><p>Turn caption or Whisper transcripts into structured summaries via a reusable skill.</p></div>
     <div class="card"><h4>Word cloud</h4><p>Transcript → <code>word_cloud.json</code>, rendered client-side (wordcloud2.js). Batch + merge.</p></div>
-    <div class="card"><h4>Learn</h4><p>Roadmap toward TTS and Obsidian mind-maps.</p></div>
+    <div class="card"><h4>Text to speech</h4><p>Voice a summary/transcript with Piper (free, CPU-only). Selectable voice + speed.</p></div>
+    <div class="card"><h4>Learn</h4><p>Roadmap toward Obsidian mind-maps and consolidation.</p></div>
   </div>
 </section>
 
@@ -446,6 +447,7 @@ python code/read_channel.py</code></pre>
     <tr><td><kbd>d</kbd></td><td><code>make_wordcloud.py</code></td><td>One transcript → <code>word_cloud.json</code> (uses the script's <code>INPUT</code>).</td></tr>
     <tr><td><kbd>wc</kbd></td><td><code>make_wordcloud.py</code></td><td>Batch/merge word clouds; <code>wc config\config_wordcloud.json</code>.</td></tr>
     <tr><td><kbd>a</kbd></td><td><code>reencode_audio.py</code></td><td>Re-encode audio at a target bitrate; <code>a config\config_reencode.json</code>.</td></tr>
+    <tr><td><kbd>v</kbd></td><td><code>generate_speech.py</code></td><td>Text to speech via Piper; <code>v config\config_tts.json</code> (voice/speed configurable).</td></tr>
   </table>
   <p>Configure the source at the top of the script (set ONE, leave the others <code>None</code>):</p>
 <pre><code>PLAYLIST_ID = "PLxxxxxxxx"          # a playlist
@@ -673,7 +675,7 @@ flowchart LR
     <tr><td><code>requirements.txt</code> fixed, pinned, ffmpeg documented</td><td class="status done">Done</td></tr>
     <tr><td>Dev Container aligned to Python 3.12</td><td class="status done">Done</td></tr>
     <tr><td>Short-URL and output-folder bug fixes</td><td class="status done">Done</td></tr>
-    <tr><td>Helper batch files (<code>c/r/t/s/p/w/d/wc/a</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Helper batch files (<code>c/r/t/s/p/w/d/wc/a/v</code>)</td><td class="status done">Done</td></tr>
     <tr><td>Word cloud (<code>make_wordcloud.py</code> + <code>wordcloud.html</code>)</td><td class="status done">Done</td></tr>
     <tr><td>Reusable <code>lib/</code> package (net, textutil, paths, youtube)</td><td class="status done">Done</td></tr>
     <tr><td>Playlists tool (<code>list_playlists.py</code>) &rarr; <code>data/playlists.json</code></td><td class="status done">Done</td></tr>
@@ -695,10 +697,10 @@ flowchart LR
     <tr><td>Speech to text (Whisper)</td><td>todo #1</td><td class="status done">Done — <code>transcribe_audio.py</code> (<kbd>w</kbd>), ~95% vs. captions</td></tr>
     <tr><td>Speech to translated text</td><td>todo #2</td><td class="status done">Done — <code>task="translate"</code> (English only, Whisper's fixed target)</td></tr>
     <tr><td>Reusable <code>lib/</code> + playlists tool</td><td>plan Phase 0 / A</td><td class="status done">Done — <code>lib/</code>, <code>list_playlists.py</code> (<kbd>p</kbd>)</td></tr>
-    <tr><td>Text to speech</td><td>todo #3</td><td class="status todo">To do</td></tr>
+    <tr><td>Text to speech</td><td>todo #3</td><td class="status done">Done — <code>generate_speech.py</code> (<kbd>v</kbd>) voices a summary/transcript to <code>tts_output/</code> via Piper (free, MIT, CPU-only, no GPU); name/id/all selection, adjustable voice + speed (<code>length_scale</code>), skip-if-exists</td></tr>
     <tr><td>Audio to audio at a different bit rate</td><td>todo #4</td><td class="status done">Done — <code>reencode_audio.py</code> (<kbd>a</kbd>) re-encodes <code>audio/</code> → <code>audio_reencoded/*.&lt;bitrate&gt;.&lt;ext&gt;</code> via ffmpeg (free); name/id/all selection, skip-if-exists, no extra deps</td></tr>
     <tr><td>Text summarization notebook</td><td>todo #5</td><td class="status partial">Partial — <code>make_summaries.py</code> (<kbd>s</kbd>) reads caption + Whisper transcripts and hands off to Kiro; standalone notebook still open</td></tr>
-    <tr><td>Text to speech with special voices</td><td>todo #6</td><td class="status todo">To do</td></tr>
+    <tr><td>Text to speech with special voices</td><td>todo #6</td><td class="status partial">Partial — voice + speed are selectable now (any free Piper voice, incl. fr/ro; <code>length_scale</code>); optional higher-quality engine (Kokoro) and voice cloning (XTTS/Chatterbox) remain deferred</td></tr>
     <tr><td>Create word cloud</td><td>todo #7</td><td class="status done">Done — <code>make_wordcloud.py</code> (<kbd>d</kbd>/<kbd>wc</kbd>) → <code>word_cloud.json</code>, rendered by <code>wordcloud.html</code> (wordcloud2.js); batch + merge + language guard, no matplotlib</td></tr>
     <tr><td>Video &rarr; mindmap recording</td><td>todo notes</td><td class="status todo">To do</td></tr>
     <tr><td>Prompt-building logic doc</td><td>todo notes</td><td class="status todo">To do</td></tr>
@@ -710,16 +712,16 @@ flowchart LR
   <div class="mermaid">
 graph TD
   P0["Phase 0 - Foundation<br/>downloader + transcripts + lib/ (done)"]
-  P1["Phase 1 - Audio to Text<br/>Whisper STT + translate (done); bitrate open"]
+  P1["Phase 1 - Audio to Text<br/>Whisper STT + translate + bitrate (done)"]
   P2["Phase 2 - Text to Knowledge<br/>summarization prep + word cloud (done)"]
-  P3["Phase 3 - Text to Speech<br/>edge-tts, special voices"]
+  P3["Phase 3 - Text to Speech<br/>Piper baseline done; voices/cloning optional"]
   P4["Phase 4 - Consolidation<br/>mindmap, Obsidian, prompt docs"]
   P5["Phase 5 - Polish<br/>Streamlit, CI (optional)"]
   P0 --> P1 --> P2 --> P3 --> P4 --> P5
   style P0 fill:#123024,stroke:#38d39f,color:#e7ecf5
   style P1 fill:#123024,stroke:#38d39f,color:#e7ecf5
   style P2 fill:#1a2b2f,stroke:#38d39f,color:#e7ecf5
-  style P3 fill:#171e2e,stroke:#4f9cff,color:#e7ecf5
+  style P3 fill:#1a2b2f,stroke:#38d39f,color:#e7ecf5
   style P4 fill:#171e2e,stroke:#4f9cff,color:#e7ecf5
   style P5 fill:#171e2e,stroke:#9aa7bd,color:#e7ecf5
   </div>
@@ -746,6 +748,7 @@ graph TD
 &#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s.bat)
 &#9474;  &#9500;&#9472; make_wordcloud.py       # transcript -> word_cloud.json (d.bat / wc.bat)
 &#9474;  &#9500;&#9472; reencode_audio.py       # re-encode audio at a target bitrate (a.bat)
+&#9474;  &#9500;&#9472; generate_speech.py      # text -> speech via Piper (v.bat)
 &#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader
 &#9474;  &#9492;&#9472; languages.json          # subtitle languages to fetch (en, fr, ro)
 &#9500;&#9472; lib/                       # reusable helpers: net, textutil, paths, youtube
@@ -753,16 +756,17 @@ graph TD
 &#9500;&#9472; .devcontainer/             # Codespaces / Dev Container (Python 3.12)
 &#9500;&#9472; audio/                     # downloaded audio (git-ignored)
 &#9500;&#9472; audio_reencoded/           # re-encoded audio at a target bitrate (git-ignored)
+&#9500;&#9472; tts_output/                # text-to-speech audio + .voices/ cache (git-ignored)
 &#9500;&#9472; transcripts/               # caption transcripts (git-ignored)
 &#9500;&#9472; generated_transcripts/     # Whisper transcripts (git-ignored)
 &#9500;&#9472; summaries/                 # AI-generated summaries (tracked)
 &#9500;&#9472; data/                      # e.g. playlists.json (git-ignored)
-&#9500;&#9472; config/                    # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json
+&#9500;&#9472; config/                    # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
 &#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
 &#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, mini_todo.md, notes
 &#9500;&#9472; wordcloud.html             # renders a word_cloud.json (wordcloud2.js)
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
-&#9500;&#9472; c.bat r.bat t.bat s.bat p.bat w.bat d.bat wc.bat a.bat  # helper runners
+&#9500;&#9472; c.bat r.bat t.bat s.bat p.bat w.bat d.bat wc.bat a.bat v.bat  # helper runners
 &#9500;&#9472; requirements.txt
 &#9500;&#9472; plan.md                    # roadmap and analysis (single source of truth)
 &#9492;&#9472; README.md</code></pre>

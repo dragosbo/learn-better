@@ -12,6 +12,7 @@ env/
 repos/
 audio/
 audio_reencoded/
+tts_output/
 transcripts/
 generated_transcripts/
 timestamped/

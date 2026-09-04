@@ -1,0 +1,10 @@
+{
+  "_comment": "Text-to-speech config (todo2 items 3, 6 — baseline). select_by is one of name|id|all over the text folders (summaries/, transcripts/, generated_transcripts/). For 'name', select is case-insensitive substrings of the file name; for 'id', select is 11-char YouTube ids (the [<id>] in the name); for 'all', every text file is voiced (slow). When several sources exist for one video, ONE is voiced per id, preferring summary > caption transcript > Whisper transcript. engine is 'piper' (the free CPU-only baseline). voice is a Piper voice id (e.g. 'en_US-lessac-medium'; fr_FR-* / ro_RO-* voices also exist); the .onnx model downloads on first use into tts_output/.voices/. format is 'wav' (Piper native) or 'mp3' (converted via ffmpeg). length_scale sets the speaking speed: >1 slower, <1 faster (handy presets 0.9 faster, 1.0 normal, 1.15 slower/clearer); non-1.0 speeds add a .s<scale> tag to the output name so speeds coexist. max_chars optionally caps very long inputs for a quick test (null = whole file). Outputs go to tts_output/<base>.<voice>[.s<scale>].<ext> (skip-if-exists); text inputs are never modified.",
+  "select_by": "name",
+  "select": ["Git and GitHub"],
+  "engine": "piper",
+  "voice": "en_US-lessac-medium",
+  "format": "wav",
+  "length_scale": 1.0,
+  "max_chars": null
+}

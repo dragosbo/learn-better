@@ -1,0 +1,10 @@
+{
+  "_comment": "TTS at a FASTER speaking speed (length_scale 0.9). Same as config_tts.json but quicker narration. Output name carries the speed: tts_output/<base>.<voice>.s0.9.wav (the .s<scale> tag is added because length_scale != 1.0, so it won't collide with the normal-speed 1.0 file). Edit select_by/select to pick which text to voice.",
+  "select_by": "name",
+  "select": ["Git and GitHub"],
+  "engine": "piper",
+  "voice": "en_US-lessac-medium",
+  "format": "wav",
+  "length_scale": 0.9,
+  "max_chars": null
+}

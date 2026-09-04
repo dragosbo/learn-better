@@ -45,3 +45,10 @@ ipykernel>=6.29,<7
 # the model weights from Hugging Face on first use, and needs ffmpeg (already
 # a system dependency above).
 faster-whisper>=1.0
+
+# Text-to-speech baseline (Phase D): turn transcripts/summaries into narrated
+# audio. Piper is MIT-licensed, CPU-only (no GPU), no API key. It downloads a
+# small per-voice .onnx model on first use into tts_output/.voices/. Optional
+# mp3 output reuses the ffmpeg system dependency above. Used by
+# code/generate_speech.py (v.bat).
+piper-tts>=1.2

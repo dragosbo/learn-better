@@ -20,6 +20,7 @@ roadmap.
 | `curl_cffi` | Powers yt-dlp's browser **impersonation** (TLS fingerprint). Required, without it YouTube blocks subtitle/format fetches (bot-check, empty subtitle responses). |
 | `youtube-transcript-api` | Fetch video transcripts/subtitles. |
 | `faster-whisper` | Local, no-API-key speech-to-text (and translate-to-English) for clips whose captions are disabled. CPU-friendly (`int8`); needs `ffmpeg`. Used by `transcribe_audio.py` (`w.bat`). |
+| `piper-tts` | Local, no-API-key **text-to-speech** (MIT, CPU-only, no GPU). Turns a transcript/summary into narrated audio. Downloads a small per-voice `.onnx` model on first use. Used by `generate_speech.py` (`v.bat`). |
 | `pandas` | Metadata tables/dataframes. |
 | `ipykernel` | Lets the Jupyter notebooks run inside this environment. |
 
@@ -324,6 +325,9 @@ Helper batch files are provided for convenience (run them from the repo root):
 - `a.bat` — activates the env and runs `code\reencode_audio.py` to re-encode
   audio at a different bitrate (`a`, or `a config\config_reencode.json`); see
   "Audio re-encode / bitrate" below.
+- `v.bat` — activates the env and runs `code\generate_speech.py` to turn a
+  transcript/summary into narrated audio (`v`, or `v config\config_tts.json`);
+  see "Text to speech" below.
 
 ### List your playlists (no API key)
 
@@ -609,6 +613,60 @@ Verify a result played the way you expect, or check its bitrate with `ffprobe`
 ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "audio_reencoded\<file>.96kbps.mp3"
 ```
 
+### Text to speech (`v.bat`)
+
+Turn study material back into audio: `code/generate_speech.py` reads a text
+source (a `summaries/*.summary.md`, a `transcripts/` caption file, or a
+`generated_transcripts/` Whisper file), synthesizes narration with the free,
+local **Piper** engine, and writes a `.wav` to `tts_output/`. This is the
+opposite direction of the Whisper step (text → audio).
+
+Free tooling only: **Piper** is MIT-licensed, CPU-only, no GPU, no API key, no
+paid service (`pip install piper-tts`). On first use it downloads a small
+per-voice `.onnx` model into `tts_output/.voices/` (cached after). Optional
+`mp3` output reuses the ffmpeg binary the project already requires.
+
+Run it with the default config (Git & GitHub summary, `en_US-lessac-medium`
+voice, wav):
+
+```cmd
+v
+```
+
+Or pass an explicit config:
+
+```cmd
+v config\config_tts.json
+```
+
+Config keys (`config/config_tts.json`):
+
+- **`select_by`** — `name` (case-insensitive substrings of the file name, in
+  `select`) | `id` (11-char YouTube ids, the `[<id>]` in the name, in `select`) |
+  `all` (every text file, slow). When several sources exist for one video, ONE is
+  voiced per id, preferring **summary > caption transcript > Whisper transcript**.
+- **`voice`** — a Piper voice id (default `en_US-lessac-medium`). Many free voices
+  exist, including `fr_FR-*` and `ro_RO-*`; changing this downloads that voice on
+  first use.
+- **`length_scale`** — speaking **speed**: it multiplies the audio *length*, so
+  **below 1.0 = faster** (shorter audio), **above 1.0 = slower** (longer). Presets:
+  `0.9` faster, `1.0` normal, `1.15` slower/clearer. A non-1.0 value adds a
+  `.s<scale>` tag to the output name so speeds coexist. (See
+  `config/config_tts.speed09.json` for a ready-made faster preset.)
+- **`format`** — `wav` (Piper native) or `mp3` (converted via ffmpeg).
+- **`max_chars`** — optional cap on input length for a quick test (`null` = whole
+  file).
+
+Output files are named `tts_output/<base>.<voice>[.s<scale>].<ext>` (e.g.
+`... .en_US-lessac-medium.wav`, or `... .en_US-lessac-medium.s0.9.wav` at 0.9
+speed). Re-running **skips** files that already exist. Output goes to
+`tts_output/` (git-ignored). Open a result in any player, or check it with
+`ffprobe`:
+
+```cmd
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "tts_output\<file>.wav"
+```
+
 ### Download audio from YouTube (legacy)
 
 `pytube`-based downloader for a search, a public playlist, or single videos.
@@ -732,6 +790,7 @@ learn-better/
 │   ├── make_summaries.py      # lists transcripts needing a summary (used by s.bat)
 │   ├── make_wordcloud.py      # transcript -> word_cloud.json (d.bat / wc.bat)
 │   ├── reencode_audio.py      # re-encode audio at a target bitrate (a.bat)
+│   ├── generate_speech.py     # text -> speech via Piper (v.bat)
 │   ├── youtube_download.py    # legacy pytube audio downloader
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
 ├── lib/                 # reusable helpers: net, textutil, paths, youtube
@@ -739,11 +798,12 @@ learn-better/
 ├── .devcontainer/       # Codespaces / Dev Container (Python 3.12)
 ├── audio/               # downloaded audio (git-ignored)
 ├── audio_reencoded/     # re-encoded audio at a target bitrate (git-ignored)
+├── tts_output/          # text-to-speech audio + .voices/ cache (git-ignored)
 ├── transcripts/         # saved caption transcripts (git-ignored)
 ├── generated_transcripts/ # Whisper transcripts (git-ignored)
 ├── summaries/           # AI-generated summaries (tracked by git)
 ├── data/                # playlists.json + wordclouds/*.word_cloud.json (git-ignored)
-├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json
+├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
 ├── ignore/              # git-ignored: retired code + todo.md, mini_todo.md, notes
 ├── wordcloud.html       # renders a word_cloud.json (wordcloud2.js)
@@ -757,6 +817,7 @@ learn-better/
 ├── d.bat                # activate env + run make_wordcloud.py (one transcript)
 ├── wc.bat               # activate env + run make_wordcloud.py (config: batch/merge)
 ├── a.bat                # activate env + run reencode_audio.py (audio bitrate)
+├── v.bat                # activate env + run generate_speech.py (text to speech)
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

@@ -27,7 +27,8 @@ single source of truth for what remains to be done.
 | `.devcontainer/` | fixed | Codespaces-ready; Python versions were mismatched (now aligned to 3.12). |
 | `requirements.txt` | fixed | Typo fixed; pinned; added `yt-dlp`, `ipykernel`, `faster-whisper`; documented `ffmpeg` as a system dep. |
 | `code/make_wordcloud.py` | **working** | Transcript → `data/wordclouds/*.word_cloud.json` (data only); batch + merge + single-language guard; JSON-config driven (`d.bat` / `wc.bat`). Rendered by `wordcloud.html` (wordcloud2.js). |
-| Remaining (TTS, bitrate) | not started | The last `todo.md` items; STT + translation + summarization prep + word cloud now exist as scripts. |
+| `code/reencode_audio.py` | **working** | Re-encode `audio/` → `audio_reencoded/*.<bitrate>.<ext>` via ffmpeg (free; no new deps); name/id/all selection, skip-if-exists, failed-run handling; JSON-config driven (`a.bat`). Item 4. |
+| Remaining (TTS) | not started | The last big `todo.md` item; STT + translation + summarization prep + word cloud + audio-bitrate now exist as scripts. |
 
 ### Fixes already applied
 - **`requirements.txt`**: corrected `youtoube-transcript-api` → `youtube-transcript-api`,
@@ -155,8 +156,11 @@ isolation.
       same-language transcript.
 - [x] **Captions-first source flow** — for a playlist/channel/search, use the
       YouTube caption when present and only Whisper the caption-less clips.
-- [ ] `audio_bitrate` — re-encode audio at a target bitrate via `ffmpeg` (item 4).
-      Small and independent; not yet done.
+- [x] `audio_bitrate` — re-encode audio at a target bitrate via `ffmpeg`
+      (item 4). `reencode_audio.py` (`a.bat`) reads `audio/`, re-encodes with
+      ffmpeg (free, already required — no new deps), and writes to a separate
+      `audio_reencoded/*.<bitrate>.<ext>` (originals untouched). name/id/all
+      selection, skip-if-exists, JSON-config (`config/config_reencode.json`).
 
 ### Phase 2 — Text → Knowledge (`todo` items 5, 7)
 - [~] **Summarization** (item 5) — `make_summaries.py` (`s.bat`) does the
@@ -233,14 +237,15 @@ The next high-value moves, in order:
 
 1. **Text to speech** (`todo` items 3, 6) — `edge-tts` (free, many voices) as a
    baseline; then special/custom voices.
-2. **Audio bitrate** (`todo` item 4) — a small `ffmpeg` re-encode helper.
-3. **Consolidate outputs** under a single `data/` root, or a self-contained
+2. **Consolidate outputs** under a single `data/` root, or a self-contained
    summarization notebook (local HF model / API prompt) if you want summaries
    without the manual Kiro paste step.
 
-(**Word cloud**, `todo` item 7, is now done — see the Phase 2 checklist: a
-data-only Python script writes `word_cloud.json` and `wordcloud.html` renders it
-with wordcloud2.js, no matplotlib.)
+(**Word cloud** (`todo` item 7) and the **audio-bitrate helper** (`todo` item 4)
+are now done. Word cloud: a data-only Python script writes `word_cloud.json` and
+`wordcloud.html` renders it with wordcloud2.js, no matplotlib. Audio bitrate:
+`reencode_audio.py` (`a.bat`) re-encodes with ffmpeg into `audio_reencoded/`,
+no new deps — see the Phase 1 checklist.)
 
 (The old `scrapetube`/API-key script `get_my_playlists.py` has been retired to
 `ignore/`, so no migration of it is needed; the no-key `yt-dlp` tools cover its

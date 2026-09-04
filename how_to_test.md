@@ -35,6 +35,9 @@ s                                          :: C5 - prepare summaries (both sourc
 d                                          :: W1 - word cloud JSON for one transcript
 wc config\config_wordcloud.json            :: W3 - batch: one cloud per transcript
 wc config\config_wordcloud.merge.json      :: merge: many transcripts -> one cloud
+
+a                                          :: R1 - re-encode audio at a bitrate
+a config\config_reencode.json              :: R2 - batch re-encode (name/id/all)
 ```
 
 If the `c` / `w` / `s` shortcuts are not on your PATH, use the `.bat` name or the
@@ -227,6 +230,60 @@ then `wordcloud.html?file=data/wordclouds/<base>.word_cloud.json`.)
 
 ---
 
+## Phase R — Audio re-encode / bitrate (`a` + reencode_audio.py)
+
+Re-encodes `audio/*` to a target bitrate with **ffmpeg** (free, already
+installed), writing to `audio_reencoded/*.<bitrate>.<ext>` (skip-if-exists).
+Originals in `audio/` are never touched.
+
+> Do NOT type inline `::` notes after the command at the prompt — cmd passes
+> `::` as an argument. Run `a` (or `a config\config_reencode.json`) alone.
+
+### R1 — re-encode one file
+
+```cmd
+a
+```
+**Expect:** `Selected 1 audio file(s) via SELECT_BY='name'`, then
+`-> 96kbps mp3: ...` and an `original -> new (saved %)` line, ending
+`1 re-encoded, 0 skipped, 0 failed`. The file lands in `audio_reencoded/`.
+Second run → `= exists, skipping` and `0 re-encoded, 1 skipped, 0 failed`.
+
+Verify the bitrate (ffprobe ships with ffmpeg):
+```cmd
+ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "audio_reencoded\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].96kbps.mp3"
+```
+→ ~`96000`. Original in `audio/` keeps its size. Open the output in any player;
+speech is clear.
+
+### R2 — batch selection (config)
+
+Edit `config\config_reencode.json` → `select_by` and `select`:
+```cmd
+a config\config_reencode.json
+```
+**Expect:** the selection list, then one output per selected file, ending with a
+`N re-encoded, M skipped, 0 failed` tally. `select_by:"id"` picks by the
+`[<id>]` in the name; `select_by:"all"` re-encodes every audio file (slow).
+Changing `bitrate` (e.g. `128k`) writes a NEW `...128kbps.mp3` alongside the 96k
+one (they don't collide).
+
+### R3 — bad input should fail cleanly (no traceback)
+
+```cmd
+a config\<bitrate=banana>.json    :: -> "!! Invalid bitrate 'banana'. ..."
+a config\<select_by=banana>.json  :: -> "!! Invalid select_by 'banana'. ..."
+a config\<select=zzz...>.json     :: -> "No audio matched SELECT_BY=... "
+a config\<codec=nonsuch>.json     :: use a FRESH bitrate so it doesn't skip
+                                  ::   -> "! failed: Unknown encoder ...", tally
+                                  ::      "... 1 failed", no partial file left
+```
+**Expect:** each bad-input case prints a clear `!!`/message and exits without a
+Python traceback; the bad-codec case marks that file `failed` and leaves no
+partial output. (Delete the throwaway configs after.)
+
+---
+
 ## Quick reference — all runners
 
 | Cmd | Script | Purpose |
@@ -239,6 +296,7 @@ then `wordcloud.html?file=data/wordclouds/<base>.word_cloud.json`.)
 | `s` | `make_summaries.py` | List transcripts needing a summary; print AI instruction |
 | `d` | `make_wordcloud.py` | One transcript -> `word_cloud.json` (uses the script's `INPUT`) |
 | `wc` | `make_wordcloud.py` | Batch/merge word clouds; `wc config\config_wordcloud.json` |
+| `a` | `reencode_audio.py` | Re-encode audio at a bitrate; `a config\config_reencode.json` |
 
 ## Whisper config files (in `config/`)
 
@@ -260,3 +318,9 @@ then `wordcloud.html?file=data/wordclouds/<base>.word_cloud.json`.)
 |------|------|---------------|
 | `config_wordcloud.json` | select_by=all | Batch: one cloud per video |
 | `config_wordcloud.merge.json` | merge (id) | Combine the 3 git videos into `git-series` |
+
+## Audio re-encode config files (in `config/`)
+
+| File | mode | What it tests |
+|------|------|---------------|
+| `config_reencode.json` | select_by=name, 96k mp3 | Default: re-encode the Git & GitHub clip to 96 kbps |

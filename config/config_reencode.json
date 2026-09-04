@@ -1,0 +1,10 @@
+{
+  "_comment": "Audio re-encode config (todo1 item 4). select_by is one of name|id|all over the audio/ folder. For 'name', select is a list of case-insensitive substrings matched against audio file names. For 'id', select is a list of 11-char YouTube ids (the [<id>] in the file name). For 'all', select is ignored and every audio file in audio/ is re-encoded (slow). bitrate is the target audio bitrate (e.g. '64k', '96k', '128k', or 64000). format/codec pick the container/encoder (mp3/libmp3lame is the free, universal default; m4a/aac, ogg/libvorbis, opus/libopus also work). sample_rate (ffmpeg -ar) and channels (ffmpeg -ac, e.g. 1 = mono) are optional; null keeps the source value. Outputs go to audio_reencoded/<name>.<bitrate>.<ext> (skip-if-exists); originals in audio/ are never modified.",
+  "select_by": "name",
+  "select": ["Git and GitHub"],
+  "bitrate": "96k",
+  "format": "mp3",
+  "codec": "libmp3lame",
+  "sample_rate": null,
+  "channels": null
+}

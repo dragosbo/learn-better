@@ -7,6 +7,7 @@ root, which is where the scripts/batch files are run from.
 import os
 
 AUDIO_DIR = "audio"            # downloaded audio (mp3/webm/m4a)
+AUDIO_REENCODED_DIR = "audio_reencoded"  # re-encoded audio at a target bitrate
 TRANSCRIPT_DIR = "transcripts"  # saved transcript .txt files (from YouTube captions)
 GENERATED_TRANSCRIPT_DIR = "generated_transcripts"  # Whisper-generated transcripts
 DATA_DIR = "data"              # structured data, e.g. data/playlists.json

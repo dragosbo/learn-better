@@ -73,146 +73,214 @@ user already has on PATH (or in the conda env). No new entry in
 
 ---
 
-## Phase R0 — Scope + prerequisites (no code) — TODO
+## Phase R0 — Scope + prerequisites (no code) — DONE
 
-- [ ] **R0.1** Confirm ffmpeg is the only dependency and it is already required
+- [x] **R0.1** Confirm ffmpeg is the only dependency and it is already required
       (README "Install ffmpeg"). No new pip package, no `requirements.txt`
       change. Note the free codecs that ship with ffmpeg (libmp3lame, aac,
       libvorbis, libopus).
-- [ ] **R0.2** Decide output folder `audio_reencoded/` and add
+      ✅ Verified ffmpeg + ffprobe present in the `learn-better` conda env
+      (`.../envs/learn-better/Library/bin/ffmpeg.exe`). No pip/requirements
+      change made.
+- [x] **R0.2** Decide output folder `audio_reencoded/` and add
       `AUDIO_REENCODED_DIR = "audio_reencoded"` to `lib/paths.py`. Add it to
       `.gitignore` (like `audio/`).
-- [ ] **R0.3** Decide the output name pattern: `<base>.<bitrate>.<ext>` where
+      ✅ Added `AUDIO_REENCODED_DIR = "audio_reencoded"` to `lib/paths.py`; added
+      `audio_reencoded/` to `.gitignore`.
+- [x] **R0.3** Decide the output name pattern: `<base>.<bitrate>.<ext>` where
       `<base>` is the input name minus its extension, `<bitrate>` is normalized
       (e.g. `64k` -> `64kbps`), `<ext>` from `format`. This makes different
       bitrates coexist and drives skip-if-exists.
+      ✅ Implemented as `<base>.<Nkbps>.<ext>` (e.g. `... .64kbps.mp3`,
+      `... .128kbps.mp3` coexist).
 
-**Test:** none (decisions only). Write them as config comments at the top of the
-new script.
+**Test:** none (decisions only). Written as config comments atop
+`code/reencode_audio.py`.
 
 ---
 
-## Phase R1 — Re-encode ONE file (proof of concept) — TODO
+## Phase R1 — Re-encode ONE file (proof of concept) — DONE, USER-VALIDATED
 
-- [ ] **R1.1** New script `code/reencode_audio.py`. Config block at top
+- [x] **R1.1** New script `code/reencode_audio.py`. Config block at top
       (same style as `transcribe_audio.py`): `SELECT_BY="name"`, `SELECT=[...]`,
       `BITRATE="64k"`, `FORMAT="mp3"`, `CODEC="libmp3lame"`, `SAMPLE_RATE=None`,
       `CHANNELS=None`. Make the repo root importable and `from lib import paths`.
-- [ ] **R1.2** `find_ffmpeg()` — locate the ffmpeg binary via `shutil.which`
+- [x] **R1.2** `find_ffmpeg()` — locate the ffmpeg binary via `shutil.which`
       (respects PATH and the active conda env). If missing, print a clear error
       with the install hints from README (`conda install -c conda-forge ffmpeg`,
       `winget install ffmpeg`, `brew install ffmpeg`, `apt install ffmpeg`) and
       abort — do NOT crash with a raw traceback.
-- [ ] **R1.3** `reencode_one(src, bitrate, fmt, codec, ...)` — build the ffmpeg
-      command and run it with `subprocess.run([...], check=False)` (list form, no
-      `shell=True`, so titles with spaces/accents/emoji are safe). Command shape:
+- [x] **R1.3** `reencode_one(...)` — builds the ffmpeg command and runs it with
+      `subprocess.run([...])` (list form, no `shell=True`, so titles with
+      spaces/accents/emoji are safe). Command shape:
       `ffmpeg -hide_banner -loglevel error -y -i "<src>" -vn -c:a <codec> -b:a
       <bitrate> [-ar <sr>] [-ac <ch>] "<out>"`. `-vn` drops any cover-art video
-      stream. Return True/False on the exit code.
-- [ ] **R1.4** Output path via `paths.AUDIO_REENCODED_DIR` +
-      `<base>.<bitrate>.<ext>`; create the folder if missing; **skip-if-exists**
-      (print `= exists, skipping`), matching the other tools.
-- [ ] **R1.5** UTF-8 stdout guard (`sys.stdout.reconfigure`) like
+      stream. Returns "written"/"skipped"/"failed" on the exit code.
+- [x] **R1.4** Output path via `paths.AUDIO_REENCODED_DIR` +
+      `<base>.<bitrate>.<ext>`; creates the folder if missing; **skip-if-exists**
+      (prints `= exists, skipping`), matching the other tools.
+- [x] **R1.5** UTF-8 stdout guard (`sys.stdout.reconfigure`) like
       `make_wordcloud.py`, so non-ASCII titles never crash the Windows console.
 
-**Test:**
-```cmd
-python code\reencode_audio.py
-```
-With `SELECT_BY="name"`, `SELECT=["Git and GitHub"]`, `BITRATE="64k"`. Confirm
-`audio_reencoded/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].64kbps.mp3`
-exists and is **smaller** than the original. Run twice → second run skips.
+✅ Also added `normalize_bitrate()` (accepts `64k` / `64000` / `64`), failed-run
+handling (captures ffmpeg stderr, deletes any partial output, counts `failed`,
+continues), and a per-file `human_size` line **`orig X MB -> new Y MB
+(saved Z%)`** so the size drop is visible in the run output (no `dir` needed).
 
-**What to look for:**
-- The output file plays in any player (VLC / browser / Windows Media Player).
-- File size dropped roughly in proportion to the bitrate (a 64k mp3 is ~half a
-  128k one for the same duration).
-- Verify the actual bitrate: `ffprobe -v error -show_entries
-  format=bit_rate -of default=noprint_wrappers=1 "audio_reencoded\...64kbps.mp3"`
-  reports ~64000. (ffprobe ships with ffmpeg; no extra install.)
-- No stray video stream in the output (cover art dropped by `-vn`).
-- Original in `audio/` is untouched (same size/mtime).
+**Test (run):**
+```cmd
+c                              :: activate the learn-better env (ffmpeg lives here)
+python code\reencode_audio.py  :: SELECT_BY="name", SELECT=["Git and GitHub"], BITRATE="64k"
+```
+
+**How this was actually tested (record for re-runs):**
+1. **First run wrote the file.** Output:
+   `audio_reencoded\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].64kbps.mp3`.
+2. **Size check** — original vs. re-encoded (the script now prints this itself):
+   - 64k run: ~63.6 MB original → **~9.96 MB** (first pass) — big drop.
+   - 128k demo run: `orig 63.6 MB -> 128k 28.2 MB (saved 56%)`.
+   (Exact MB varies with the source file; the point is the output is clearly
+   smaller and scales with the chosen bitrate.)
+3. **Actual bitrate check with ffprobe** (ships with ffmpeg, no extra install):
+   ```cmd
+   ffprobe -v error -show_entries format=bit_rate,duration -of default=noprint_wrappers=1 "audio_reencoded\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].64kbps.mp3"
+   ```
+   → reported `bit_rate=64000` and the duration matched the original (~2195s).
+   The audio stream was `codec_name=mp3` with **no video stream** (cover art
+   dropped by `-vn`).
+4. **Originals untouched** — `audio\...mp3` kept its original size/mtime.
+5. **Skip-if-exists** — a second `python code\reencode_audio.py` printed
+   `= exists, skipping` and the tally `0 re-encoded, 1 skipped, 0 failed`.
+6. **Different bitrate coexists** — running at `128k` wrote a separate
+   `... .128kbps.mp3` next to the 64k one (proves the name pattern).
+7. **Listen** — open the `.64kbps.mp3` in VLC / Windows Media Player / a browser;
+   speech is clear. (Note: if a player has the file open, Windows locks it, so
+   close the player before regenerating that exact file.)
+
+**What to look for:** output plays; size dropped and scales with bitrate;
+`ffprobe` bitrate ≈ target; no video stream; original unchanged; second run
+skips.
 
 ---
 
-## Phase R2 — Batch + selection + config (mirror transcribe_audio.py) — TODO
+## Phase R2 — Batch + selection + config (mirror transcribe_audio.py) — DONE, USER-VALIDATED
 
-- [ ] **R2.1** Selection like the Whisper tool: `SELECT_BY = "name" | "id" |
+- [x] **R2.1** Selection like the Whisper tool: `SELECT_BY = "name" | "id" |
       "all"` over the `audio/` folder. `name` = case-insensitive substrings;
-      `id` = 11-char `[<id>]` match; `all` = every audio file. Reuse the id regex
-      idea from `make_wordcloud.py` (`\[([A-Za-z0-9_-]{11})\]`). Accept the
+      `id` = 11-char `[<id>]` match; `all` = every audio file. Reuses the id
+      regex from `make_wordcloud.py` (`\[([A-Za-z0-9_-]{11})\]`). Accepts the
       common audio extensions (`.mp3`, `.m4a`, `.webm`, `.opus`, `.ogg`, `.wav`).
-- [ ] **R2.2** Loop the R1 core over the selection with a written/skipped/failed
-      tally (same reporting style as `process_transcript`). Print each input,
-      the target bitrate, and the output path.
-- [ ] **R2.3** JSON config `config/config_reencode.json` (schema above), loaded
+      (Implemented in R1 already via `pick_audio` / `_audio_files`.)
+- [x] **R2.2** Loops the R1 core over the selection with a written/skipped/failed
+      tally (same reporting style as `process_transcript`). Prints each input,
+      the target bitrate/format/codec, the output name, and the size-saved line.
+- [x] **R2.3** JSON config `config/config_reencode.json` (schema above), loaded
       via an optional `argv[1]` path or auto-loaded if present — same
       `load_config` / `resolve_config_path` pattern as `make_wordcloud.py`
       (only present keys override; `_comment`/unknown keys ignored with a note).
-- [ ] **R2.4** `a.bat` runner: `a` (default config / in-file defaults) or
-      `a config\config_reencode.json`. Mirror `wc.bat` (`python
-      code\reencode_audio.py %1`).
+- [x] **R2.4** `a.bat` runner: `a` (default config / in-file defaults) or
+      `a config\config_reencode.json`. Mirrors `wc.bat`
+      (`python code\reencode_audio.py %1`).
 
-**Test (batch by name):**
-```cmd
-a config\config_reencode.json
-```
-Confirm one re-encoded file per selected audio in `audio_reencoded/`, and that
-re-running skips existing ones. Try `select_by:"id"` and `select_by:"all"`.
+✅ Default `config/config_reencode.json` targets the Git clip at **96k mp3**
+(96k chosen as a good speech default: clearly smaller than typical downloads,
+better quality than 64k). `a.bat` created.
 
-**What to look for:**
-- The selection list printed matches what you expect (right count, right files).
-- Tally line reads e.g. `2 re-encoded, 1 skipped, 0 failed`.
-- A file with no matching selection prints a clear "nothing matched" message
-  (not a crash), like the other tools.
-- Changing `bitrate` to `128k` writes a NEW `...128kbps.mp3` alongside the 64k
-  one (they don't collide), proving the name pattern works.
+**How R2 was tested (record for re-runs):**
+1. **Batch by id** — a config with `select_by:"id"`,
+   `select:["F2DBSH2VoHQ","9llCMADxvzI"]`, `bitrate:"96k"`:
+   ```cmd
+   a config\config_reencode.json      :: (or an explicit id config)
+   ```
+   → `Selected 2 audio file(s) via SELECT_BY='id'`, both written to
+   `audio_reencoded/*.96kbps.mp3`.
+2. **ffprobe bitrate check** — both outputs reported `bit_rate=96003` (≈96k):
+   - `How to use Git inside of VSCode - 2020 [F2DBSH2VoHQ].96kbps.mp3`
+   - `What Is GitLab Pipeline？ ... [9llCMADxvzI].96kbps.mp3`
+   The GitLab title contains fullwidth Unicode (`？`, `｜`); the script's UTF-8
+   stdout guard handled it without error.
+3. **Skip-if-exists (re-run)** — running the same config again printed
+   `= exists, skipping` for both and the tally
+   `0 re-encoded, 2 skipped, 0 failed`.
+4. **Different bitrate coexists** — a 128k demo wrote `... .128kbps.mp3`
+   alongside the 64k file (no collision), confirming the name pattern.
 
----
+5. **`a` runner confirmed** — running plain `a` at the prompt uses
+   `config\config_reencode.json` (Git clip @ 96k) and re-encodes as expected.
 
-## Phase R3 — Robustness + edge cases — TODO
+**What to look for:** the selection list matches (right count/files); tally line
+like `2 re-encoded, 0 skipped, 0 failed`; a non-matching selection prints a
+"nothing matched" message (not a crash); changing `bitrate` writes a new
+`...<N>kbps.mp3` without clobbering earlier ones.
 
-- [ ] **R3.1** Missing ffmpeg → friendly message + install hints, exit cleanly
-      (covered in R1.2; verify by temporarily renaming ffmpeg or emptying PATH).
-- [ ] **R3.2** A failed ffmpeg run (bad codec/bitrate) → capture stderr, print a
-      one-line reason, count it as `failed`, and **continue** the batch instead
-      of aborting. Do not leave a half-written output file (ffmpeg `-y` plus
-      checking the exit code; delete a zero-byte/failed output if present).
-- [ ] **R3.3** Empty `audio/` or no matches → clear message, exit 0.
-- [ ] **R3.4** Validate `bitrate` looks like `\d+k` (or a plain integer);
-      normalize `64k`/`64000`/`64` consistently for the file name and the
-      `-b:a` flag. Reject nonsense with a readable error.
-
-**Test:**
-```cmd
-:: 1) ffmpeg missing (simulate): rename it on PATH or run in a shell without it
-a
-:: 2) bad codec: set "codec":"nonsuch" in the config
-a config\config_reencode.json
-```
-**What to look for:** case 1 prints the install hint and exits without a
-traceback; case 2 marks that file `failed` with ffmpeg's reason, leaves no
-partial output, and the run still finishes with a tally.
+> **Gotcha (interactive prompt):** `::` is a `.bat` comment only at the START of
+> a line. Do NOT type inline notes after the command, e.g. `a  :: uses config` —
+> cmd passes `::` as `%1`, so the script reports `Config file not found: ::`.
+> Just run `a` (or `a config\config_reencode.json`) with nothing after it.
 
 ---
 
-## Phase R4 — Docs + wiring — TODO
+## Phase R3 — Robustness + edge cases — DONE, VALIDATED
 
-- [ ] **R4.1** `README.md`: add an "Audio re-encode / bitrate (`a.bat`)" section
-      (what it does, `audio_reencoded/` output, the config keys, the ffmpeg note
-      that it is free and already installed), add `a.bat` to the helper list and
-      `reencode_audio.py` / `a.bat` / `audio_reencoded/` to the repo layout.
-- [ ] **R4.2** `how_to_test.md`: add a "Phase R" block (R1 one file, R2 batch,
-      R3 failure cases) with the exact commands and the ffprobe bitrate check;
-      add `a` to the "all runners" table and a "Re-encode config files" table.
-- [ ] **R4.3** `youtube.html`: add the tool to the "Running the tools" table
-      (`a` row) and mark `todo` item 4 **Done** in the "Implemented vs.
-      remaining" section (it is currently "To do"). Optional: a short
-      "Audio re-encode" note/section.
-- [ ] **R4.4** `plan.md`: tick Phase 1's `audio_bitrate` box (`[ ]` -> `[x]`),
-      update the Section 1 status table (new `reencode_audio.py` row), and adjust
-      the Section 5 "recommended next step" (item 2 done → TTS becomes the clear
-      next move).
+- [x] **R3.1** Missing ffmpeg → friendly message + install hints, exit cleanly
+      (`find_ffmpeg` via `shutil.which`; `main` returns if None — no traceback).
+      Verified by inspection (didn't tamper with PATH); the logic is a simple
+      which-check + guarded return.
+- [x] **R3.2** A failed ffmpeg run (bad codec/bitrate) → captures stderr, prints
+      a one-line reason, counts it as `failed`, and **continues** the batch.
+      Deletes any half-written output. ✅ Verified with `codec:"nonsuch_codec"`:
+      `! failed: Unknown encoder 'nonsuch_codec'`, tally
+      `0 re-encoded, 0 skipped, 1 failed`, and NO `77kbps.mp3` partial left in
+      `audio_reencoded/`.
+- [x] **R3.3** Empty `audio/` or no matches → clear message, exit 0. ✅ Verified
+      with `select:["zzz_no_such_file_zzz"]`:
+      `No audio matched SELECT_BY='name' SELECT=[...]  (looked in ...\audio\)`.
+- [x] **R3.4** Validate `bitrate` (`normalize_bitrate` accepts `64k`/`64000`/`64`,
+      rejects nonsense) AND `select_by` up front. ✅ Verified:
+      `bitrate:"banana"` → `!! Invalid bitrate 'banana'. Use e.g. '64k', ...`;
+      `select_by:"banana"` → `!! Invalid select_by 'banana'. Use one of: name |
+      id | all.` Also guards an empty `select` list for name/id modes.
+
+✅ Extra hardening added in R3: `main()` validates `SELECT_BY` (and non-empty
+`SELECT` for name/id) before doing any work; `pick_audio`'s unknown-mode branch
+now returns `False` instead of raising (no traceback).
+
+**How R3 was tested (record for re-runs):** point `a` at a throwaway config in
+`config/` for each case (delete it after):
+```cmd
+a config\<bad-bitrate>.json   :: bitrate "banana"   -> "!! Invalid bitrate ..."
+a config\<bad-select>.json    :: select_by "banana" -> "!! Invalid select_by ..."
+a config\<no-match>.json      :: select ["zzz..."]  -> "No audio matched ..."
+a config\<bad-codec>.json     :: codec "nonsuch", a FRESH bitrate (e.g. 77k so it
+                              ::   doesn't skip) -> "! failed: Unknown encoder ..."
+                              ::   tally "... 1 failed", no partial file left
+```
+**What to look for:** each bad-input case prints a clear `!!` message and exits
+without a Python traceback; the bad-codec run marks that file `failed` with
+ffmpeg's reason, leaves no partial output, and still finishes with a tally.
+
+---
+
+## Phase R4 — Docs + wiring — DONE
+
+- [x] **R4.1** `README.md`: added an "Audio re-encode / bitrate (`a.bat`)"
+      section (what it does, `audio_reencoded/` output, the config keys, the
+      ffmpeg-is-free-and-already-installed note, ffprobe check); added `a.bat` to
+      the helper list and `reencode_audio.py` / `a.bat` / `audio_reencoded/` +
+      `config_reencode.json` to the repo layout.
+- [x] **R4.2** `how_to_test.md`: added a "Phase R" block (R1 one file, R2 batch,
+      R3 failure cases) with commands + the ffprobe bitrate check and the `::`
+      gotcha note; added `a` to the quick copy-paste examples, the "all runners"
+      table, and a new "Audio re-encode config files" table.
+- [x] **R4.3** `youtube.html`: added the `a` row to the "Running the tools"
+      table; marked `todo` item 4 **Done** in "Implemented vs. remaining";
+      updated the helper-batch-files row to `c/r/t/s/p/w/d/wc/a`; added
+      `reencode_audio.py`, `audio_reencoded/`, `a.bat`, and `config_reencode.json`
+      to the repo layout.
+- [x] **R4.4** `plan.md`: ticked Phase 1's `audio_bitrate` box; added a
+      `code/reencode_audio.py` row to the Section 1 status table; updated the
+      "Remaining" row to (TTS) only; rewrote the Section 5 next-step (bitrate
+      done → TTS is the clear next move).
 
 **Test:** open `youtube.html` and `README.md`, confirm the new tool is listed and
 `todo` item 4 shows Done; run through the `how_to_test.md` Phase R block.

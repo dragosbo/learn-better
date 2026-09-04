@@ -321,6 +321,9 @@ Helper batch files are provided for convenience (run them from the repo root):
   transcript (`d`); see "Word cloud" below.
 - `wc.bat` — activates the env and runs `code\make_wordcloud.py` with a config
   (`wc config\config_wordcloud.json`) for batch/merge word clouds.
+- `a.bat` — activates the env and runs `code\reencode_audio.py` to re-encode
+  audio at a different bitrate (`a`, or `a config\config_reencode.json`); see
+  "Audio re-encode / bitrate" below.
 
 ### List your playlists (no API key)
 
@@ -554,6 +557,58 @@ without touching the Python side.
 Output goes to `data/wordclouds/` (git-ignored). Re-running skips files that
 already exist; delete one (or change `output_name`) to regenerate.
 
+### Audio re-encode / bitrate (`a.bat`)
+
+Re-encode existing downloaded audio to a **different (usually lower) bitrate**,
+handy for shrinking files or standardizing them for playback. `code/reencode_audio.py`
+reads from `audio/`, re-encodes with **ffmpeg**, and writes to a separate
+`audio_reencoded/` folder so the originals are never touched (re-encoding to a
+lower bitrate is lossy and irreversible).
+
+This uses **only free tooling**: ffmpeg is already required by the project
+(yt-dlp uses it for mp3 conversion — see "Install ffmpeg" above). No new pip
+package, no API, no paid service. The default codec `libmp3lame` ships with
+ffmpeg and plays everywhere.
+
+Run it with the default config (Git & GitHub clip at 96 kbps mp3):
+
+```cmd
+a
+```
+
+Or pass an explicit config:
+
+```cmd
+a config\config_reencode.json
+```
+
+Config keys (`config/config_reencode.json`):
+
+- **`select_by`** — `name` (case-insensitive substrings of the audio file name,
+  in `select`) | `id` (11-char YouTube ids, the `[<id>]` in the name, in
+  `select`) | `all` (every audio file in `audio/`, slow).
+- **`bitrate`** — the target audio bitrate: `"64k"`, `"96k"`, `"128k"` (or a
+  plain number like `64000`). Lower = smaller file, lower quality. 96k is a good
+  balance for speech.
+- **`format`** / **`codec`** — output container/encoder. Defaults `mp3` /
+  `libmp3lame` (free, universal). `m4a`/`aac`, `ogg`/`libvorbis`, `opus`/
+  `libopus` also work.
+- **`sample_rate`** (ffmpeg `-ar`) / **`channels`** (ffmpeg `-ac`, e.g. `1` =
+  mono to shrink further) — optional; `null` keeps the source value.
+
+Output files are named `audio_reencoded/<name>.<bitrate>.<ext>` (e.g.
+`... .96kbps.mp3`), so different bitrates coexist. Re-running **skips** files
+that already exist; delete one (or pick a new bitrate) to regenerate. The run
+prints an `original -> new (saved %)` line per file. Output goes to
+`audio_reencoded/` (git-ignored).
+
+Verify a result played the way you expect, or check its bitrate with `ffprobe`
+(ships with ffmpeg):
+
+```cmd
+ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "audio_reencoded\<file>.96kbps.mp3"
+```
+
 ### Download audio from YouTube (legacy)
 
 `pytube`-based downloader for a search, a public playlist, or single videos.
@@ -676,17 +731,19 @@ learn-better/
 │   ├── compare_transcripts.py # Whisper-vs-captions quality check
 │   ├── make_summaries.py      # lists transcripts needing a summary (used by s.bat)
 │   ├── make_wordcloud.py      # transcript -> word_cloud.json (d.bat / wc.bat)
+│   ├── reencode_audio.py      # re-encode audio at a target bitrate (a.bat)
 │   ├── youtube_download.py    # legacy pytube audio downloader
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
 ├── lib/                 # reusable helpers: net, textutil, paths, youtube
 ├── notebooks/           # yt_download.ipynb (reusable helpers + metadata)
 ├── .devcontainer/       # Codespaces / Dev Container (Python 3.12)
 ├── audio/               # downloaded audio (git-ignored)
+├── audio_reencoded/     # re-encoded audio at a target bitrate (git-ignored)
 ├── transcripts/         # saved caption transcripts (git-ignored)
 ├── generated_transcripts/ # Whisper transcripts (git-ignored)
 ├── summaries/           # AI-generated summaries (tracked by git)
 ├── data/                # playlists.json + wordclouds/*.word_cloud.json (git-ignored)
-├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json
+├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
 ├── ignore/              # git-ignored: retired code + todo.md, mini_todo.md, notes
 ├── wordcloud.html       # renders a word_cloud.json (wordcloud2.js)
@@ -699,6 +756,7 @@ learn-better/
 ├── w.bat                # activate env + run transcribe_audio.py (Whisper)
 ├── d.bat                # activate env + run make_wordcloud.py (one transcript)
 ├── wc.bat               # activate env + run make_wordcloud.py (config: batch/merge)
+├── a.bat                # activate env + run reencode_audio.py (audio bitrate)
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

@@ -11,6 +11,7 @@ env/
 # Project output / secrets
 repos/
 audio/
+audio_reencoded/
 transcripts/
 generated_transcripts/
 timestamped/

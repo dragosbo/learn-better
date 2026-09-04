@@ -368,6 +368,13 @@ curl -fsSL https://deno.land/install.sh | sh   :: Linux</code></pre>
     Four ways to run the project. They all converge on the same target: a Python
     3.12 environment with <code>requirements.txt</code> installed. Pick whichever fits.
   </p>
+  <div class="note">
+    For a deeper, comparison-driven deployment guide &mdash; 12 platforms (local
+    conda/pip/uv, Docker, Podman, dev containers, Colab, Codespaces, Gitpod)
+    ranked by complexity vs. capabilities, plus ready-to-use image scripts like
+    <code>Dockerfile.standalone</code> &mdash; see <code>how_to_deploy.md</code>
+    in the repo root.
+  </div>
   <div class="mermaid">
 flowchart LR
   L["Local<br/>conda / venv"] --> ENV
@@ -767,6 +774,8 @@ graph TD
 &#9500;&#9472; wordcloud.html             # renders a word_cloud.json (wordcloud2.js)
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
 &#9500;&#9472; c.bat r.bat t.bat s.bat p.bat w.bat d.bat wc.bat a.bat v.bat  # helper runners
+&#9500;&#9472; Dockerfile.standalone      # slim Docker/Podman/CI image (see how_to_deploy.md)
+&#9500;&#9472; how_to_deploy.md           # deployment guide: 12 platforms + image scripts
 &#9500;&#9472; requirements.txt
 &#9500;&#9472; plan.md                    # roadmap and analysis (single source of truth)
 &#9492;&#9472; README.md</code></pre>

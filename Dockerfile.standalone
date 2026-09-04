@@ -1,0 +1,54 @@
+# Dockerfile.standalone — self-contained image for Docker / Podman / CI.
+#
+# Unlike .devcontainer/ (which targets VS Code / Codespaces and pulls in IDE
+# tooling), this uses the official slim Python image: lighter, no IDE bloat, and
+# runnable anywhere Docker or Podman is installed. Good for scripted batch
+# processing, CI pipelines, or server deployment. See how_to_deploy.md (Part 2/4).
+#
+# Build:
+#   docker build -f Dockerfile.standalone -t learn-better .
+#   podman build -f Dockerfile.standalone -t learn-better .
+#
+# Run interactively (mount folders you want to persist):
+#   docker run -it --rm -v "$(pwd)/audio:/app/audio" -v "$(pwd)/transcripts:/app/transcripts" learn-better
+#
+# Run a specific tool non-interactively, e.g.:
+#   docker run --rm -v "$(pwd)/audio:/app/audio" learn-better python code/read_channel.py
+#
+# NOTE: the .bat helpers (c/r/t/s/p/w/d/wc/a/v) are Windows-only; inside this
+# Linux image call the scripts directly with `python code/<script>.py`.
+FROM python:3.12-slim-bookworm
+
+LABEL org.opencontainers.image.description="learn-better: YouTube-to-study-material pipeline"
+
+# System dependencies. ffmpeg is REQUIRED (yt-dlp/faster-whisper audio + mp3) and
+# is NOT pip-installable; git/curl are handy for cloning/fetching at runtime.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        git \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Non-root user for security.
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /app
+
+# Install Python deps before copying the full source, so the (slow) pip layer is
+# cached and only re-runs when requirements.txt changes.
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy the project and hand ownership to the non-root user.
+COPY . .
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+# Expose a port for optional Jupyter / http.server use (e.g. wordcloud.html).
+EXPOSE 8888
+
+# Default to an interactive shell; override at `docker run` time to run a script.
+CMD ["/bin/bash"]

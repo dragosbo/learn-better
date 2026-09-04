@@ -223,6 +223,11 @@ almost certainly on the wrong interpreter).
 You can run this project four ways. They all end up at the same place: a Python
 3.12 environment with `requirements.txt` installed. Pick whichever fits.
 
+> For a deeper, comparison-driven deployment guide — 12 platforms (local
+> conda/pip/uv, Docker, Podman, dev containers, Colab, Codespaces, Gitpod) ranked
+> by complexity vs. capabilities, plus ready-to-use image scripts including
+> `Dockerfile.standalone` — see [`how_to_deploy.md`](how_to_deploy.md).
+
 | Where | Best for | Setup effort |
 |---|---|---|
 | **Local** | Everyday use on your own machine. | Manual env (above). |
@@ -818,6 +823,9 @@ learn-better/
 ├── wc.bat               # activate env + run make_wordcloud.py (config: batch/merge)
 ├── a.bat                # activate env + run reencode_audio.py (audio bitrate)
 ├── v.bat                # activate env + run generate_speech.py (text to speech)
+├── Dockerfile.standalone # slim Docker/Podman/CI image (ffmpeg, non-root); see how_to_deploy.md
+├── .dockerignore        # keeps the Docker build context lean
+├── how_to_deploy.md     # deployment guide: 12 platforms + image scripts
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

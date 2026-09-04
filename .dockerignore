@@ -1,0 +1,38 @@
+# Keep the Docker build context lean (used by Dockerfile.standalone).
+# Mostly mirrors .gitignore: regenerated outputs, caches, secrets, and VCS/editor
+# cruft don't belong in the image. Mount output folders at runtime instead.
+
+# Version control / CI
+.git/
+.github/
+
+# Python caches / envs
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# Regenerated outputs (git-ignored) — mount these at runtime, don't bake them in
+audio/
+audio_reencoded/
+tts_output/
+transcripts/
+generated_transcripts/
+timestamped/
+repos/
+data/
+
+# Local-only / retired / secrets
+ignore/
+secrets.json
+cookies.txt
+
+# Dev containers (this standalone image doesn't use them)
+.devcontainer/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

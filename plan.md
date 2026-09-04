@@ -223,13 +223,16 @@ isolation.
 - [x] **Fix the devcontainer ffmpeg gap** — applied: `.devcontainer/Dockerfile`
       now installs `ffmpeg` via an `apt-get install --no-install-recommends
       ffmpeg` layer (was missing — the #1 setup-failure cause per
-      `how_to_deploy.md`). Still optional: drop the unused `azure-cli` feature and
-      add a HuggingFace model-cache volume.
-- [ ] **Add the standalone container assets to the repo** (optional) — commit
-      `Dockerfile.standalone` (and a `.dockerignore`) so Docker/Podman/CI users
-      have a lighter, IDE-free image, per `how_to_deploy.md` Part 4.
-- [ ] **Link `how_to_deploy.md` from README / youtube.html** (optional) so the
-      deployment guide is discoverable next to the "How to run it" quick-start.
+      `how_to_deploy.md`). Also done: removed the unused `azure-cli` feature from
+      `devcontainer.json` and added a `~/.cache` model-cache volume (faster-whisper
+      + Piper weights survive rebuilds).
+- [x] **Add the standalone container assets to the repo** — added
+      `Dockerfile.standalone` (slim Python base, ffmpeg, non-root user) and a
+      `.dockerignore` (keeps the build context lean, mirrors the git-ignored
+      outputs) so Docker/Podman/CI users get a lighter, IDE-free image.
+- [x] **Link `how_to_deploy.md` from README / youtube.html** — linked from both,
+      next to the "How to run it" quick-start, so the deployment guide is
+      discoverable.
 - [ ] **Note on `.bat` helpers vs. Linux** (optional) — document bash equivalents
       (or provide `.sh` runners) since the one-letter `.bat` files don't work
       inside the Linux containers/cloud shells.

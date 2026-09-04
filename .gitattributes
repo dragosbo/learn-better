@@ -1,0 +1,4 @@
+# Keep shell scripts LF so they run on Linux/macOS (a CRLF shebang breaks with
+# "bad interpreter: /usr/bin/env bash^M"). Keep .bat CRLF for Windows.
+*.sh text eol=lf
+*.bat text eol=crlf

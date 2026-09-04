@@ -233,9 +233,12 @@ isolation.
 - [x] **Link `how_to_deploy.md` from README / youtube.html** — linked from both,
       next to the "How to run it" quick-start, so the deployment guide is
       discoverable.
-- [ ] **Note on `.bat` helpers vs. Linux** (optional) — document bash equivalents
-      (or provide `.sh` runners) since the one-letter `.bat` files don't work
-      inside the Linux containers/cloud shells.
+- [x] **`.bat` helpers vs. Linux** — added matching `.sh` runners for all ten
+      helpers (`c/r/t/p/s/d/w/wc/a/v`) so the tools work inside the Linux
+      containers/cloud shells. They activate conda if present, else use the
+      current `python` (Docker/Codespaces style). `.gitattributes` forces `*.sh`
+      to LF (a CRLF shebang breaks on Linux) and keeps `*.bat` CRLF. Documented
+      in README + how_to_test.md.
 
 ---
 

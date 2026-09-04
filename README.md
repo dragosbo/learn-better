@@ -313,6 +313,13 @@ Notes for Colab:
 Activate your environment first (step 1), then run any of the scripts below.
 Helper batch files are provided for convenience (run them from the repo root):
 
+> **Windows vs. Linux/macOS.** The one-letter helpers come in two forms:
+> `.bat` for Windows `cmd` (e.g. `r`) and matching `.sh` for Linux/macOS and the
+> containers/cloud shells (e.g. `./r.sh`, or `bash r.sh`). The `.sh` runners
+> activate the `learn-better` conda env if `conda` is present, otherwise they use
+> the current `python` (which is how the Docker/Codespaces images are set up).
+> Both forms call the same `code/<script>.py`.
+
 - `c.bat` — activates the `learn-better` conda env (`c` from the repo root).
 - `r.bat` — activates the env and runs `code\read_channel.py` (`r`).
 - `t.bat` — activates the env and runs `code\read_transcript.py` (`t`).

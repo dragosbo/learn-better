@@ -8,6 +8,11 @@ top to bottom.
 > Run `c` first (or `c.bat`) to activate the conda env, unless a test line
 > already includes activation. All Whisper config files now live in `config/`.
 >
+> **Linux/macOS:** every `.bat` below has a matching `.sh` runner — use
+> `./r.sh`, `./w.sh config/config_transcribe.id.json`, etc. (or `bash r.sh`).
+> They activate conda if present, else use the current `python` (as in the
+> Docker/Codespaces images). The commands are otherwise identical.
+>
 > Note on output: on Windows `cmd`, long transcription output can look noisy;
 > that is normal. What matters is the final summary line each tool prints.
 

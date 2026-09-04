@@ -1,13 +1,15 @@
 # Skill — writing mini-plan `todoN.md` files for further development
 
 A reusable procedure for turning a roadmap item (from `plan.md`) into a small,
-phased, testable **mini-plan** file that we build top-to-bottom. This is the
-format we used for the word cloud (`todo.md`) and the audio-bitrate helper
-(`todo1.md`); it worked well, so it is written down here to reuse.
+phased, testable **mini-plan** file that we build top-to-bottom. Proven on the
+word cloud (`todo.md`), the audio-bitrate helper (`todo1.md`), the text-to-speech
+baseline (`todo2.md`), and a consolidation refactor (`todo3.md`); written down
+here to reuse.
 
-Kiro: when the user asks to "plan" a feature, or to add a `todoN.md`, follow
-this. Produce the plan file first, confirm the couple of decisions that need the
-user, then implement phase by phase.
+Kiro: when the user asks to "plan" a feature/change, or to add a `todoN.md`,
+follow this. Produce the plan file first, confirm the couple of decisions that
+need the user, then implement phase by phase — stopping for the user to test
+after each phase (see "Interaction protocol").
 
 ---
 
@@ -16,9 +18,19 @@ user, then implement phase by phase.
 - The user picks a `plan.md` roadmap item (e.g. "let's do item 4") and asks for
   a plan, OR a task will take more than a couple of steps.
 - Name the file `todoN.md` at the repo root (`todo.md`, `todo1.md`, `todo2.md`,
-  …). One feature per file.
-- After the feature is fully done and its docs are wired in, the old plan can be
-  archived to `ignore/` (git-ignored) — but only when the user says so.
+  …). One feature/change per file.
+- Two shapes of task, plan them differently:
+  - **New tool / feature** (word cloud, bitrate, TTS) — the phase skeleton below
+    (proof-of-concept → batch → robustness → docs).
+  - **Cross-cutting refactor** (consolidate outputs, move runners) — nothing new
+    is built; the risk is **stale references**, not new logic. Lead with "change
+    the single source of truth (`lib/paths.py`), then verify sameness"; inventory
+    every reference up front; make the riskiest step (e.g. a physical file move)
+    its own phase, after the code already expects the new state.
+- After the plan is fully done and its docs are wired in, archive it to `ignore/`
+  (git-ignored) — but only when the user says so. If the file was already
+  committed, archive with `git rm --cached todoN.md` + `move`/`mv` into `ignore/`,
+  then commit the removal (the copy in `ignore/` stays local and git-ignored).
 
 ---
 
@@ -52,6 +64,44 @@ user, then implement phase by phase.
    continue the batch.
 8. **Don't add tests/features the user didn't ask for.** Solve the item; keep it
    proportional.
+9. **Ship a runner for every OS the repo targets.** This repo has both Windows
+   `.bat` and Linux/macOS `.sh` one-letter helpers. A new tool needs BOTH (e.g.
+   `v.bat` + `v.sh`). The `.sh` form should activate conda if present, else fall
+   back to the current `python` (that's how the Docker/Codespaces images run).
+   Keep `.gitattributes` forcing `*.sh` → LF (a CRLF shebang breaks on Linux with
+   `bad interpreter: ...^M`) and `*.bat` → CRLF; set the `.sh` executable bit via
+   `git update-index --chmod=+x`.
+10. **Prefer a tool's stable CLI over its Python API when the API drifts.** Piper
+    shifted APIs across `piper-tts`/`piper1-gpl`, but its CLI (`piper -m … -f …`,
+    text on stdin) was stable — so the script shells out via list-form
+    `subprocess`. Before wiring a new engine, confirm what's actually installed
+    (`where <tool>`, `python -c "import x; print(x.__file__)"`, list its
+    submodules) rather than guessing the interface.
+
+---
+
+## Interaction protocol — implement → test → wait → continue
+
+This is how the user wants these plans run, and it works well: **one phase at a
+time, with the user testing between phases.** For EACH phase:
+
+1. **Implement only that phase.** Don't run ahead into the next one.
+2. **Verify what you can yourself first** (syntax, path resolution, a real run
+   with a domain check), then **hand off to the user for their own test.**
+3. **Give clear, copy-paste test guidance every time** — exact commands from the
+   repo root, what output to expect, where the artifact is (a path they can open/
+   listen to), and what "pass" looks like. Put example commands on their **own
+   clean line** with no inline `::`/`#` notes appended (the user will paste them
+   verbatim; see the `::` gotcha).
+4. **Pause and wait for the user's feedback/go-ahead** before the next phase. If
+   a test fails, fix it and re-issue the test steps before moving on.
+5. **Only after the user confirms**, mark the phase `— DONE, USER-VALIDATED` with
+   its testing record, then continue.
+
+State this protocol at the top of the `todoN.md` itself when the task is a
+refactor or otherwise risky, so the plan file carries the contract. Don't batch
+phases together, and don't declare success with "it should work" — always a
+concrete recipe the user can run.
 
 ---
 
@@ -99,7 +149,8 @@ present; state "no new pip dep / no API / no cloud".>
 - [ ] X2.1 SELECT_BY = name|id|all over the input folder
 - [ ] X2.2 loop the X1 core; written/skipped/failed tally
 - [ ] X2.3 JSON config in config/ (load_config + resolve_config_path pattern)
-- [ ] X2.4 `<letter>.bat` runner (mirror wc.bat: `python code/... %1`)
+- [ ] X2.4 `<letter>.bat` AND `<letter>.sh` runners (mirror wc.bat/wc.sh:
+      `python code/... %1` / `"$@"`); .gitattributes covers the new .sh
 **Test / What to look for:** <commands + outcomes>
 
 ## Phase X3 — Robustness + edge cases — TODO
@@ -110,9 +161,12 @@ present; state "no new pip dep / no API / no cloud".>
 **Test / What to look for:** <bad-input commands + expected `!!` messages>
 
 ## Phase X4 — Docs + wiring — TODO
-- [ ] X4.1 README.md: new section + runner in helper list + repo layout
+- [ ] X4.1 README.md: new section + BOTH runners in helper list + repo layout;
+      add any new pip dep to the dependency table AND requirements.txt (only now,
+      after X1 proved it installs locally)
 - [ ] X4.2 how_to_test.md: a "Phase X" block + runner table + config table
-- [ ] X4.3 youtube.html: tools-table row + mark the todo item Done + layout
+- [ ] X4.3 youtube.html: tools-table row + mark the todo item Done + layout +
+      roadmap recolor
 - [ ] X4.4 plan.md: tick the checklist box + status-table row + next-step
 **Test:** open youtube.html/README, confirm listed + item marked Done.
 
@@ -165,6 +219,29 @@ Verify results, don't assume:
 - **Non-ASCII titles** (fr/ro accents, emoji, fullwidth `？｜`) appear in file
   names — always `sys.stdout.reconfigure(encoding="utf-8")` in scripts and use
   list-form `subprocess.run([...])` (no `shell=True`).
+- **Wrong interpreter for tools on PATH.** `jupyter`/`nbconvert` (and sometimes
+  other tools) can resolve to the **base Anaconda 3.7** install, not the
+  `learn-better` env — you'll see `ModuleNotFoundError: No module named 'pandas'`
+  etc. Run through the env's python: `python -m jupyter nbconvert ...`. Even then,
+  nbconvert executes with a registered **kernelspec** that may point at base; if
+  so, validate notebook *logic* by importing its functions in a plain
+  `python script.py` in the env instead of a full notebook execute.
+- **Terminal stdout can be unreliable in this setup.** Live command output is
+  sometimes swallowed/mangled. Redirect to a file and read it back
+  (`... > _out.txt 2>&1` then read `_out.txt`); confirm long/slow runs by checking
+  the produced artifact (a file appearing) rather than trusting console output.
+  Clean up the `_out.txt` and any stray redirect-artifact files (e.g. a 0-byte
+  `skips)`) afterward.
+- **`.sh` on Windows checkout.** Author `.sh` with LF and enforce it via
+  `.gitattributes` (`*.sh text eol=lf`); otherwise git's autocrlf gives them a
+  CRLF shebang that fails on Linux. Set the exec bit through git
+  (`git update-index --chmod=+x`) since Windows can't chmod.
+- **New pip deps: defer to the docs phase.** Decide the dep in the scope phase but
+  DON'T add it to `requirements.txt` until a real local run proves it installs and
+  works (PyPI can be blocked in some sandboxes; installs happen on the user's
+  machine, as with `faster-whisper`/`piper-tts`). Cache model downloads in a
+  git-ignored folder (e.g. `tts_output/.voices/`, or a devcontainer `~/.cache`
+  volume) so first-run downloads aren't repeated.
 
 ---
 
@@ -192,14 +269,43 @@ Verify results, don't assume:
 
 ---
 
+## Cross-cutting refactor playbook (when NOT building a new tool)
+
+For tasks like "consolidate outputs under `data/`" or "move the runners into one
+folder":
+- **Change the single source of truth first.** Output paths funnel through
+  `lib/paths.py`; most scripts follow automatically. Grep for the few hardcoded
+  strings that DON'T (`"summaries"` was one) and fix those explicitly.
+- **Inventory every reference up front** (grep for the constants, folder names,
+  runner names) so nothing is missed: `code/*.py`, `lib/*.py`, `.gitignore`,
+  `.dockerignore`, all four docs, the notebook.
+- **Respect the tracked/ignored split.** `summaries/` is git-tracked (authored);
+  the rest are git-ignored (regenerated). Don't bury tracked content under an
+  ignored root, or git stops tracking it.
+- **Physical moves are their own phase, done AFTER the code expects the new
+  layout,** and verified with `git status` (no tracked file should vanish) +
+  `git check-ignore`. Move, never delete.
+- **Preserve UX.** If runners move to `bin/`, keep one-line root shims so `r`/`w`/
+  `v` still work from the repo root (or document a PATH step) — confirm with the
+  user which they prefer.
+- The win is **verified sameness**, not new behavior: after each phase, test that
+  every tool still reads/writes the right place.
+
+---
+
 ## Definition of done for a mini-plan
 
-- All phases marked DONE with their `[x]` boxes and a testing record.
-- The tool runs from a one-letter `.bat`, is config-driven, skips existing
-  outputs, and fails cleanly on bad input.
+- All phases marked DONE with their `[x]` boxes and a testing record; each phase
+  was user-validated before the next began.
+- The tool runs from a one-letter `.bat` **and** `.sh`, is config-driven, skips
+  existing outputs, and fails cleanly on bad input (no raw tracebacks).
 - Docs wired in all four places: `README.md`, `how_to_test.md`, `youtube.html`,
-  `plan.md` (checkbox + status row + next-step).
+  `plan.md` (checkbox + status row + next-step). Any new dep is in the dependency
+  table AND `requirements.txt`.
+- `.gitattributes` covers new `.sh` (LF) and they carry the exec bit.
 - Outputs are git-ignored; originals untouched; no new paid/heavy deps.
-- Temp test files cleaned up.
-- Committed to `main` only after the user confirms.
+- Temp test files (captured output, throwaway configs, stray artifacts) cleaned up.
+- Committed to `main` only after the user confirms (this repo works straight on
+  `main`, no branches; stage files by name; leave unrelated untracked files out
+  and mention them).
 ```

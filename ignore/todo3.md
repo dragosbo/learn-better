@@ -1,5 +1,10 @@
 # TODO3 — Consolidate outputs under `data/` + gather runners into one folder
 
+> **STATUS: all phases (T0–T5) implemented.** Outputs live under `data/`, runners
+> under `scripts/` (add to PATH via `init.bat`), and all four docs + the code
+> messages/paths are swept. T2/T3/T4/T5 are marked "awaiting user test" per the
+> per-phase protocol; the work itself is complete and self-verified.
+
 Two related housekeeping goals (from `plan.md` Phase 0 + a new request):
 
 **A. Consolidate outputs under a single `data/` root.** Today the generated/output
@@ -87,9 +92,9 @@ Options:
   works from anywhere. No shims, but requires a PATH step per machine/shell.
 - **(c)** Keep the runners at the root (status quo) but that doesn't meet the
   "one folder" goal.
-- **Recommendation: (a)** — a `bin/` folder holds the actual logic, and
-  minimal root shims preserve the exact one-letter UX with no PATH setup. (The
-  shims are one line each and rarely change.)
+- **DECIDED: (b)** — the real runners live in `scripts/` and the user adds
+  `scripts/` to PATH so `r`/`w`/`v` work from anywhere. No shim files; the root
+  stays clean. (Option (a)'s root shims were considered and dropped.)
 
 > **Please confirm:** A1 summaries option (a/b), A1 migrate option (a/b), B1
 > option (a/b/c), and the folder name (`bin/` vs `scripts/`). The phases below
@@ -109,7 +114,7 @@ Options:
 | Word cloud JSON | `data/wordclouds/` | `data/wordclouds/` (unchanged) |
 | Playlists | `data/playlists.json` | `data/playlists.json` (unchanged) |
 | Summaries (tracked) | `summaries/` | `data/summaries/` (still tracked via a `.gitignore` negation) |
-| Runners | `*.bat` / `*.sh` at root | `scripts/*.bat` + `scripts/*.sh`, with 1-line root shims |
+| Runners | `*.bat` / `*.sh` at root | `scripts/*.bat` + `scripts/*.sh` (add `scripts/` to PATH for the one-letter UX) |
 
 ---
 
@@ -126,8 +131,9 @@ Options:
         to it.
       - **A1 migrate:** YES — physically move existing outputs into `data/`
         (one-time) so skip-if-exists keeps working, nothing re-downloads.
-      - **B1 runners:** option (a) — move real runners to **`scripts/`**, keep
-        1-line root shims so `r`/`w`/`v`… still work from the repo root, no PATH.
+      - **B1 runners:** option (b) — move real runners to **`scripts/`** and add
+        `scripts/` to PATH so `r`/`w`/`v`… work from anywhere. No shims (option
+        (a)'s root shims were considered and dropped).
       - **Folder name:** `scripts/`.
 - [x] **T0.2** Reference inventory complete (verified by grep):
       - **`lib/paths.py`** — the single source of truth. Constants to repoint:
@@ -231,81 +237,191 @@ outputs ignored under `data/`, nothing tracked lost. Report back; then T3.
 
 ---
 
-## Phase T3 — Gather runners into `scripts/` with root shims — TODO
+## Phase T3 — Gather runners into `scripts/` (option b: PATH) — DONE (awaiting user test)
 
-- [ ] **T3.1** Create `scripts/` and move the real runners there: `scripts/c.bat`,
-      `scripts/r.bat`, ... and `scripts/c.sh`, `scripts/r.sh`, ... (all 10 of
-      each). The runners call `python code\...` / `python code/...`; since the
-      root shims invoke them from the repo root, those relative paths still
-      resolve — verify. (`conda activate` inside them is unaffected.)
-- [ ] **T3.2** Add tiny **root shims** so the one-letter UX is unchanged:
-      - `r.bat` (root) → `@echo off` + `call "%~dp0scripts\r.bat" %*`
-      - `r.sh` (root) → `#!/usr/bin/env bash` + `exec "$(dirname "$0")/scripts/r.sh" "$@"`
-      (one per runner). `.gitattributes` `*.sh`/`*.bat` rules already cover both
-      `scripts/*.sh` and the root `*.sh` shims (path-independent globs).
-- [ ] **T3.3** Keep executable bits on all `.sh` (real in `scripts/` + root shim)
-      via `git update-index --chmod=+x`.
+> **Decision (user):** the real runners live in `scripts/` and the user adds
+> `scripts/` to PATH so `r`/`w`/`v` work from anywhere. Cleaner root, nothing at
+> the root level.
+
+- [x] **T3.1** `git mv`'d all 20 runners (10 `.bat` + 10 `.sh`) into `scripts/`
+      — git recorded 20 clean renames (R). `scripts/*` runners keep their
+      `python code\...` / `python code/...` calls (run from the repo root).
+      `scripts/` is NOT ignored (`git check-ignore` returns nothing; `git ls-files`
+      shows all 20 tracked).
+- [x] **T3.2** The root has no `.bat`/`.sh`. To keep the one-letter UX, add
+      `scripts/` to PATH — now documented in `README.md`'s "Running the tools"
+      section (session + permanent, Windows `set`/`setx` and Unix `export`), the
+      "How to run it" intro, and the repo-layout tree (runners listed under
+      `scripts/`). `scripts/*.sh` kept their exec bit through the rename (mode
+      `100755`); `.gitattributes` globs still apply.
+- [x] **T3.3** `scripts/*.sh` exec bits verified `100755` in the index
+      (`git ls-files -s scripts/*.sh`), so the renames preserved the executable
+      mode.
+
+✅ Verified: `a config\config_reencode.json` routed to the tool, found
+`Git and GitHub ... .mp3` in `data\audio\` (proving T1+T2), and skip-if-exists
+worked (output under `data\audio_reencoded`). Invoke the runners as
+`scripts\a.bat config\config_reencode.json` (or `scripts/a.sh ...` on Linux), or
+add `scripts/` to PATH to keep typing `a`.
 
 > Note (`scripts/` vs `code/`): the repo already has `code/` for the Python
 > tools; `scripts/` is only the thin runners. Keep them distinct.
 
 **Test & hand off (STOP for user feedback):** run and report before T4.
+
+There is nothing at the repo root, so invoke the runners from `scripts\` (they
+still call `python code\...` with no `cd`, so run them from the repo root):
 ```cmd
-r
+scripts\r.bat
 ```
 ```cmd
+scripts\wc.bat config\config_wordcloud.json
+```
+On Linux/macOS:
+```cmd
+scripts/r.sh
+```
+```cmd
+scripts/w.sh config/config_transcribe.id.json
+```
+To keep the **one-letter UX** (`r`, `wc`, …) add `scripts\` to PATH for the
+session, then the bare names work from the repo root:
+```cmd
+set PATH=%CD%\scripts;%PATH%
+r
 wc config\config_wordcloud.json
 ```
 On Linux/macOS:
 ```cmd
-./r.sh
+export PATH="$PWD/scripts:$PATH"
+r.sh
+w.sh config/config_transcribe.id.json
 ```
+**Expect:** the runners execute `python code\...` and the config arg passes
+through, exactly as before the move. **Pass =** same behavior as before, whether
+called as `scripts\<x>.bat` or (with `scripts\` on PATH) by the short name.
+Report back; T4.
+
+---
+
+## Phase T4 — Verify each tool end-to-end — DONE (awaiting user test)
+
+- [x] **T4.1** Verified each tool resolves under `data/`:
+      - **`a` (reencode)** — RAN: read `data/audio/`, wrote to
+        `D:\...\data\audio_reencoded`, `1 skipped` (skip-if-exists held). ✅
+      - **`d` / `wc` (wordcloud)** — RAN: read `data/transcripts/` +
+        `data/generated_transcripts/`, wrote `D:\...\data\wordclouds`,
+        `10 skipped` (skip-if-exists held). ✅
+      - **`s` (make_summaries)** — RAN: scanned `data/transcripts/` +
+        `data/generated_transcripts/`, checked `data/summaries/`, correctly
+        tagged the 3 existing summaries `[have summary]`. ✅ (See T4 NOTE below —
+        the printed paste-instruction still shows OLD root paths.)
+      - **`v` (generate_speech), `w` (transcribe_audio), `p`/`r`/`t`
+        (yt-dlp tools)** — deps ARE installed in the `learn-better` env
+        (verified against the env's python:
+        `...\envs\learn-better\python.exe -c "importlib.util.find_spec(...)"`
+        → piper, faster_whisper, yt_dlp, youtube_transcript_api, pandas,
+        curl_cffi all **OK**; user also confirmed `pip list` shows
+        `piper-tts 1.7.0`). Path resolution verified by SOURCE:
+        `generate_speech.py` builds `OUTPUT_DIR=paths.TTS_OUTPUT_DIR` + sources
+        from `SUMMARY/TRANSCRIPT/GENERATED` `paths.*`; `transcribe_audio.py`
+        builds `AUDIO_DIR`, `OUTPUT_DIR=GENERATED_TRANSCRIPT_DIR`,
+        `caption_dir=TRANSCRIPT_DIR` from `paths.*` (skip checks read those
+        `data/` dirs); `read_channel.py` imports `AUDIO_DIR`/`TRANSCRIPT_DIR` from
+        `lib.paths`; `list_playlists.py` uses `OUTPUT_JSON=DATA_DIR/playlists.json`.
+        All write/skip targets resolve under `data/`. ✅ (`v`/`w` runnable;
+        `p`/`r`/`t` also need network.)
+
+      > **Earlier-session correction:** a prior note here wrongly said these deps
+      > were "MISSING". That was a test artifact — the `python` invoked in that
+      > session had fallen through to a NON-env interpreter (PATH also lists bare
+      > `Anaconda3-2019.10\python.exe` and the WindowsApps stub). Against the
+      > actual `learn-better` env python, all deps are present. No repo/env fix
+      > needed; only make sure the `learn-better` env is truly active (run `c`
+      > first) so `python` = `...\envs\learn-better\python.exe`.
+      - **Why `a`/`d`/`wc`/`s` ran regardless:** those scripts use only the Python
+        standard library (+ `lib/paths`), so they execute under any interpreter.
+      - Confirmed all 8 constants print `data\...`
+        (`python -c "from lib import paths; ..."`).
+- [x] **T4.2** Skip-if-exists confirmed on moved files: `a` (1 skipped), `wc`
+      (10 skipped), and `s` recognizing the 3 moved summaries all prove the
+      physical move (T2) + path repoint (T1) are consistent — the tools find the
+      files at their new `data/` homes.
+
+> **T4 NOTE (follow-up for T5 / code sweep):** `make_summaries.py` prints its
+> paste-ready Kiro instruction with the OLD root paths — `transcripts/...`,
+> `generated_transcripts/...`, and `save each to summaries/<base>.summary.md`.
+> These are hardcoded display strings (the scan itself uses `data/` correctly),
+> so summaries pasted from that instruction would point Kiro at the wrong folder.
+> Fix in T5: repoint those printed strings to `data/transcripts/`,
+> `data/generated_transcripts/`, `data/summaries/`.
+
+**Test & hand off (STOP for user feedback):** re-run the local tools from the
+repo root (or via `scripts\`) and confirm each prints `data\...` paths and skips
+existing outputs:
 ```cmd
-./w.sh config/config_transcribe.id.json
+a config\config_reencode.json
+wc config\config_wordcloud.json
+s
 ```
-**Expect:** the one-letter commands still work from the repo root (root shim →
-`scripts\<x>.bat` → `python code\...`), and the config arg passes through.
-**Pass =** same behavior as before the move, from the repo root. Report back; T4.
+**Expect:** `a` → `...\data\audio_reencoded` (1 skipped); `wc` →
+`...\data\wordclouds` (10 skipped); `s` → lists 10 videos, 3 `[have summary]`.
+`v` needs `pip install piper-tts` to run fully; `p`/`t`/`r`/`w` are network
+tools — their paths are verified by source. **Pass =** outputs resolve under
+`data/` and skip-if-exists holds. Report back; then T5.
 
 ---
 
-## Phase T4 — Verify each tool end-to-end — TODO
+## Phase T5 — Docs + wiring — DONE (awaiting user test)
 
-- [ ] **T4.1** Re-run a light check of each tool so outputs land under `data/`:
-      - `p` → `data/playlists.json` (unchanged path).
-      - `d` / `wc` → `data/wordclouds/*.word_cloud.json` (unchanged path).
-      - `a config\config_reencode.json` → `data/audio_reencoded/...` (reads
-        `data/audio/`).
-      - `v` → `data/tts_output/...` (reads `data/summaries/` + `data/transcripts/`).
-      - `s` → lists from `data/transcripts/` + `data/generated_transcripts/`,
-        checks `data/summaries/`.
-      - `t` / `r` / `w` → write under `data/` (network-dependent; skip-if-exists
-        should recognize the moved files).
-- [ ] **T4.2** Confirm skip-if-exists still triggers on the moved files (proves
-      the move + repoint are consistent).
+- [x] **T5.1** `README.md`: runners/PATH part done earlier; NOW the output-folder
+      half is done too — repo-layout tree nests all outputs under `data/`
+      (audio, audio_reencoded, tts_output, transcripts, generated_transcripts,
+      summaries [tracked], wordclouds, playlists.json), and every inline path
+      mention in the tool sections repointed to `data/...` (Colab note,
+      read_channel output, transcribe output, select_by=all, word cloud,
+      re-encode + ffprobe, TTS + ffprobe, summaries section, Whisper-quality
+      section, legacy downloader).
+- [x] **T5.2** `youtube.html`: repo-layout tree nests outputs under `data/` +
+      adds `scripts/`/`init.bat`; all Mermaid diagram node labels repointed
+      (`audio/`→`data/audio/`, `transcripts/`, `generated_transcripts/`,
+      `summaries/`, wordcloud); "Running the tools" intro documents `scripts/`
+      + PATH + `init.bat`; command table `c.bat`→`scripts/c.bat`; status rows
+      updated; runner comment labels changed from `x.bat` to bare `x`.
+- [x] **T5.3** `how_to_test.md`: all hardcoded output paths in the Phase
+      A/B/C/W/R/D expectations repointed to `data/...` (transcripts, audio,
+      generated_transcripts, summaries, audio_reencoded + ffprobe, tts_output +
+      ffprobe, quick-ref table).
+- [x] **T5.4** `plan.md`: ticked the "consolidate outputs under a single `data/`
+      root" checkbox (Phase 0); Section 4 repo-layout snippet rewritten with
+      outputs nested under `data/` + `scripts/`/`init.bat`; status-table +
+      Phase 1/2/3 + "next steps" output paths repointed; "layout stabilizing"
+      note now reads "consolidated under `data/`"; runner labels de-`.bat`-ed.
+- [x] **T5.5 (code, from the T4 NOTE + sweep):**
+      - `make_summaries.py` — the paste-ready Kiro instruction + all printed
+        messages now use `data/...` (derived from `paths.*`), not the old root
+        strings. VERIFIED by running `s`: prints `data/summaries/<base>...`,
+        `data/transcripts/...`, `data/generated_transcripts/...`.
+      - `compare_transcripts.py` — was hardcoding `"generated_transcripts"` /
+        `"transcripts"` (NOT via `paths`); now imports `lib.paths` and builds
+        `WHISPER_FILE`/`YT_FILE` from `paths.GENERATED_TRANSCRIPT_DIR` /
+        `paths.TRANSCRIPT_DIR`. VERIFIED: resolves to `data\...`.
+      - `youtube_download.py` (legacy pytube) — default `output_path` changed
+        from `"audio"` to `"data/audio"` for consistency.
+      - All three parse clean (`ast.parse` OK).
 
-**Test:** run the above; each should print paths under `data/` and skip existing
-outputs. (Network tools optional — the path resolution is the thing to confirm.)
-
----
-
-## Phase T5 — Docs + wiring — TODO
-
-- [ ] **T5.1** `README.md`: update the **repo layout** block (outputs now under
-      `data/`; runners under `bin/` with root shims); update any inline
-      `audio/`/`transcripts/`/`tts_output/` path mentions; note the `bin/` +
-      shim arrangement in the "Running the tools" section.
-- [ ] **T5.2** `youtube.html`: update the repo-layout tree and any path mentions
-      (data pipeline diagram labels like `audio/` → `data/audio/`, etc.).
-- [ ] **T5.3** `how_to_test.md`: update any hardcoded output paths in the test
-      expectations (e.g. `audio_reencoded\...` → `data\audio_reencoded\...`,
-      `tts_output\...` → `data\tts_output\...`).
-- [ ] **T5.4** `plan.md`: tick Phase 0's "consolidate outputs under a single
-      `data/` root" box; add a short note on the `bin/` runner reorg; update the
-      Section 4 repo-layout snippet.
-
-**Test:** open `README.md` / `youtube.html`, confirm the layout matches reality
-and no doc still points at the old root-level output folders.
+**Test & hand off (STOP for user feedback):** skim the docs and confirm no old
+root-level output paths remain, and the summaries instruction now points at
+`data/`:
+```cmd
+s
+```
+**Expect:** the paste-ready block reads `save each to data/summaries/<base>.summary.md`
+with `data/transcripts/...` / `data/generated_transcripts/...` entries.
+Open `README.md`, `youtube.html`, `how_to_test.md`, `plan.md` — the repo-layout
+blocks show outputs nested under `data/` and runners under `scripts/`; no doc
+points at bare `audio/`, `transcripts/`, `tts_output/`, etc. **Pass =** docs
+match reality; `s` prints `data/` paths. This completes TODO3.
 
 ---
 
@@ -316,7 +432,7 @@ and no doc still points at the old root-level output folders.
 | 0 | T0 decide + inventory | low | decisions written; grep list complete |
 | 1 | T1 repoint `lib/paths.py` (+ hardcoded summaries) | low-med | `paths.*` print `data\...`; tools resolve there |
 | 2 | T2 move outputs + ignore files | med | git shows no tracked outputs; still ignored |
-| 3 | T3 `bin/` + root shims | med | `r` / `./r.sh` still work from root, args pass |
+| 3 | T3 move runners to `scripts/` (+ PATH) | med | `scripts\r.bat` / `scripts/r.sh` work, args pass |
 | 4 | T4 verify each tool | med | outputs land under `data/`; skip-if-exists holds |
 | 5 | T5 docs sweep | low | layout blocks + paths match reality |
 
@@ -337,10 +453,10 @@ nothing tracked moved unexpectedly.
   `git check-ignore data/summaries/x.md` printing NOTHING (= still tracked).
 - **Moves, not deletes:** T2 moves git-ignored outputs; never delete the
   originals. Verify with `git status` that no tracked file vanished.
-- **Preserve the one-letter UX:** whatever the runner reorg, typing `r` / `w` /
-  `v` from the repo root must still work (root shims, per recommendation).
+- **Preserve the one-letter UX:** with the runners in `scripts/`, add `scripts/`
+  to PATH so typing `r` / `w` / `v` from the repo root still works.
 - **Windows/Linux:** keep `.gitattributes` LF-for-`.sh` / CRLF-for-`.bat` covering
-  both `bin/` and the root shims. `.sh` files keep their executable bit.
+  `scripts/`. `.sh` files keep their executable bit.
 - **No new deps; free.** Pure moves + path edits.
 - This is a **refactor** — the win is verified sameness (every tool still reads/
   writes the right place), not new behavior. Test path resolution after each phase.

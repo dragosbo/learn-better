@@ -5,14 +5,14 @@ frequencies (minus stopwords), and writes a renderer-agnostic JSON that a small
 HTML page renders client-side with wordcloud.js (see wordcloud.html, Phase W2).
 
 Input transcripts live in:
-    transcripts/<title> [<id>].en.txt              (YouTube captions)
-    generated_transcripts/<title> [<id>].whisper.<lang>.txt  (Whisper, Phase C)
+    data/transcripts/<title> [<id>].en.txt              (YouTube captions)
+    data/generated_transcripts/<title> [<id>].whisper.<lang>.txt  (Whisper, Phase C)
 Output:
     data/wordclouds/<title> [<id>].word_cloud.json
 
 The JSON shape (words pre-sorted by descending weight):
     {
-      "source": "transcripts/... .en.txt",
+      "source": "data/transcripts/... .en.txt",
       "video_id": "...", "title": "...", "language": "en",
       "total_tokens": N, "unique_words": M,
       "generated_at": "<iso8601>",
@@ -26,9 +26,9 @@ Selecting which transcripts to process (set SELECT_BY + SELECT below):
     substring (case-insensitive), e.g. ["Git and GitHub", "GitLab"].
   - SELECT_BY = "id":    transcripts matched by YouTube video id (the `[<id>]`
     in the file name), e.g. ["tRZGeaHPoaw"].
-  - SELECT_BY = "all":   every transcript in transcripts/ + generated_transcripts/.
+  - SELECT_BY = "all":   every transcript in data/transcripts/ + data/generated_transcripts/.
 
-When both a caption (transcripts/) and a Whisper (generated_transcripts/)
+When both a caption (data/transcripts/) and a Whisper (data/generated_transcripts/)
 transcript exist for the same video, the CAPTION one is preferred (one word
 cloud per video), matching make_summaries.py.
 
@@ -73,7 +73,7 @@ from lib.textutil import safe_filename  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Config (W1 - single file). Point INPUT at a transcript file NAME (it is
-# looked up in transcripts/ first, then generated_transcripts/) or a video id.
+# looked up in data/transcripts/ first, then data/generated_transcripts/) or a video id.
 # ---------------------------------------------------------------------------
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSCRIPT_DIR = os.path.join(_REPO_ROOT, paths.TRANSCRIPT_DIR)
@@ -164,8 +164,8 @@ _STOPWORDS = {
 def resolve_input(name):
     """Find the transcript file for INPUT (a file name or a video id).
 
-    Returns (abs_path, source_rel) or (None, None). Looks in transcripts/ first,
-    then generated_transcripts/. If `name` is an 11-char id, match by `[<id>]`.
+    Returns (abs_path, source_rel) or (None, None). Looks in data/transcripts/
+    first, then data/generated_transcripts/. If `name` is an 11-char id, match by `[<id>]`.
     """
     candidates = []
     for folder, rel_prefix in ((TRANSCRIPT_DIR, paths.TRANSCRIPT_DIR),
@@ -232,8 +232,8 @@ def _all_transcripts():
 def pick_transcripts(select_by, select, input_name):
     """Return [(abspath, source_rel, filename)] to process, per the mode.
 
-    Dedupes by video id, preferring the caption transcript (transcripts/) over
-    the Whisper one (generated_transcripts/) when both exist for a video, so we
+    Dedupes by video id, preferring the caption transcript (data/transcripts/) over
+    the Whisper one (data/generated_transcripts/) when both exist for a video, so we
     produce one word cloud per video. `_all_transcripts` yields captions first.
     """
     if select_by == "input":

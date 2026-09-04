@@ -28,7 +28,7 @@ c                                          :: activate the env (once per termina
 
 p                                          :: Phase A - list playlists -> data/playlists.json
 
-t                                          :: Phase B - transcripts only -> transcripts/
+t                                          :: Phase B - transcripts only -> data/transcripts/
 r                                          :: Phase B - audio + transcripts for a source
 
 w                                          :: C1 - Whisper the default clip
@@ -53,11 +53,19 @@ v config\config_tts.speed09.json           :: faster narration (length_scale 0.9
 > is only a comment at the start of a line, so `v :: something` passes `::` as an
 > argument. The `::` notes above are just annotations for reading, not to paste.
 
-If the `c` / `w` / `s` shortcuts are not on your PATH, use the `.bat` name or the
-script directly, e.g.:
+The one-letter runners now live in **`scripts/`**. To type the bare names
+(`c` / `w` / `s` …) from the repo root, add `scripts/` to your PATH for the
+session:
 
 ```cmd
-w.bat config\config_transcribe.id.json
+set PATH=%CD%\scripts;%PATH%
+```
+
+(On Linux/macOS: `export PATH="$PWD/scripts:$PATH"`.) Otherwise invoke them by
+their path, or call the script directly, e.g.:
+
+```cmd
+scripts\w.bat config\config_transcribe.id.json
 python code\transcribe_audio.py config\config_transcribe.id.json
 ```
 
@@ -92,12 +100,12 @@ Delete the file and re-run to confirm it regenerates.
 These prove the `lib/` refactor kept behavior identical.
 
 ```cmd
-t                 :: transcripts only, one file per language -> transcripts/
+t                 :: transcripts only, one file per language -> data/transcripts/
 r                 :: audio + transcripts for a playlist/channel/search
 ```
-**Expect:** videos listed; transcripts saved to `transcripts/`; audio saved to
-`audio/`; files already present are skipped. (Configure the source at the top of
-`code/read_channel.py` / `code/read_transcript.py`.)
+**Expect:** videos listed; transcripts saved to `data/transcripts/`; audio saved
+to `data/audio/`; files already present are skipped. (Configure the source at the
+top of `code/read_channel.py` / `code/read_transcript.py`.)
 
 ---
 
@@ -112,7 +120,7 @@ r                 :: audio + transcripts for a playlist/channel/search
 w                 :: uses config\config_transcribe.json (default: name "Git and GitHub")
 ```
 **Expect:** the Git & GitHub clip transcribed to
-`generated_transcripts/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt`,
+`data/generated_transcripts/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt`,
 ending with `-> N chars written to ...`. (First run downloads the Whisper model.)
 
 We also validated quality with a helper (not a .bat):
@@ -126,7 +134,7 @@ Selection by **name substring**:
 ```cmd
 w config\config_transcribe.name.json   :: names containing "VSCode" or "GitLab Pipeline"
 ```
-**Expect:** `Selected 2 file(s)`, each transcribed to `generated_transcripts/`.
+**Expect:** `Selected 2 file(s)`, each transcribed to `data/generated_transcripts/`.
 
 Selection by **video id** (ids are the `[<id>]` in the file name, same as
 `data/playlists.json`):
@@ -179,13 +187,13 @@ w config\config_transcribe.ro.json            :: Romanian audio-> ROMANIAN (.whi
 ### C5 — summaries read BOTH caption and Whisper transcripts
 
 ```cmd
-s                 :: prep summaries: scan transcripts/ + generated_transcripts/
+s                 :: prep summaries: scan data/transcripts/ + data/generated_transcripts/
 ```
 **Expect:** one line per video, tagged `(caption)` or `(whisper)`, captions
 preferred, deduped by video id (no clip listed twice). Then a paste-ready
 instruction for Kiro whose paths point at the right folder
-(`transcripts/...` vs `generated_transcripts/...`). Paste that into Kiro to write
-`summaries/*.summary.md`.
+(`data/transcripts/...` vs `data/generated_transcripts/...`). Paste that into
+Kiro to write `data/summaries/*.summary.md`.
 
 **End-to-end:** `w config\config_transcribe.source.json` to Whisper a caption-less
 clip, then `s` — that clip should now appear as `(whisper) [NEEDS summary]`.
@@ -245,9 +253,9 @@ then `wordcloud.html?file=data/wordclouds/<base>.word_cloud.json`.)
 
 ## Phase R — Audio re-encode / bitrate (`a` + reencode_audio.py)
 
-Re-encodes `audio/*` to a target bitrate with **ffmpeg** (free, already
-installed), writing to `audio_reencoded/*.<bitrate>.<ext>` (skip-if-exists).
-Originals in `audio/` are never touched.
+Re-encodes `data/audio/*` to a target bitrate with **ffmpeg** (free, already
+installed), writing to `data/audio_reencoded/*.<bitrate>.<ext>` (skip-if-exists).
+Originals in `data/audio/` are never touched.
 
 > Do NOT type inline `::` notes after the command at the prompt — cmd passes
 > `::` as an argument. Run `a` (or `a config\config_reencode.json`) alone.
@@ -259,14 +267,14 @@ a
 ```
 **Expect:** `Selected 1 audio file(s) via SELECT_BY='name'`, then
 `-> 96kbps mp3: ...` and an `original -> new (saved %)` line, ending
-`1 re-encoded, 0 skipped, 0 failed`. The file lands in `audio_reencoded/`.
+`1 re-encoded, 0 skipped, 0 failed`. The file lands in `data/audio_reencoded/`.
 Second run → `= exists, skipping` and `0 re-encoded, 1 skipped, 0 failed`.
 
 Verify the bitrate (ffprobe ships with ffmpeg):
 ```cmd
-ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "audio_reencoded\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].96kbps.mp3"
+ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "data\audio_reencoded\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].96kbps.mp3"
 ```
-→ ~`96000`. Original in `audio/` keeps its size. Open the output in any player;
+→ ~`96000`. Original in `data/audio/` keeps its size. Open the output in any player;
 speech is clear.
 
 ### R2 — batch selection (config)
@@ -301,9 +309,9 @@ partial output. (Delete the throwaway configs after.)
 
 Turns a text source (summary / caption / Whisper transcript) into narrated audio
 with **Piper** (free, MIT, CPU-only). Output goes to
-`tts_output/<base>.<voice>[.s<scale>].wav` (skip-if-exists). Inputs are never
+`data/tts_output/<base>.<voice>[.s<scale>].wav` (skip-if-exists). Inputs are never
 modified. Local prerequisite: `pip install piper-tts` (the voice model downloads
-on first use into `tts_output/.voices/`).
+on first use into `data/tts_output/.voices/`).
 
 > Type `v` ALONE (or `v config\...json`). Don't paste inline `::` notes after it.
 
@@ -315,10 +323,10 @@ v
 **Expect:** `Selected 1 text file(s) ... voice 'en_US-lessac-medium' -> wav`,
 then (first run) a voice download, then
 `-> en_US-lessac-medium wav (speed 1.0): ...` and a written line. The file lands
-in `tts_output/` (it voices the *summary*, per summary > caption > whisper).
+in `data/tts_output/` (it voices the *summary*, per summary > caption > whisper).
 Second run → `= exists, skipping`. Check it:
 ```cmd
-ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "tts_output\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en_US-lessac-medium.wav"
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "data\tts_output\Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en_US-lessac-medium.wav"
 ```
 → duration > 0; open the wav in any player to hear it.
 
@@ -362,7 +370,7 @@ configs after.)
 |-----|--------|---------|
 | `c` | (activate) | Activate the `learn-better` conda env |
 | `p` | `list_playlists.py` | List a channel's public playlists -> `data/playlists.json` |
-| `t` | `read_transcript.py` | Transcripts only, per language -> `transcripts/` |
+| `t` | `read_transcript.py` | Transcripts only, per language -> `data/transcripts/` |
 | `r` | `read_channel.py` | Audio + transcripts for a source |
 | `w` | `transcribe_audio.py` | Whisper STT / translate; `w config\config_transcribe.<mode>.json` |
 | `s` | `make_summaries.py` | List transcripts needing a summary; print AI instruction |

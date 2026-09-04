@@ -7,7 +7,7 @@ import pytube as yt
 # os.chdir("test")
 
 
-def yt2mp3(youtube_video, output_path="audio"):
+def yt2mp3(youtube_video, output_path="data/audio"):
     try:
         audio_stream = youtube_video.streams.filter(only_audio=True).first()
         audio_stream.download(output_path=output_path)

@@ -1,6 +1,6 @@
-"""Compare the Whisper output (generated_transcripts/*.whisper.*.txt) against
-the YouTube English transcript for the same video, ignoring timestamps, casing,
-and punctuation. Prints similarity metrics and a rough quality percentage.
+"""Compare the Whisper output (data/generated_transcripts/*.whisper.*.txt)
+against the YouTube English transcript for the same video, ignoring timestamps,
+casing, and punctuation. Prints similarity metrics and a rough quality percentage.
 
 Usage:
     python code/compare_transcripts.py
@@ -8,16 +8,21 @@ Usage:
 
 import os
 import re
+import sys
 import difflib
 from collections import Counter
 
+# Make the repo root importable so `from lib import paths` works when this
+# script is run as `python code/compare_transcripts.py`.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _REPO_ROOT)
+from lib import paths  # noqa: E402
 
 WHISPER_FILE = os.path.join(
-    _REPO_ROOT, "generated_transcripts",
+    _REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR,
     "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt")
 YT_FILE = os.path.join(
-    _REPO_ROOT, "transcripts",
+    _REPO_ROOT, paths.TRANSCRIPT_DIR,
     "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt")
 
 TIMESTAMP_RE = re.compile(r"\[\d{2}:\d{2}:\d{2}\]")

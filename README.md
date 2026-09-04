@@ -238,8 +238,10 @@ You can run this project four ways. They all end up at the same place: a Python
 ### 1. Local
 
 Follow **Environment setup** above (conda or venv), then run the tools with the
-`c` / `r` / `t` / `s` batch files (Windows) or `python code/<script>.py`
-(any OS). This is the default path and what the batch helpers assume.
+`c` / `r` / `t` / `s` runners in `scripts/` (Windows `.bat`, Linux/macOS `.sh`)
+or `python code/<script>.py` (any OS). Add `scripts/` to your PATH to type the
+bare one-letter names from the repo root (see **Running the tools** below). This
+is the default path and what the runners assume.
 
 ### 2. Dev Container (VS Code + Docker)
 
@@ -303,22 +305,57 @@ Notes for Colab:
 - The YouTube **bot-check** is more likely on cloud IPs. If you hit
   "Sign in to confirm you're not a bot", upload a `cookies.txt` (see the cookies
   note under *Running the tools*) and point `COOKIES_FILE` at it.
-- Colab sessions are ephemeral: download anything in `audio/` / `transcripts/`
-  before the runtime disconnects, or mount Google Drive to persist them.
+- Colab sessions are ephemeral: download anything in `data/audio/` /
+  `data/transcripts/` before the runtime disconnects, or mount Google Drive to
+  persist them.
 
 ---
 
 ## Running the tools
 
 Activate your environment first (step 1), then run any of the scripts below.
-Helper batch files are provided for convenience (run them from the repo root):
+The helper runners live in the **`scripts/`** folder (they still call
+`code/<script>.py` with no `cd`, so run them from the repo root):
+
+```cmd
+scripts\r.bat
+scripts\wc.bat config\config_wordcloud.json
+```
+
+**Keep the one-letter UX by adding `scripts/` to your PATH.** Then the bare
+names (`r`, `w`, `v`, …) work from the repo root, exactly as before they moved.
+
+Windows (`cmd`) — for the current session:
+
+```cmd
+set PATH=%CD%\scripts;%PATH%
+r
+wc config\config_wordcloud.json
+```
+
+To make it permanent on Windows, add the full `...\learn-better\scripts` path
+via **System Properties → Environment Variables → Path** (the safest way — it
+edits the stored PATH without expanding or truncating it). `setx` also works but
+writes the *expanded* PATH and truncates at 1024 chars, so prefer the GUI.
+
+Linux/macOS (bash/zsh) — for the current session:
+
+```bash
+export PATH="$PWD/scripts:$PATH"
+r.sh
+w.sh config/config_transcribe.id.json
+```
+
+To make it permanent, add that `export` line (with the absolute repo path) to
+your `~/.bashrc` / `~/.zshrc`.
 
 > **Windows vs. Linux/macOS.** The one-letter helpers come in two forms:
 > `.bat` for Windows `cmd` (e.g. `r`) and matching `.sh` for Linux/macOS and the
-> containers/cloud shells (e.g. `./r.sh`, or `bash r.sh`). The `.sh` runners
+> containers/cloud shells (e.g. `r.sh`, or `bash scripts/r.sh`). The `.sh` runners
 > activate the `learn-better` conda env if `conda` is present, otherwise they use
 > the current `python` (which is how the Docker/Codespaces images are set up).
-> Both forms call the same `code/<script>.py`.
+> Both forms call the same `code/<script>.py`. Without `scripts/` on PATH, invoke
+> them by their path: `scripts\r.bat` (Windows) or `scripts/r.sh` (Linux/macOS).
 
 - `c.bat` — activates the `learn-better` conda env (`c` from the repo root).
 - `r.bat` — activates the env and runs `code\read_channel.py` (`r`).
@@ -386,11 +423,11 @@ clips that have no transcript.
 What it does, per clip (up to `LIMIT`, default **5**, never more):
 
 1. **Lists** the videos from your chosen source.
-2. **Saves the transcript** to `transcripts/<title> [<id>].txt`. If a clip has
-   no transcript (subtitles disabled), it prints a loud `!! NO TRANSCRIPT`
+2. **Saves the transcript** to `data/transcripts/<title> [<id>].txt`. If a clip
+   has no transcript (subtitles disabled), it prints a loud `!! NO TRANSCRIPT`
    line and lists that clip in the end-of-run summary.
-3. **Downloads the audio** to `audio/<title> [<id>].mp3`. Both steps **skip**
-   any file already present, so re-running only fetches what's missing.
+3. **Downloads the audio** to `data/audio/<title> [<id>].mp3`. Both steps
+   **skip** any file already present, so re-running only fetches what's missing.
 
 Configure the source at the top of the file (set ONE, leave the others `None`):
 
@@ -407,8 +444,8 @@ Run it:
 r
 ```
 
-(or `python code\read_channel.py`). Output goes to `audio/` and
-`transcripts/` (both git-ignored).
+(or `python code\read_channel.py`). Output goes to `data/audio/` and
+`data/transcripts/` (both git-ignored).
 
 Notes:
 - **mp3 conversion needs ffmpeg** (see Dependencies). Set `AUDIO_FORMAT = None`
@@ -426,8 +463,8 @@ For clips whose YouTube captions are disabled (the ones the tools flag as
 `NO TRANSCRIPT`), generate a transcript from the audio using
 [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper) — a fast,
 CPU-friendly, no-API-key speech-to-text engine. `code/transcribe_audio.py` writes
-to `generated_transcripts/<title> [<id>].whisper.<lang>.txt` (named from the audio
-file), and **skips** any transcript already present.
+to `data/generated_transcripts/<title> [<id>].whisper.<lang>.txt` (named from the
+audio file), and **skips** any transcript already present.
 
 It is driven by small JSON config files in the `config/` folder, passed to `w`:
 
@@ -444,7 +481,7 @@ Each config sets `select_by` and the Whisper options:
   matched against audio file names.
 - **`select_by = "id"`** — `select` is a list of YouTube video ids (the `[<id>]`
   in each audio file name; copy them from `data/playlists.json`).
-- **`select_by = "all"`** — every audio file in `audio/` (slow).
+- **`select_by = "all"`** — every audio file in `data/audio/` (slow).
 - **`select_by = "source"`** — the real "fill the gaps" use case: give a
   `playlist_id` / `channel` / `search`, and for each video it uses the YouTube
   caption transcript if one exists, and **only** Whisper-transcribes the
@@ -469,8 +506,8 @@ YouTube's captions (see "Whisper transcription quality" below).
 w config\config_transcribe.source.json
 ```
 
-Output goes to `generated_transcripts/` (git-ignored). Re-running skips clips that
-already have a transcript.
+Output goes to `data/generated_transcripts/` (git-ignored). Re-running skips
+clips that already have a transcript.
 
 ### Summarize transcripts (`s.bat`)
 
@@ -489,12 +526,12 @@ s
 `code/make_summaries.py` then:
 
 1. finds every English transcript from **both** sources — YouTube captions
-   (`transcripts/*.en.txt`) and Whisper output
-   (`generated_transcripts/*.whisper.en.txt`),
+   (`data/transcripts/*.en.txt`) and Whisper output
+   (`data/generated_transcripts/*.whisper.en.txt`),
 2. picks **one per video** (captions preferred; a Whisper transcript is used only
    when that video has no caption), deduplicating by the `[<id>]` video id so the
    same clip is never listed twice,
-3. checks which already have a matching `summaries/<base>.summary.md`,
+3. checks which already have a matching `data/summaries/<base>.summary.md`,
 4. prints which are done vs. missing (tagging each `(caption)` or `(whisper)`), and
 5. for the missing ones, prints a single ready-to-paste instruction whose paths
    point at the correct folder.
@@ -502,22 +539,22 @@ s
 You copy that printed instruction into the Kiro chat, e.g.:
 
 > Apply skill_summary.md to these transcripts and save each to
-> summaries/<base>.summary.md:
-> - transcripts/Some Video [abc123].en.txt
-> - generated_transcripts/Another Video [def456].whisper.en.txt
+> data/summaries/<base>.summary.md:
+> - data/transcripts/Some Video [abc123].en.txt
+> - data/generated_transcripts/Another Video [def456].whisper.en.txt
 
 Kiro reads each transcript and writes the summary following `skill_summary.md`.
 Existing summaries are left alone, so re-running only surfaces new transcripts.
-To regenerate one, delete its `summaries/*.summary.md` and run `s` again.
+To regenerate one, delete its `data/summaries/*.summary.md` and run `s` again.
 
 Typical flow for a new video: `t` or `w` (get a transcript, caption or Whisper) →
 `s` (list what needs summarizing) → paste the instruction into Kiro.
 
 Note: only English transcripts are summarized, and both a caption and a Whisper
-transcript for the same video map to the same `summaries/<base>.summary.md`.
-Summaries are saved to `summaries/` (this folder **is** tracked by git, unlike
-`audio/`, `transcripts/`, and `generated_transcripts/`, since summaries are
-authored content rather than regenerated downloads).
+transcript for the same video map to the same `data/summaries/<base>.summary.md`.
+Summaries are saved to `data/summaries/` (this folder **is** tracked by git,
+unlike `data/audio/`, `data/transcripts/`, and `data/generated_transcripts/`,
+since summaries are authored content rather than regenerated downloads).
 
 ### Word cloud (`d.bat` / `wc.bat`)
 
@@ -527,7 +564,7 @@ HTML page renders it **client-side** with a JavaScript library. No `matplotlib`,
 no plotting deps.
 
 **1. Generate the data.** `code/make_wordcloud.py` reads a transcript (from
-`transcripts/` or `generated_transcripts/`), strips timestamps, tokenizes
+`data/transcripts/` or `data/generated_transcripts/`), strips timestamps, tokenizes
 (Unicode-aware, keeps accented fr/ro letters), drops stopwords + very short
 words, counts frequencies, and writes
 `data/wordclouds/<title> [<id>].word_cloud.json` (skip-if-exists).
@@ -577,9 +614,9 @@ already exist; delete one (or change `output_name`) to regenerate.
 
 Re-encode existing downloaded audio to a **different (usually lower) bitrate**,
 handy for shrinking files or standardizing them for playback. `code/reencode_audio.py`
-reads from `audio/`, re-encodes with **ffmpeg**, and writes to a separate
-`audio_reencoded/` folder so the originals are never touched (re-encoding to a
-lower bitrate is lossy and irreversible).
+reads from `data/audio/`, re-encodes with **ffmpeg**, and writes to a separate
+`data/audio_reencoded/` folder so the originals are never touched (re-encoding to
+a lower bitrate is lossy and irreversible).
 
 This uses **only free tooling**: ffmpeg is already required by the project
 (yt-dlp uses it for mp3 conversion — see "Install ffmpeg" above). No new pip
@@ -602,7 +639,7 @@ Config keys (`config/config_reencode.json`):
 
 - **`select_by`** — `name` (case-insensitive substrings of the audio file name,
   in `select`) | `id` (11-char YouTube ids, the `[<id>]` in the name, in
-  `select`) | `all` (every audio file in `audio/`, slow).
+  `select`) | `all` (every audio file in `data/audio/`, slow).
 - **`bitrate`** — the target audio bitrate: `"64k"`, `"96k"`, `"128k"` (or a
   plain number like `64000`). Lower = smaller file, lower quality. 96k is a good
   balance for speech.
@@ -612,30 +649,30 @@ Config keys (`config/config_reencode.json`):
 - **`sample_rate`** (ffmpeg `-ar`) / **`channels`** (ffmpeg `-ac`, e.g. `1` =
   mono to shrink further) — optional; `null` keeps the source value.
 
-Output files are named `audio_reencoded/<name>.<bitrate>.<ext>` (e.g.
+Output files are named `data/audio_reencoded/<name>.<bitrate>.<ext>` (e.g.
 `... .96kbps.mp3`), so different bitrates coexist. Re-running **skips** files
 that already exist; delete one (or pick a new bitrate) to regenerate. The run
 prints an `original -> new (saved %)` line per file. Output goes to
-`audio_reencoded/` (git-ignored).
+`data/audio_reencoded/` (git-ignored).
 
 Verify a result played the way you expect, or check its bitrate with `ffprobe`
 (ships with ffmpeg):
 
 ```cmd
-ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "audio_reencoded\<file>.96kbps.mp3"
+ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "data\audio_reencoded\<file>.96kbps.mp3"
 ```
 
 ### Text to speech (`v.bat`)
 
 Turn study material back into audio: `code/generate_speech.py` reads a text
-source (a `summaries/*.summary.md`, a `transcripts/` caption file, or a
-`generated_transcripts/` Whisper file), synthesizes narration with the free,
-local **Piper** engine, and writes a `.wav` to `tts_output/`. This is the
+source (a `data/summaries/*.summary.md`, a `data/transcripts/` caption file, or a
+`data/generated_transcripts/` Whisper file), synthesizes narration with the free,
+local **Piper** engine, and writes a `.wav` to `data/tts_output/`. This is the
 opposite direction of the Whisper step (text → audio).
 
 Free tooling only: **Piper** is MIT-licensed, CPU-only, no GPU, no API key, no
 paid service (`pip install piper-tts`). On first use it downloads a small
-per-voice `.onnx` model into `tts_output/.voices/` (cached after). Optional
+per-voice `.onnx` model into `data/tts_output/.voices/` (cached after). Optional
 `mp3` output reuses the ffmpeg binary the project already requires.
 
 Run it with the default config (Git & GitHub summary, `en_US-lessac-medium`
@@ -669,20 +706,20 @@ Config keys (`config/config_tts.json`):
 - **`max_chars`** — optional cap on input length for a quick test (`null` = whole
   file).
 
-Output files are named `tts_output/<base>.<voice>[.s<scale>].<ext>` (e.g.
+Output files are named `data/tts_output/<base>.<voice>[.s<scale>].<ext>` (e.g.
 `... .en_US-lessac-medium.wav`, or `... .en_US-lessac-medium.s0.9.wav` at 0.9
 speed). Re-running **skips** files that already exist. Output goes to
-`tts_output/` (git-ignored). Open a result in any player, or check it with
+`data/tts_output/` (git-ignored). Open a result in any player, or check it with
 `ffprobe`:
 
 ```cmd
-ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "tts_output\<file>.wav"
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "data\tts_output\<file>.wav"
 ```
 
 ### Download audio from YouTube (legacy)
 
 `pytube`-based downloader for a search, a public playlist, or single videos.
-Audio is saved to an `audio/` folder.
+Audio is saved to the `data/audio/` folder.
 
 ```cmd
 python code\youtube_download.py
@@ -711,7 +748,7 @@ jupyter notebook notebooks\yt_download.ipynb
 Before generalizing the speech-to-text step, we validated it on one clip.
 `code/transcribe_audio.py` transcribes *Git and GitHub Tutorial for Beginners*
 with `faster-whisper` (model `base`, CPU, `int8`) to
-`generated_transcripts/...whisper.en.txt`. We then compared that output against
+`data/generated_transcripts/...whisper.en.txt`. We then compared that output against
 YouTube's own English captions for the same video.
 
 ### How the numbers were obtained
@@ -808,28 +845,31 @@ learn-better/
 ├── lib/                 # reusable helpers: net, textutil, paths, youtube
 ├── notebooks/           # yt_download.ipynb (reusable helpers + metadata)
 ├── .devcontainer/       # Codespaces / Dev Container (Python 3.12)
-├── audio/               # downloaded audio (git-ignored)
-├── audio_reencoded/     # re-encoded audio at a target bitrate (git-ignored)
-├── tts_output/          # text-to-speech audio + .voices/ cache (git-ignored)
-├── transcripts/         # saved caption transcripts (git-ignored)
-├── generated_transcripts/ # Whisper transcripts (git-ignored)
-├── summaries/           # AI-generated summaries (tracked by git)
-├── data/                # playlists.json + wordclouds/*.word_cloud.json (git-ignored)
+├── data/                # ALL generated outputs live here (git-ignored, except summaries/)
+│   ├── audio/               # downloaded audio (git-ignored)
+│   ├── audio_reencoded/     # re-encoded audio at a target bitrate (git-ignored)
+│   ├── tts_output/          # text-to-speech audio + .voices/ cache (git-ignored)
+│   ├── transcripts/         # saved caption transcripts (git-ignored)
+│   ├── generated_transcripts/ # Whisper transcripts (git-ignored)
+│   ├── summaries/           # AI-generated summaries (TRACKED by git via .gitignore negation)
+│   ├── wordclouds/          # *.word_cloud.json (git-ignored)
+│   └── playlists.json       # channel playlists (git-ignored)
 ├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
 ├── ignore/              # git-ignored: retired code + todo.md, mini_todo.md, notes
 ├── wordcloud.html       # renders a word_cloud.json (wordcloud2.js)
 ├── skill_summary.md     # reusable summary format/procedure
-├── c.bat                # activate the learn-better conda env
-├── r.bat                # activate env + run read_channel.py
-├── t.bat                # activate env + run read_transcript.py
-├── s.bat                # activate env + run make_summaries.py (prep summaries)
-├── p.bat                # activate env + run list_playlists.py
-├── w.bat                # activate env + run transcribe_audio.py (Whisper)
-├── d.bat                # activate env + run make_wordcloud.py (one transcript)
-├── wc.bat               # activate env + run make_wordcloud.py (config: batch/merge)
-├── a.bat                # activate env + run reencode_audio.py (audio bitrate)
-├── v.bat                # activate env + run generate_speech.py (text to speech)
+├── scripts/             # one-letter runners (add to PATH for c/r/t/s/p/w/d/wc/a/v)
+│   ├── c.bat / c.sh     # activate the learn-better conda env
+│   ├── r.bat / r.sh     # activate env + run read_channel.py
+│   ├── t.bat / t.sh     # activate env + run read_transcript.py
+│   ├── s.bat / s.sh     # activate env + run make_summaries.py (prep summaries)
+│   ├── p.bat / p.sh     # activate env + run list_playlists.py
+│   ├── w.bat / w.sh     # activate env + run transcribe_audio.py (Whisper)
+│   ├── d.bat / d.sh     # activate env + run make_wordcloud.py (one transcript)
+│   ├── wc.bat / wc.sh   # activate env + run make_wordcloud.py (config: batch/merge)
+│   ├── a.bat / a.sh     # activate env + run reencode_audio.py (audio bitrate)
+│   └── v.bat / v.sh     # activate env + run generate_speech.py (text to speech)
 ├── Dockerfile.standalone # slim Docker/Podman/CI image (ffmpeg, non-root); see how_to_deploy.md
 ├── .dockerignore        # keeps the Docker build context lean
 ├── how_to_deploy.md     # deployment guide: 12 platforms + image scripts

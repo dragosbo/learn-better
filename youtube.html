@@ -144,7 +144,7 @@
     The three summarized videos together map out a version-control learning path:
     Git fundamentals, using Git visually in an IDE, and automating delivery with a
     CI/CD pipeline. This mindmap distills the key ideas from each
-    <code>summaries/*.summary.md</code>.
+    <code>data/summaries/*.summary.md</code>.
   </p>
   <div class="mermaid">
 mindmap
@@ -203,7 +203,7 @@ mindmap
     Sourced from the summaries of <em>Git and GitHub Tutorial for Beginners</em>,
     <em>How to use Git inside of VSCode</em>, and
     <em>What Is a GitLab Pipeline? (Part 5)</em>. Open the files in
-    <code>summaries/</code> for the full breakdown of each.
+    <code>data/summaries/</code> for the full breakdown of each.
   </div>
 </section>
 
@@ -217,9 +217,9 @@ graph LR
   U --> B["Fetch transcripts<br/>in multiple languages"]
   U --> C["Summarize a video<br/>(TOC + strengths/weaknesses)"]
   U --> D["Build study notes<br/>(Obsidian / mindmap)"]
-  A --> R1[["audio/*.mp3"]]
-  B --> R2[["transcripts/*.txt"]]
-  C --> R3[["summaries/*.summary.md"]]
+  A --> R1[["data/audio/*.mp3"]]
+  B --> R2[["data/transcripts/*.txt"]]
+  C --> R3[["data/summaries/*.summary.md"]]
   D --> R4[["Knowledge base"]]
   style U fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
   style R1 fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
@@ -247,18 +247,18 @@ graph LR
   </p>
   <div class="mermaid">
 flowchart TD
-  Start([Run r.bat]) --> Cfg{"Which source is set?"}
+  Start([Run r]) --> Cfg{"Which source is set?"}
   Cfg -->|PLAYLIST_ID| S1
   Cfg -->|CHANNEL| S1
   Cfg -->|SEARCH| S1
   S1["STEP 1 - list videos<br/>(yt-dlp, extract_flat)"] --> Loop{"For each clip<br/>up to LIMIT"}
   Loop --> S2["STEP 2 - transcript<br/>(yt-dlp subtitles &rarr; VTT &rarr; clean .txt)"]
   S2 --> HasT{"Transcript<br/>available?"}
-  HasT -->|yes| SaveT[["transcripts/*.txt"]]
+  HasT -->|yes| SaveT[["data/transcripts/*.txt"]]
   HasT -->|no| Flag["Flag as NO TRANSCRIPT"]
   Loop --> S3{"DOWNLOAD<br/>enabled?"}
   S3 -->|yes| S3d["STEP 3 - audio<br/>(yt-dlp bestaudio &rarr; mp3 via ffmpeg)"]
-  S3d --> SaveA[["audio/*.mp3"]]
+  S3d --> SaveA[["data/audio/*.mp3"]]
   S3 -->|no| Skip[skip]
   SaveT --> Done([Summary report])
   Flag --> Done
@@ -284,13 +284,13 @@ flowchart TD
   <div class="mermaid">
 flowchart LR
   YT([YouTube]) --> DL["yt-dlp"]
-  DL --> AUD[["audio/ (git-ignored)"]]
+  DL --> AUD[["data/audio/ (git-ignored)"]]
   DL --> VTT["subtitles (VTT)"]
   VTT --> CLEAN["clean + timestamp"]
-  CLEAN --> TR[["transcripts/ (git-ignored)"]]
+  CLEAN --> TR[["data/transcripts/ (git-ignored)"]]
   TR --> MS["make_summaries.py<br/>(lists what needs a summary)"]
   MS --> KIRO{{"Kiro (AI)<br/>applies skill_summary.md"}}
-  KIRO --> SUM[["summaries/ (tracked)"]]
+  KIRO --> SUM[["data/summaries/ (tracked)"]]
   SUM --> OBS([Obsidian / mindmap])
   style YT fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
   style KIRO fill:#1e2740,stroke:#ffb454,color:#ffd28a
@@ -436,16 +436,20 @@ python code/read_channel.py</code></pre>
     Cloud IPs hit the YouTube <strong>bot-check</strong> more often. If you see
     "Sign in to confirm you're not a bot", upload a <code>cookies.txt</code> and set
     <code>COOKIES_FILE</code>. Colab sessions are ephemeral, download
-    <code>audio/</code> / <code>transcripts/</code> before disconnect or mount Google Drive.
+    <code>data/audio/</code> / <code>data/transcripts/</code> before disconnect or mount Google Drive.
   </div>
 </section>
 
 <section id="run">
   <h2>Running the tools</h2>
-  <p>Activate the environment, then use the helper batch files from the repo root:</p>
+  <p>The runners live in <code>scripts/</code>. Add that folder to your PATH
+     (<code>set PATH=%CD%\scripts;%PATH%</code> on Windows, or the repo's
+     <code>init.bat</code>; <code>export PATH="$PWD/scripts:$PATH"</code> on
+     Linux/macOS) to type the one-letter commands below from the repo root,
+     otherwise invoke them by path (<code>scripts\r.bat</code>):</p>
   <table>
     <tr><th>Command</th><th>Runs</th><th>What it does</th></tr>
-    <tr><td><kbd>c</kbd></td><td><code>c.bat</code></td><td>Activate the <code>learn-better</code> conda env.</td></tr>
+    <tr><td><kbd>c</kbd></td><td><code>scripts/c.bat</code></td><td>Activate the <code>learn-better</code> conda env.</td></tr>
     <tr><td><kbd>r</kbd></td><td><code>read_channel.py</code></td><td>Audio + transcripts for a playlist/channel/search.</td></tr>
     <tr><td><kbd>t</kbd></td><td><code>read_transcript.py</code></td><td>Transcripts only, one file per language.</td></tr>
     <tr><td><kbd>p</kbd></td><td><code>list_playlists.py</code></td><td>List a channel's public playlists to <code>data/playlists.json</code>.</td></tr>
@@ -475,7 +479,7 @@ LIMIT       = 5                     # max clips to process</code></pre>
     generates a transcript from the audio using
     <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a> &mdash; a
     fast, CPU-friendly, no-API-key engine. Output lands in
-    <code>generated_transcripts/&lt;title&gt; [&lt;id&gt;].whisper.&lt;lang&gt;.txt</code>
+    <code>data/generated_transcripts/&lt;title&gt; [&lt;id&gt;].whisper.&lt;lang&gt;.txt</code>
     (named from the audio file), with skip-if-exists. It is driven by small JSON
     config files in the <code>config/</code> folder, passed to <kbd>w</kbd>.
   </p>
@@ -489,7 +493,7 @@ w config\config_transcribe.source.json:: playlist/channel/search, captions-first
     <tr><th>Mode</th><th>What it does</th></tr>
     <tr><td><code>name</code></td><td>Audio files whose name contains any of the given substrings.</td></tr>
     <tr><td><code>id</code></td><td>Audio files matched by YouTube video id (the <code>[&lt;id&gt;]</code> in the name; same ids as <code>data/playlists.json</code>).</td></tr>
-    <tr><td><code>all</code></td><td>Every audio file in <code>audio/</code> (slow).</td></tr>
+    <tr><td><code>all</code></td><td>Every audio file in <code>data/audio/</code> (slow).</td></tr>
     <tr><td><code>source</code></td><td>The "fill the gaps" case: a playlist/channel/search where each clip uses its YouTube caption if present, and <strong>only</strong> caption-less clips are Whisper-transcribed (audio reused/downloaded; model loads lazily).</td></tr>
   </table>
 
@@ -505,10 +509,10 @@ w config\config_transcribe.source.json:: playlist/channel/search, captions-first
 flowchart TD
   Src([playlist / channel / search]) --> LV["list videos"]
   LV --> Cap{"has YouTube<br/>caption?"}
-  Cap -->|yes| Keep[["transcripts/*.en.txt<br/>(no Whisper)"]]
+  Cap -->|yes| Keep[["data/transcripts/*.en.txt<br/>(no Whisper)"]]
   Cap -->|no| Aud["reuse/download audio"]
   Aud --> W["faster-whisper<br/>transcribe or translate"]
-  W --> Out[["generated_transcripts/<br/>*.whisper.&lt;lang&gt;.txt"]]
+  W --> Out[["data/generated_transcripts/<br/>*.whisper.&lt;lang&gt;.txt"]]
   style Src fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
   style W fill:#1e2740,stroke:#ffb454,color:#ffd28a
   style Keep fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
@@ -526,23 +530,23 @@ flowchart TD
   <h2>Summaries workflow</h2>
   <p>
     Summaries are authored by the AI, not a script (a batch file cannot reason about
-    content). <code>s.bat</code> does the deterministic prep and hands off to Kiro.
+    content). <code>s</code> does the deterministic prep and hands off to Kiro.
     It reads transcripts from <strong>both</strong> sources &mdash; YouTube captions
-    (<code>transcripts/</code>) and Whisper output (<code>generated_transcripts/</code>)
+    (<code>data/transcripts/</code>) and Whisper output (<code>data/generated_transcripts/</code>)
     &mdash; preferring captions and picking one per video (deduped by video id).
   </p>
   <div class="mermaid">
 sequenceDiagram
   participant You
-  participant s as s.bat / make_summaries.py
+  participant s as s / make_summaries.py
   participant Kiro as Kiro (AI)
   You->>s: run "s"
-  s->>s: scan transcripts/*.en.txt + generated_transcripts/*.whisper.en.txt
-  s->>s: pick one per video (captions preferred), check summaries/
+  s->>s: scan data/transcripts/*.en.txt + data/generated_transcripts/*.whisper.en.txt
+  s->>s: pick one per video (captions preferred), check data/summaries/
   s-->>You: list done vs. missing (caption/whisper) + paste-ready instruction
   You->>Kiro: paste instruction (apply skill_summary.md)
   Kiro->>Kiro: read each transcript
-  Kiro-->>You: write summaries/*.summary.md
+  Kiro-->>You: write data/summaries/*.summary.md
   </div>
   <p>
     Typical flow for a new video: <kbd>t</kbd> or <kbd>w</kbd> (get a transcript,
@@ -564,7 +568,7 @@ sequenceDiagram
   </p>
   <div class="mermaid">
 flowchart LR
-  T[["transcripts/*.en.txt<br/>generated_transcripts/*.whisper.en.txt"]] --> M["make_wordcloud.py<br/>tokenize, drop stopwords, count"]
+  T[["data/transcripts/*.en.txt<br/>data/generated_transcripts/*.whisper.en.txt"]] --> M["make_wordcloud.py<br/>tokenize, drop stopwords, count"]
   M --> J[["data/wordclouds/<br/>*.word_cloud.json"]]
   J --> H["wordcloud.html<br/>wordcloud2.js (CDN)"]
   H --> C([interactive cloud])
@@ -608,7 +612,7 @@ wc config\config_wordcloud.merge.json :: merge: ONE cloud from many transcripts<
     Before generalizing the speech-to-text step, we validated it on one clip.
     <code>code/transcribe_audio.py</code> transcribes <em>Git and GitHub Tutorial for
     Beginners</em> with <code>faster-whisper</code> (model <code>base</code>, CPU,
-    <code>int8</code>) to <code>generated_transcripts/&hellip;whisper.en.txt</code>, then we
+    <code>int8</code>) to <code>data/generated_transcripts/&hellip;whisper.en.txt</code>, then we
     compared that output against YouTube's own English captions for the same video.
   </p>
 
@@ -623,8 +627,8 @@ wc config\config_wordcloud.merge.json :: merge: ONE cloud from many transcripts<
   </p>
   <div class="mermaid">
 flowchart LR
-  W[["generated_transcripts/<br/>*.whisper.en.txt (Whisper base)"]] --> N["normalize<br/>strip timestamps, lowercase, tokenize"]
-  Y[["transcripts/*.en.txt<br/>(YouTube captions)"]] --> N
+  W[["data/generated_transcripts/<br/>*.whisper.en.txt (Whisper base)"]] --> N["normalize<br/>strip timestamps, lowercase, tokenize"]
+  Y[["data/transcripts/*.en.txt<br/>(YouTube captions)"]] --> N
   N --> M{{"compare<br/>difflib + bag-of-words"}}
   M --> R["~95% word accuracy<br/>96.4% sequence similarity"]
   style W fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
@@ -678,7 +682,7 @@ flowchart LR
     <tr><th>Item</th><th>Status</th></tr>
     <tr><td>No-API-key downloader + transcripts (<code>read_channel.py</code>)</td><td class="status done">Done</td></tr>
     <tr><td>Transcript-only tool per language (<code>read_transcript.py</code>)</td><td class="status done">Done</td></tr>
-    <tr><td>Output folders <code>audio/</code>, <code>transcripts/</code> (git-ignored)</td><td class="status done">Done</td></tr>
+    <tr><td>Output folders under <code>data/</code> (e.g. <code>data/audio/</code>, <code>data/transcripts/</code>, git-ignored)</td><td class="status done">Done</td></tr>
     <tr><td><code>requirements.txt</code> fixed, pinned, ffmpeg documented</td><td class="status done">Done</td></tr>
     <tr><td>Dev Container aligned to Python 3.12</td><td class="status done">Done</td></tr>
     <tr><td>Short-URL and output-folder bug fixes</td><td class="status done">Done</td></tr>
@@ -688,7 +692,7 @@ flowchart LR
     <tr><td>Playlists tool (<code>list_playlists.py</code>) &rarr; <code>data/playlists.json</code></td><td class="status done">Done</td></tr>
     <tr><td>Whisper speech-to-text + translate (<code>transcribe_audio.py</code>)</td><td class="status done">Done</td></tr>
     <tr><td>Summary skill + summaries (caption + Whisper sources)</td><td class="status done">Done</td></tr>
-    <tr><td>Minimalist <code>.gitignore</code>; cookies + <code>generated_transcripts/</code> ignored</td><td class="status done">Done</td></tr>
+    <tr><td>Minimalist <code>.gitignore</code>; cookies + <code>data/generated_transcripts/</code> ignored</td><td class="status done">Done</td></tr>
   </table>
 
   <h3>In progress / partial <span class="tag">partial</span></h3>
@@ -704,8 +708,8 @@ flowchart LR
     <tr><td>Speech to text (Whisper)</td><td>todo #1</td><td class="status done">Done — <code>transcribe_audio.py</code> (<kbd>w</kbd>), ~95% vs. captions</td></tr>
     <tr><td>Speech to translated text</td><td>todo #2</td><td class="status done">Done — <code>task="translate"</code> (English only, Whisper's fixed target)</td></tr>
     <tr><td>Reusable <code>lib/</code> + playlists tool</td><td>plan Phase 0 / A</td><td class="status done">Done — <code>lib/</code>, <code>list_playlists.py</code> (<kbd>p</kbd>)</td></tr>
-    <tr><td>Text to speech</td><td>todo #3</td><td class="status done">Done — <code>generate_speech.py</code> (<kbd>v</kbd>) voices a summary/transcript to <code>tts_output/</code> via Piper (free, MIT, CPU-only, no GPU); name/id/all selection, adjustable voice + speed (<code>length_scale</code>), skip-if-exists</td></tr>
-    <tr><td>Audio to audio at a different bit rate</td><td>todo #4</td><td class="status done">Done — <code>reencode_audio.py</code> (<kbd>a</kbd>) re-encodes <code>audio/</code> → <code>audio_reencoded/*.&lt;bitrate&gt;.&lt;ext&gt;</code> via ffmpeg (free); name/id/all selection, skip-if-exists, no extra deps</td></tr>
+    <tr><td>Text to speech</td><td>todo #3</td><td class="status done">Done — <code>generate_speech.py</code> (<kbd>v</kbd>) voices a summary/transcript to <code>data/tts_output/</code> via Piper (free, MIT, CPU-only, no GPU); name/id/all selection, adjustable voice + speed (<code>length_scale</code>), skip-if-exists</td></tr>
+    <tr><td>Audio to audio at a different bit rate</td><td>todo #4</td><td class="status done">Done — <code>reencode_audio.py</code> (<kbd>a</kbd>) re-encodes <code>data/audio/</code> → <code>data/audio_reencoded/*.&lt;bitrate&gt;.&lt;ext&gt;</code> via ffmpeg (free); name/id/all selection, skip-if-exists, no extra deps</td></tr>
     <tr><td>Text summarization notebook</td><td>todo #5</td><td class="status partial">Partial — <code>make_summaries.py</code> (<kbd>s</kbd>) reads caption + Whisper transcripts and hands off to Kiro; standalone notebook still open</td></tr>
     <tr><td>Text to speech with special voices</td><td>todo #6</td><td class="status partial">Partial — voice + speed are selectable now (any free Piper voice, incl. fr/ro; <code>length_scale</code>); optional higher-quality engine (Kokoro) and voice cloning (XTTS/Chatterbox) remain deferred</td></tr>
     <tr><td>Create word cloud</td><td>todo #7</td><td class="status done">Done — <code>make_wordcloud.py</code> (<kbd>d</kbd>/<kbd>wc</kbd>) → <code>word_cloud.json</code>, rendered by <code>wordcloud.html</code> (wordcloud2.js); batch + merge + language guard, no matplotlib</td></tr>
@@ -749,31 +753,34 @@ graph TD
 &#9500;&#9472; code/                      # scripts
 &#9474;  &#9500;&#9472; read_channel.py         # no-API-key: audio + transcripts (recommended)
 &#9474;  &#9500;&#9472; read_transcript.py      # no-API-key: transcripts only (per language)
-&#9474;  &#9500;&#9472; list_playlists.py       # no-API-key: list a channel's public playlists (p.bat)
-&#9474;  &#9500;&#9472; transcribe_audio.py     # Whisper speech-to-text + translate (w.bat)
+&#9474;  &#9500;&#9472; list_playlists.py       # no-API-key: list a channel's public playlists (p)
+&#9474;  &#9500;&#9472; transcribe_audio.py     # Whisper speech-to-text + translate (w)
 &#9474;  &#9500;&#9472; compare_transcripts.py  # Whisper-vs-captions quality check
-&#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s.bat)
-&#9474;  &#9500;&#9472; make_wordcloud.py       # transcript -> word_cloud.json (d.bat / wc.bat)
-&#9474;  &#9500;&#9472; reencode_audio.py       # re-encode audio at a target bitrate (a.bat)
-&#9474;  &#9500;&#9472; generate_speech.py      # text -> speech via Piper (v.bat)
+&#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s)
+&#9474;  &#9500;&#9472; make_wordcloud.py       # transcript -> word_cloud.json (d / wc)
+&#9474;  &#9500;&#9472; reencode_audio.py       # re-encode audio at a target bitrate (a)
+&#9474;  &#9500;&#9472; generate_speech.py      # text -> speech via Piper (v)
 &#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader
 &#9474;  &#9492;&#9472; languages.json          # subtitle languages to fetch (en, fr, ro)
 &#9500;&#9472; lib/                       # reusable helpers: net, textutil, paths, youtube
 &#9500;&#9472; notebooks/                 # yt_download.ipynb
 &#9500;&#9472; .devcontainer/             # Codespaces / Dev Container (Python 3.12)
-&#9500;&#9472; audio/                     # downloaded audio (git-ignored)
-&#9500;&#9472; audio_reencoded/           # re-encoded audio at a target bitrate (git-ignored)
-&#9500;&#9472; tts_output/                # text-to-speech audio + .voices/ cache (git-ignored)
-&#9500;&#9472; transcripts/               # caption transcripts (git-ignored)
-&#9500;&#9472; generated_transcripts/     # Whisper transcripts (git-ignored)
-&#9500;&#9472; summaries/                 # AI-generated summaries (tracked)
-&#9500;&#9472; data/                      # e.g. playlists.json (git-ignored)
+&#9500;&#9472; data/                      # ALL generated outputs (git-ignored, except summaries/)
+&#9474;  &#9500;&#9472; audio/                  # downloaded audio (git-ignored)
+&#9474;  &#9500;&#9472; audio_reencoded/        # re-encoded audio at a target bitrate (git-ignored)
+&#9474;  &#9500;&#9472; tts_output/             # text-to-speech audio + .voices/ cache (git-ignored)
+&#9474;  &#9500;&#9472; transcripts/            # caption transcripts (git-ignored)
+&#9474;  &#9500;&#9472; generated_transcripts/  # Whisper transcripts (git-ignored)
+&#9474;  &#9500;&#9472; summaries/              # AI-generated summaries (TRACKED via .gitignore negation)
+&#9474;  &#9500;&#9472; wordclouds/             # *.word_cloud.json (git-ignored)
+&#9474;  &#9492;&#9472; playlists.json          # channel playlists (git-ignored)
 &#9500;&#9472; config/                    # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
 &#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
 &#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, mini_todo.md, notes
 &#9500;&#9472; wordcloud.html             # renders a word_cloud.json (wordcloud2.js)
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
-&#9500;&#9472; c.bat r.bat t.bat s.bat p.bat w.bat d.bat wc.bat a.bat v.bat  # helper runners
+&#9500;&#9472; scripts/                   # one-letter runners c/r/t/s/p/w/d/wc/a/v (.bat + .sh; add to PATH)
+&#9500;&#9472; init.bat                   # adds scripts/ to PATH for the current cmd session
 &#9500;&#9472; Dockerfile.standalone      # slim Docker/Podman/CI image (see how_to_deploy.md)
 &#9500;&#9472; how_to_deploy.md           # deployment guide: 12 platforms + image scripts
 &#9500;&#9472; requirements.txt

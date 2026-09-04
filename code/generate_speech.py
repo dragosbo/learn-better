@@ -2,19 +2,19 @@
 
 Read a TEXT source (a transcript, a Whisper transcript, or a summary), synthesize
 narration with the free, local, CPU-only **Piper** engine, and write the audio to
-a separate `tts_output/` folder. This mirrors Phase C (speech-to-text via
+a separate `data/tts_output/` folder. This mirrors Phase C (speech-to-text via
 faster-whisper) in the opposite direction: text -> audio.
 
 Input text lives in:
-    transcripts/<title> [<id>].<lang>.txt            (YouTube captions)
-    generated_transcripts/<title> [<id>].whisper.<lang>.txt  (Whisper)
-    summaries/<title> [<id>].summary.md              (AI summaries; Markdown)
+    data/transcripts/<title> [<id>].<lang>.txt            (YouTube captions)
+    data/generated_transcripts/<title> [<id>].whisper.<lang>.txt  (Whisper)
+    data/summaries/<title> [<id>].summary.md              (AI summaries; Markdown)
 Output:
-    tts_output/<base>.<voice>.wav   (e.g. ... .en_US-lessac-medium.wav)
+    data/tts_output/<base>.<voice>.wav   (e.g. ... .en_US-lessac-medium.wav)
 
 Free tooling only: Piper is MIT-licensed, CPU-only, no GPU, no API key, no paid
 service (`pip install piper-tts`). The voice model (a small .onnx) downloads on
-first use into tts_output/.voices/ (same "first-run download" idea faster-whisper
+first use into data/tts_output/.voices/ (same "first-run download" idea faster-whisper
 uses). Optional mp3 output reuses the ffmpeg binary the project already requires.
 
 This script drives the Piper **CLI** via subprocess (its interface is stable
@@ -32,9 +32,9 @@ preferring: summary > caption transcript > Whisper transcript.
 
 D0 decisions (recorded here per the plan):
   - New dep: piper-tts (MIT, CPU-only). ffmpeg only for optional mp3.
-  - Output folder tts_output/ (git-ignored); name <base>.<voice>.<ext> so
+  - Output folder data/tts_output/ (git-ignored); name <base>.<voice>.<ext> so
     multiple voices coexist and skip-if-exists works.
-  - summaries/*.summary.md is stripped of Markdown before synthesis.
+  - data/summaries/*.summary.md is stripped of Markdown before synthesis.
 
 Usage (from the repo root, with the learn-better env active):
     python code/generate_speech.py                       # in-file defaults / auto-config
@@ -189,7 +189,7 @@ def pick_text(select_by, select):
 
 
 def _strip_markdown(text):
-    """Reduce Markdown to plain narratable prose (for summaries/*.md)."""
+    """Reduce Markdown to plain narratable prose (for data/summaries/*.md)."""
     out = []
     in_fence = False
     for line in text.splitlines():

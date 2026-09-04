@@ -1,14 +1,14 @@
 """Audio re-encode / bitrate helper (todo item 4 from plan.md).
 
-Re-encode existing audio (audio/*.mp3, .m4a, .webm, ...) to a chosen BITRATE and
-FORMAT using ffmpeg, writing the results to a SEPARATE folder so the originals
+Re-encode existing audio (data/audio/*.mp3, .m4a, .webm, ...) to a chosen BITRATE
+and FORMAT using ffmpeg, writing the results to a SEPARATE folder so the originals
 are never touched. Re-encoding to a lower bitrate is lossy and irreversible, so
-we always write to audio_reencoded/ and treat audio/ as read-only.
+we always write to data/audio_reencoded/ and treat data/audio/ as read-only.
 
 Input audio lives in:
-    audio/<title> [<id>].mp3            (also .m4a / .webm / .opus / .ogg / .wav)
+    data/audio/<title> [<id>].mp3            (also .m4a / .webm / .opus / .ogg / .wav)
 Output:
-    audio_reencoded/<title> [<id>].<bitrate>.<ext>   e.g. ....64kbps.mp3
+    data/audio_reencoded/<title> [<id>].<bitrate>.<ext>   e.g. ....64kbps.mp3
 
 Free tooling only: this shells out to the ffmpeg binary the project already
 requires (yt-dlp uses it for mp3 conversion; see README "Install ffmpeg"). No
@@ -20,7 +20,7 @@ Selecting which audio files to process (set SELECT_BY + SELECT below):
     (case-insensitive), e.g. ["Git and GitHub", "GitLab"].
   - SELECT_BY = "id":   audio files matched by YouTube video id (the `[<id>]`
     in the file name), e.g. ["tRZGeaHPoaw"].
-  - SELECT_BY = "all":  every audio file in audio/ (slow).
+  - SELECT_BY = "all":  every audio file in data/audio/ (slow).
 
 Usage (from the repo root, with the learn-better env active):
     python code/reencode_audio.py                          # in-file defaults / auto-config
@@ -139,7 +139,7 @@ def normalize_bitrate(value):
 
 
 def _audio_files():
-    """Yield (abspath, filename) for every audio file in audio/."""
+    """Yield (abspath, filename) for every audio file in data/audio/."""
     if not os.path.isdir(AUDIO_DIR):
         return
     for f in sorted(os.listdir(AUDIO_DIR)):

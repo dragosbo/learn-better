@@ -18,7 +18,7 @@ single source of truth for what remains to be done.
 | `code/read_transcript.py` | **working** | No-API-key transcript-only tool, one file per language. Thin wrapper over `lib/`. |
 | `code/list_playlists.py` | **working** | No-API-key: lists a channel's public playlists + each playlist's videos → `data/playlists.json` (`p.bat`). |
 | `lib/` package | **working** | Reusable helpers: `net`, `textutil`, `paths`, `youtube`. All entry scripts are thin config + `main()` wrappers; no duplicated logic. |
-| `code/transcribe_audio.py` | **working** | Whisper speech-to-text (`faster-whisper`): transcribe audio to `generated_transcripts/`, translate to English, select by name/id/all/source, JSON-config driven (`w.bat`). |
+| `code/transcribe_audio.py` | **working** | Whisper speech-to-text (`faster-whisper`): transcribe audio to `data/generated_transcripts/`, translate to English, select by name/id/all/source, JSON-config driven (`w`). |
 | `code/make_summaries.py` | **working** | Prep step for summaries: scans caption + Whisper transcripts (captions preferred), one per video, prints a paste-ready Kiro instruction (`s.bat`). |
 | `code/compare_transcripts.py` | **working** | Quality check: Whisper output vs. YouTube captions (~95% word accuracy on the sample). |
 | `code/youtube_download.py` | working (fragile) | Simple `pytube` audio downloader (search / playlist / single video). |
@@ -27,9 +27,9 @@ single source of truth for what remains to be done.
 | `.devcontainer/` | fixed | Codespaces-ready; Python versions were mismatched (now aligned to 3.12). |
 | `requirements.txt` | fixed | Typo fixed; pinned; added `yt-dlp`, `ipykernel`, `faster-whisper`; documented `ffmpeg` as a system dep. |
 | `code/make_wordcloud.py` | **working** | Transcript → `data/wordclouds/*.word_cloud.json` (data only); batch + merge + single-language guard; JSON-config driven (`d.bat` / `wc.bat`). Rendered by `wordcloud.html` (wordcloud2.js). |
-| `code/reencode_audio.py` | **working** | Re-encode `audio/` → `audio_reencoded/*.<bitrate>.<ext>` via ffmpeg (free; no new deps); name/id/all selection, skip-if-exists, failed-run handling; JSON-config driven (`a.bat`). Item 4. |
-| `code/generate_speech.py` | **working** | Text → speech via Piper (free, MIT, CPU-only): voice a summary/transcript to `tts_output/*.wav`; selectable voice + speed (`length_scale`), name/id/all selection, skip-if-exists; JSON-config driven (`v.bat`). Item 3 (baseline). |
-| Remaining (item 6 extras) | partial / optional | Baseline TTS done; higher-quality/cloning voices deferred. `data/` consolidation and a self-contained summarization notebook still open. |
+| `code/reencode_audio.py` | **working** | Re-encode `data/audio/` → `data/audio_reencoded/*.<bitrate>.<ext>` via ffmpeg (free; no new deps); name/id/all selection, skip-if-exists, failed-run handling; JSON-config driven (`a`). Item 4. |
+| `code/generate_speech.py` | **working** | Text → speech via Piper (free, MIT, CPU-only): voice a summary/transcript to `data/tts_output/*.wav`; selectable voice + speed (`length_scale`), name/id/all selection, skip-if-exists; JSON-config driven (`v`). Item 3 (baseline). |
+| Remaining (item 6 extras) | partial / optional | Baseline TTS done; higher-quality/cloning voices deferred. `data/` consolidation DONE (todo3); a self-contained summarization notebook still open. |
 
 ### Fixes already applied
 - **`requirements.txt`**: corrected `youtoube-transcript-api` → `youtube-transcript-api`,
@@ -45,13 +45,13 @@ single source of truth for what remains to be done.
   `get_my_playlists.py`.
 - Added `code/secrets.example.json` to document the required `YOUTUBE_API_KEY` shape.
 - **New no-API-key tool** `code/read_channel.py`: reads a playlist/channel/search
-  with `yt-dlp`, saves each clip's audio to `audio/` and transcript to
-  `transcripts/`, skips files already present, signals clips with no transcript,
+  with `yt-dlp`, saves each clip's audio to `data/audio/` and transcript to
+  `data/transcripts/`, skips files already present, signals clips with no transcript,
   and processes up to `LIMIT` (default 5) clips. Handles the YouTube bot-check via
   cookies and bypasses corporate proxies.
 - Added `c.bat` (activate env) and `r.bat` (activate + run the tool) helpers.
-- Minimalist `.gitignore`; `audio/`, `transcripts/`, and `generated_transcripts/`
-  are git-ignored.
+- Minimalist `.gitignore`; `data/` (audio, transcripts, generated_transcripts, etc.)
+  are git-ignored (except `data/summaries/`, tracked via a `.gitignore` negation).
 - **Playlists tool** `code/list_playlists.py` (`p.bat`): lists a channel's public
   playlists and each playlist's videos to `data/playlists.json`, no API key.
 - **Reusable `lib/` package**: extracted the proven download/transcript logic into
@@ -59,7 +59,7 @@ single source of truth for what remains to be done.
   thin config + `main()` wrappers with no duplicated helpers (behavior preserved).
 - **Whisper speech-to-text** `code/transcribe_audio.py` (`w.bat`), using
   `faster-whisper`:
-  - Writes to `generated_transcripts/<title> [<id>].whisper.<lang>.txt` (named
+  - Writes to `data/generated_transcripts/<title> [<id>].whisper.<lang>.txt` (named
     from the audio file), with skip-if-exists.
   - **File selection**: `SELECT_BY = name | id | all | source`. `source` takes a
     playlist/channel/search and transcribes only clips with no YouTube caption
@@ -119,8 +119,9 @@ isolation.
   transcription *and* translation, which collapses items 1 and 2 into one tool.
   (Note: YouTube already provides transcripts for many clips, so Whisper is mainly
   needed for clips whose subtitles are disabled or for translation.)
-- **Output layout is stabilizing.** Audio → `audio/`, transcripts → `transcripts/`
-  (both git-ignored). Summaries still need a home; a single `data/` root would tidy this.
+- **Output layout is consolidated under `data/`.** Audio → `data/audio/`, transcripts → `data/transcripts/`
+  (both git-ignored). Summaries live under `data/summaries/` (tracked); all
+  outputs now share the single `data/` root.
 - **`scrapetube` is broken, `yt-dlp` is the default.** Confirmed via testing; all
   new listing/downloading should use `yt-dlp`.
 
@@ -131,7 +132,7 @@ isolation.
 ### Phase 0 — Foundation (enables everything else)
 - [x] Working no-API-key downloader + transcript fetcher (`read_channel.py`),
       with skip-if-exists and a clip cap.
-- [x] Output folders in use: `audio/`, `transcripts/` (git-ignored).
+- [x] Output folders in use, now under `data/`: `data/audio/`, `data/transcripts/` (git-ignored).
 - [x] Retired the API-key/`scrapetube` script (`get_my_playlists.py`) to
       `ignore/` instead of migrating it; the no-key `yt-dlp` tools supersede it.
 - [x] Refactored the working logic from `read_channel.py` into a reusable `lib/`
@@ -142,14 +143,14 @@ isolation.
 - [x] Decided models: `faster-whisper` for STT + translation (added to
       `requirements.txt`). `edge-tts` (free) still the plan for TTS.
 - [x] New deps added lean, per phase: `faster-whisper` added when STT started.
-- [ ] Optionally consolidate outputs under a single `data/` root
+- [x] Consolidate outputs under a single `data/` root (done in `todo3.md`)
       (`data/audio/`, `data/transcripts/`, `data/summaries/`).
 
 ### Phase 1 — Audio → Text (`todo` items 1, 2, 4)
 > Delivered as **scripts** (not notebooks) in Phase C of mini_todo:
 > `code/transcribe_audio.py` (`w.bat`) + `lib/`. Notebooks remain optional.
 - [x] **Speech to text** — `transcribe_audio.py` runs `faster-whisper` over
-      downloaded audio → `generated_transcripts/*.whisper.<lang>.txt`, with
+      downloaded audio → `data/generated_transcripts/*.whisper.<lang>.txt`, with
       skip-if-exists and name/id/all/source selection. Quality ~95% vs. captions
       (`compare_transcripts.py`).
 - [x] **Speech → translated text** (item 2) — `task="translate"` (English only,
@@ -158,9 +159,9 @@ isolation.
 - [x] **Captions-first source flow** — for a playlist/channel/search, use the
       YouTube caption when present and only Whisper the caption-less clips.
 - [x] `audio_bitrate` — re-encode audio at a target bitrate via `ffmpeg`
-      (item 4). `reencode_audio.py` (`a.bat`) reads `audio/`, re-encodes with
+      (item 4). `reencode_audio.py` (`a`) reads `data/audio/`, re-encodes with
       ffmpeg (free, already required — no new deps), and writes to a separate
-      `audio_reencoded/*.<bitrate>.<ext>` (originals untouched). name/id/all
+      `data/audio_reencoded/*.<bitrate>.<ext>` (originals untouched). name/id/all
       selection, skip-if-exists, JSON-config (`config/config_reencode.json`).
 
 ### Phase 2 — Text → Knowledge (`todo` items 5, 7)
@@ -168,7 +169,7 @@ isolation.
       deterministic prep: it finds caption + Whisper transcripts (captions
       preferred), reports which lack a summary, and prints a paste-ready
       instruction; Kiro then applies `skill_summary.md` and writes
-      `summaries/*.summary.md`. A fully self-contained notebook (local HF model /
+      `data/summaries/*.summary.md`. A fully self-contained notebook (local HF model /
       API prompt) is still open.
 - [x] **Word cloud** (item 7) — done as scripts + JS, NOT matplotlib.
       `make_wordcloud.py` (`d.bat` one file, `wc.bat` batch/merge via a
@@ -185,7 +186,7 @@ isolation.
 > — fully local, MIT, CPU-only, no cloud/ToS caveats (see the archived `tts.md`
 > research and `todo2.md` for the decision).
 - [x] **Baseline TTS** (item 3) — `generate_speech.py` voices a summary /
-      caption / Whisper transcript to `tts_output/<base>.<voice>[.s<scale>].wav`
+      caption / Whisper transcript to `data/tts_output/<base>.<voice>[.s<scale>].wav`
       via Piper (free, CPU-only, no GPU/API). name/id/all selection (dedupe
       preferring summary > caption > whisper), skip-if-exists, JSON-config
       (`config/config_tts.json`). Voice model auto-downloads on first use.
@@ -256,17 +257,24 @@ learn-better/
 ├── lib/                 # shared helpers: net, textutil, paths, youtube
 ├── config/              # Whisper run configs: config_transcribe*.json
 ├── notebooks/           # yt_download.ipynb (future: one per capability)
-├── audio/               # downloaded audio (git-ignored)
-├── transcripts/         # caption transcripts (git-ignored)
-├── generated_transcripts/ # Whisper transcripts (git-ignored)
-├── summaries/           # AI-generated summaries (tracked)
-├── data/                # e.g. playlists.json (git-ignored)
+├── data/                # ALL generated outputs (git-ignored, except summaries/)
+│   ├── audio/               # downloaded audio (git-ignored)
+│   ├── audio_reencoded/     # re-encoded audio (git-ignored)
+│   ├── transcripts/         # caption transcripts (git-ignored)
+│   ├── generated_transcripts/ # Whisper transcripts (git-ignored)
+│   ├── tts_output/          # Piper TTS audio + .voices/ (git-ignored)
+│   ├── summaries/           # AI-generated summaries (TRACKED via .gitignore negation)
+│   ├── wordclouds/          # *.word_cloud.json (git-ignored)
+│   └── playlists.json       # channel playlists (git-ignored)
+├── scripts/             # one-letter runners c/r/t/s/p/w/d/wc/a/v (.bat + .sh; add to PATH)
+├── init.bat             # adds scripts/ to PATH for the current cmd session
 ├── requirements.txt
 └── plan.md
 ```
 
-Still open (roadmap): a `docs/` folder for mindmap / prompt-building notes, and
-optionally consolidating the git-ignored outputs under a single `data/` root.
+Still open (roadmap): a `docs/` folder for mindmap / prompt-building notes. The
+git-ignored outputs are now **consolidated under `data/`** (done in `todo3.md`),
+and the one-letter runners live in `scripts/` (add to PATH via `init.bat`).
 
 ---
 
@@ -283,9 +291,9 @@ The next high-value moves, in order:
 1. **TTS voice extras** (`todo` item 6, optional) — a higher-quality engine
    (Kokoro) and/or voice cloning (XTTS/Chatterbox). The baseline (Piper, with
    selectable voice + speed) is done; these are deferred niceties (todo2 D4).
-2. **Consolidate outputs** under a single `data/` root, or a self-contained
-   summarization notebook (local HF model / API prompt) if you want summaries
-   without the manual Kiro paste step.
+2. **Self-contained summarization notebook** (local HF model / API prompt) if you
+   want summaries without the manual Kiro paste step. (Output consolidation under
+   a single `data/` root is DONE — see `todo3.md`.)
 3. **Docs / consolidation** — the "video → mindmap" walkthrough and the
    prompt-building doc (Phase 4).
 
@@ -296,9 +304,9 @@ handle audio/mp3 out of the box.)
 (**Word cloud** (item 7), the **audio-bitrate helper** (item 4), and the **TTS
 baseline** (item 3) are now done. Word cloud: a data-only Python script writes
 `word_cloud.json`, rendered by `wordcloud.html` (wordcloud2.js), no matplotlib.
-Audio bitrate: `reencode_audio.py` (`a.bat`) re-encodes with ffmpeg into
-`audio_reencoded/`. TTS: `generate_speech.py` (`v.bat`) voices text with Piper
-into `tts_output/` — all free, no new heavy deps.)
+Audio bitrate: `reencode_audio.py` (`a`) re-encodes with ffmpeg into
+`data/audio_reencoded/`. TTS: `generate_speech.py` (`v`) voices text with Piper
+into `data/tts_output/` — all free, no new heavy deps.)
 
 (The old `scrapetube`/API-key script `get_my_playlists.py` has been retired to
 `ignore/`, so no migration of it is needed; the no-key `yt-dlp` tools cover its

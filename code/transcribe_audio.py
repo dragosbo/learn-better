@@ -1,14 +1,14 @@
 """Phase C: transcribe selected audio files with Whisper, no API key.
 
-Transcribes one or more audio files from `audio/` with faster-whisper and saves
-each result to `generated_transcripts/` using a name derived from the AUDIO
-FILE, not a generic hard-coded name. For:
-    audio/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].mp3
+Transcribes one or more audio files from `data/audio/` with faster-whisper and
+saves each result to `data/generated_transcripts/` using a name derived from the
+AUDIO FILE, not a generic hard-coded name. For:
+    data/audio/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].mp3
 it writes:
-    generated_transcripts/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt
+    data/generated_transcripts/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt
 
 The `.whisper.<lang>.` marker keeps these Whisper transcripts distinct from the
-YouTube-caption transcripts in `transcripts/`. Only one language per run in this
+YouTube-caption transcripts in `data/transcripts/`. Only one language per run in this
 phase (the detected language, or LANGUAGE if you pin it).
 
 TASK controls transcribe vs. translate:
@@ -26,11 +26,11 @@ Selecting which files to process (set SELECT_BY + SELECT below):
     are exactly the `id` values in data/playlists.json, so you can copy them
     straight from there.
   - SELECT_BY = "all":  transcribe every audio file (ignores SELECT). Slow; use
-    only when you really want the whole audio/ folder.
+    only when you really want the whole data/audio/ folder.
   - SELECT_BY = "source": the C3 use case. Instead of local files, take a
     playlist/channel/search, and for each video first try the YouTube caption
     transcript; only clips with NO caption transcript get their audio downloaded
-    (or reused from audio/) and Whisper-transcribed. Driven by the SOURCE_*
+    (or reused from data/audio/) and Whisper-transcribed. Driven by the SOURCE_*
     config keys (playlist_id / channel / search / limit / languages), not SELECT.
 
 Uses faster-whisper (CTranslate2 backend): faster and lighter than
@@ -53,7 +53,7 @@ take a minute before transcription starts. Transcription itself is CPU-bound.
 Bump MODEL_SIZE to "small"/"medium" for better accuracy, slower.
 
 Re-running skips any file that already has a matching transcript in
-generated_transcripts/ (skip-if-exists), so it is cheap to run again.
+data/generated_transcripts/ (skip-if-exists), so it is cheap to run again.
 """
 
 import json
@@ -165,7 +165,7 @@ def resolve_config_path():
 
 
 def output_path_for(audio_name, language):
-    """Build generated_transcripts/<base>.whisper.<lang>.txt from an audio name.
+    """Build data/generated_transcripts/<base>.whisper.<lang>.txt from an audio name.
 
     <base> is the audio file name without its extension, so the transcript name
     tracks the audio file rather than a generic hard-coded name.
@@ -252,7 +252,7 @@ def existing_transcripts(audio_name):
 
 
 def _transcribe_path(audio_path, base, model):
-    """Run Whisper on `audio_path` and write generated_transcripts/<base>.whisper.<lang>.txt.
+    """Run Whisper on `audio_path` and write data/generated_transcripts/<base>.whisper.<lang>.txt.
 
     `base` is the (already safe) transcript base name. Returns the output path,
     or None if it was skipped (already exists) / failed. Shared by the local-file
@@ -306,7 +306,7 @@ def load_model():
 
 
 def run_local_flow():
-    """Modes name/id/all: transcribe files already in audio/."""
+    """Modes name/id/all: transcribe files already in data/audio/."""
     selected = pick_audio_files(SELECT_BY, SELECT)
     if not selected:
         print(f"No audio files matched SELECT_BY={SELECT_BY!r} SELECT={SELECT!r}")

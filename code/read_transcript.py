@@ -8,7 +8,7 @@ cookies/proxies/anti-bot, so it avoids the `ParseError: no element found`
 (empty body) that youtube-transcript-api hits on corporate/proxied networks.
 
 For each video it saves one cleaned, timestamped .txt per available language:
-    transcripts/<title> [<id>].<lang>.txt
+    data/transcripts/<title> [<id>].<lang>.txt
 Files already present are skipped. Languages come from code/languages.json.
 
 Usage (from the repo root, with the learn-better env active):

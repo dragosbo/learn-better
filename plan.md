@@ -203,9 +203,12 @@ isolation.
       `learning_codspaces.txt` notes are archived in `ignore/`.
 
 ### Phase 5 — Polish (optional)
-- [~] Migrate downloads from `pytube`/`scrapetube` to `yt-dlp` for reliability.
-      Done in the active tools; the `scrapetube`-based `get_my_playlists.py` was
-      retired to `ignore/` rather than migrated; the notebook is still pending.
+- [x] Migrate downloads from `pytube`/`scrapetube` to `yt-dlp` for reliability.
+      Done across the board: the active tools use yt-dlp; the `scrapetube`-based
+      `get_my_playlists.py` was retired to `ignore/`; and `notebooks/yt_download.ipynb`
+      is now rewritten on `lib/` + yt-dlp (`vl`/`y2a`/`vm` helpers, no `pytube`).
+      The only remaining `pytube` user is the legacy `code/youtube_download.py`;
+      `pytube` can be dropped from `requirements.txt` if/when that script is retired.
 - [ ] Optional Streamlit front-end (the author already explores Streamlit elsewhere).
 - [ ] Light CI: lint + "notebooks execute" smoke test.
 

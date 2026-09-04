@@ -317,6 +317,10 @@ Helper batch files are provided for convenience (run them from the repo root):
 - `w.bat` — activates the env and runs `code\transcribe_audio.py` for Whisper
   speech-to-text (`w`, or `w config\config_transcribe.<mode>.json`); see
   "Transcribe audio with Whisper" below.
+- `d.bat` — activates the env and runs `code\make_wordcloud.py` for one
+  transcript (`d`); see "Word cloud" below.
+- `wc.bat` — activates the env and runs `code\make_wordcloud.py` with a config
+  (`wc config\config_wordcloud.json`) for batch/merge word clouds.
 
 ### List your playlists (no API key)
 
@@ -496,6 +500,60 @@ Summaries are saved to `summaries/` (this folder **is** tracked by git, unlike
 `audio/`, `transcripts/`, and `generated_transcripts/`, since summaries are
 authored content rather than regenerated downloads).
 
+### Word cloud (`d.bat` / `wc.bat`)
+
+Turn a transcript into a **word cloud**. This is split in two, matching the rest
+of the repo: a Python script produces **data** (a `word_cloud.json`), and a small
+HTML page renders it **client-side** with a JavaScript library. No `matplotlib`,
+no plotting deps.
+
+**1. Generate the data.** `code/make_wordcloud.py` reads a transcript (from
+`transcripts/` or `generated_transcripts/`), strips timestamps, tokenizes
+(Unicode-aware, keeps accented fr/ro letters), drops stopwords + very short
+words, counts frequencies, and writes
+`data/wordclouds/<title> [<id>].word_cloud.json` (skip-if-exists).
+
+One transcript (edit `INPUT` at the top of the script):
+
+```cmd
+d
+```
+
+Several at once, or a merged cloud, via a JSON config in `config/`:
+
+```cmd
+wc config\config_wordcloud.json          :: batch: one cloud per selected transcript
+wc config\config_wordcloud.merge.json    :: merge: ONE cloud from many transcripts
+```
+
+Config keys (`config/config_wordcloud.json`):
+
+- **`select_by`** — `input` (the single `input` file/id) | `name` (file-name
+  substrings in `select`) | `id` (video ids in `select`) | `all` (every
+  transcript). Selection dedupes by video id, preferring the caption transcript.
+- **`merge`** + **`output_name`** — when `merge: true`, all selected transcripts
+  are combined into ONE `data/wordclouds/<output_name>.word_cloud.json` (word
+  counts summed). Great for a whole series (e.g. `output_name: "git-series"`).
+- **`language`** — `en` | `fr` | `ro`, picks the built-in stopword list.
+- **`min_length`**, **`max_words`**, **`lowercase`**, **`stopwords_extra`** — tune
+  the tokenizer.
+
+> **Same-language rule.** A word cloud uses one stopword list, so a batch/merge
+> must be a single language. If the selected transcripts' language suffixes don't
+> all match `language`, the run aborts with a message listing the offenders —
+> narrow the selection (by name/id) or set `language` and run per language.
+
+**2. Render it.** Open `wordcloud.html` in a browser, click **Load a JSON**, and
+pick a file from `data/wordclouds/`. Word size scales with frequency. (Opening
+from disk uses the file picker; to use the `?file=` URL param instead, serve the
+folder with `python -m http.server` — see the on-page note.) The renderer uses
+[wordcloud2.js](https://github.com/timdream/wordcloud2.js) from a CDN; the JSON is
+renderer-agnostic, so a different library (d3-cloud, ECharts) could be swapped in
+without touching the Python side.
+
+Output goes to `data/wordclouds/` (git-ignored). Re-running skips files that
+already exist; delete one (or change `output_name`) to regenerate.
+
 ### Download audio from YouTube (legacy)
 
 `pytube`-based downloader for a search, a public playlist, or single videos.
@@ -617,6 +675,7 @@ learn-better/
 │   ├── transcribe_audio.py    # Whisper speech-to-text + translate (w.bat)
 │   ├── compare_transcripts.py # Whisper-vs-captions quality check
 │   ├── make_summaries.py      # lists transcripts needing a summary (used by s.bat)
+│   ├── make_wordcloud.py      # transcript -> word_cloud.json (d.bat / wc.bat)
 │   ├── youtube_download.py    # legacy pytube audio downloader
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
 ├── lib/                 # reusable helpers: net, textutil, paths, youtube
@@ -626,10 +685,11 @@ learn-better/
 ├── transcripts/         # saved caption transcripts (git-ignored)
 ├── generated_transcripts/ # Whisper transcripts (git-ignored)
 ├── summaries/           # AI-generated summaries (tracked by git)
-├── data/                # e.g. playlists.json (git-ignored)
-├── config/              # Whisper run configs: config_transcribe*.json (name/id/all/source/translate/fr/ro)
+├── data/                # playlists.json + wordclouds/*.word_cloud.json (git-ignored)
+├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
 ├── ignore/              # git-ignored: retired code + todo.md, mini_todo.md, notes
+├── wordcloud.html       # renders a word_cloud.json (wordcloud2.js)
 ├── skill_summary.md     # reusable summary format/procedure
 ├── c.bat                # activate the learn-better conda env
 ├── r.bat                # activate env + run read_channel.py
@@ -637,6 +697,8 @@ learn-better/
 ├── s.bat                # activate env + run make_summaries.py (prep summaries)
 ├── p.bat                # activate env + run list_playlists.py
 ├── w.bat                # activate env + run transcribe_audio.py (Whisper)
+├── d.bat                # activate env + run make_wordcloud.py (one transcript)
+├── wc.bat               # activate env + run make_wordcloud.py (config: batch/merge)
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

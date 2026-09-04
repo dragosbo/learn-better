@@ -31,6 +31,10 @@ w config\config_transcribe.id.json         :: C2 - transcribe by video id
 w config\config_transcribe.source.json     :: C3 - captions-first source flow
 w config\config_transcribe.translate.json  :: C4 - French clip -> English
 s                                          :: C5 - prepare summaries (both sources)
+
+d                                          :: W1 - word cloud JSON for one transcript
+wc config\config_wordcloud.json            :: W3 - batch: one cloud per transcript
+wc config\config_wordcloud.merge.json      :: merge: many transcripts -> one cloud
 ```
 
 If the `c` / `w` / `s` shortcuts are not on your PATH, use the `.bat` name or the
@@ -172,6 +176,57 @@ clip, then `s` — that clip should now appear as `(whisper) [NEEDS summary]`.
 
 ---
 
+## Phase W — Word cloud (`d` / `wc` + wordcloud.html)
+
+Data-only Python + client-side JS renderer. No matplotlib. Output goes to
+`data/wordclouds/*.word_cloud.json` (skip-if-exists).
+
+### W1 — one transcript → JSON
+
+```cmd
+d                 :: build word_cloud.json for the INPUT set atop make_wordcloud.py
+```
+**Expect:** `data/wordclouds/<title> [<id>].word_cloud.json` with sensible top
+words (e.g. Git clip: git/type/file/branch/commit), stopwords absent. Second run
+prints `Already exists, skipping`.
+
+### W3 — batch selection (config)
+
+```cmd
+wc config\config_wordcloud.json    :: default select_by="all" -> one cloud per video
+```
+**Expect:** a selection list, then per-file `-> en: N tokens ... | top words`,
+ending `N written, M skipped`. Re-run → all skipped. Edit the config's
+`select_by`/`select` for name/id subsets; `min_length`/`max_words`/`language`/
+`stopwords_extra` tune the tokenizer.
+
+### Merge — combine 2+ transcripts into ONE cloud
+
+```cmd
+wc config\config_wordcloud.merge.json   :: 3 git videos -> data/wordclouds/git-series.word_cloud.json
+```
+**Expect:** `Merging 3 transcript(s) -> one cloud 'git-series'`, combined top
+words spanning all three (git/pipeline/job/commit), one file written.
+
+### Language guard (should REJECT)
+
+A word cloud uses one stopword list, so a batch must be single-language. To see
+the guard fire, edit `config\config_wordcloud.json` → `"language": "fr"` (files
+are `.en`), then:
+```cmd
+wc config\config_wordcloud.json
+```
+**Expect:** `!! LANGUAGE MISMATCH — refusing to run a mixed-language batch`,
+listing the `[en]` files, nothing written. Reset to `"language": "en"` after.
+
+### View any result
+
+Open `wordcloud.html` → **Load a JSON** → pick a file from `data/wordclouds/`.
+Word size scales with frequency. (Or serve the folder: `python -m http.server`
+then `wordcloud.html?file=data/wordclouds/<base>.word_cloud.json`.)
+
+---
+
 ## Quick reference — all runners
 
 | Cmd | Script | Purpose |
@@ -182,6 +237,8 @@ clip, then `s` — that clip should now appear as `(whisper) [NEEDS summary]`.
 | `r` | `read_channel.py` | Audio + transcripts for a source |
 | `w` | `transcribe_audio.py` | Whisper STT / translate; `w config\config_transcribe.<mode>.json` |
 | `s` | `make_summaries.py` | List transcripts needing a summary; print AI instruction |
+| `d` | `make_wordcloud.py` | One transcript -> `word_cloud.json` (uses the script's `INPUT`) |
+| `wc` | `make_wordcloud.py` | Batch/merge word clouds; `wc config\config_wordcloud.json` |
 
 ## Whisper config files (in `config/`)
 
@@ -196,3 +253,10 @@ clip, then `s` — that clip should now appear as `(whisper) [NEEDS summary]`.
 | `config_transcribe.translate.ro.json` | source / translate | Romanian -> English |
 | `config_transcribe.fr.json` | source / transcribe (fr) | French audio -> French text |
 | `config_transcribe.ro.json` | source / transcribe (ro) | Romanian audio -> Romanian text |
+
+## Word cloud config files (in `config/`)
+
+| File | mode | What it tests |
+|------|------|---------------|
+| `config_wordcloud.json` | select_by=all | Batch: one cloud per video |
+| `config_wordcloud.merge.json` | merge (id) | Combine the 3 git videos into `git-series` |

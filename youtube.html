@@ -108,6 +108,7 @@
   <a href="#howtorun">How to run (local/remote)</a>
   <a href="#run">Running the tools</a>
   <a href="#whisper-stt">Whisper speech-to-text</a>
+  <a href="#wordcloud">Word cloud</a>
   <a href="#summaries">Summaries workflow</a>
   <a href="#whisper">Whisper quality</a>
   <a href="#status">Implemented vs. remaining</a>
@@ -131,7 +132,8 @@
     <div class="card"><h4>Fetch transcripts</h4><p>Save cleaned, timestamped transcripts per language (en/fr/ro).</p></div>
     <div class="card"><h4>Whisper STT</h4><p>Speech-to-text (and translate-to-English) for caption-less clips, no API key.</p></div>
     <div class="card"><h4>Summarize</h4><p>Turn caption or Whisper transcripts into structured summaries via a reusable skill.</p></div>
-    <div class="card"><h4>Learn</h4><p>Roadmap toward TTS, word clouds, and Obsidian mind-maps.</p></div>
+    <div class="card"><h4>Word cloud</h4><p>Transcript → <code>word_cloud.json</code>, rendered client-side (wordcloud2.js). Batch + merge.</p></div>
+    <div class="card"><h4>Learn</h4><p>Roadmap toward TTS and Obsidian mind-maps.</p></div>
   </div>
 </section>
 
@@ -441,6 +443,8 @@ python code/read_channel.py</code></pre>
     <tr><td><kbd>p</kbd></td><td><code>list_playlists.py</code></td><td>List a channel's public playlists to <code>data/playlists.json</code>.</td></tr>
     <tr><td><kbd>w</kbd></td><td><code>transcribe_audio.py</code></td><td>Whisper speech-to-text / translate; <code>w config\config_transcribe.&lt;mode&gt;.json</code>.</td></tr>
     <tr><td><kbd>s</kbd></td><td><code>make_summaries.py</code></td><td>List transcripts needing a summary; print AI instruction.</td></tr>
+    <tr><td><kbd>d</kbd></td><td><code>make_wordcloud.py</code></td><td>One transcript → <code>word_cloud.json</code> (uses the script's <code>INPUT</code>).</td></tr>
+    <tr><td><kbd>wc</kbd></td><td><code>make_wordcloud.py</code></td><td>Batch/merge word clouds; <code>wc config\config_wordcloud.json</code>.</td></tr>
   </table>
   <p>Configure the source at the top of the script (set ONE, leave the others <code>None</code>):</p>
 <pre><code>PLAYLIST_ID = "PLxxxxxxxx"          # a playlist
@@ -538,6 +542,56 @@ sequenceDiagram
   </p>
 </section>
 
+<section id="wordcloud">
+  <h2>Word cloud (<kbd>d</kbd> / <kbd>wc</kbd>)</h2>
+  <p>
+    Turn a transcript into a word cloud. Same split as the rest of the repo: a
+    Python script produces <strong>data</strong> (<code>word_cloud.json</code>), and a
+    static HTML page renders it <strong>client-side</strong> with
+    <a href="https://github.com/timdream/wordcloud2.js">wordcloud2.js</a>. No
+    <code>matplotlib</code>, no plotting deps. The JSON is renderer-agnostic, so
+    d3-cloud or ECharts could be swapped in without touching the Python side.
+  </p>
+  <div class="mermaid">
+flowchart LR
+  T[["transcripts/*.en.txt<br/>generated_transcripts/*.whisper.en.txt"]] --> M["make_wordcloud.py<br/>tokenize, drop stopwords, count"]
+  M --> J[["data/wordclouds/<br/>*.word_cloud.json"]]
+  J --> H["wordcloud.html<br/>wordcloud2.js (CDN)"]
+  H --> C([interactive cloud])
+  style T fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style M fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style J fill:#0b0f18,stroke:#38d39f,color:#d7e2f5
+  style H fill:#1e2740,stroke:#ffb454,color:#ffd28a
+  style C fill:#123024,stroke:#38d39f,color:#e7ecf5
+  </div>
+
+  <h3>Generate the data</h3>
+<pre><code>d                                     :: one transcript (INPUT atop make_wordcloud.py)
+wc config\config_wordcloud.json       :: batch: one cloud per selected transcript
+wc config\config_wordcloud.merge.json :: merge: ONE cloud from many transcripts</code></pre>
+  <table>
+    <tr><th>Config key</th><th>What it does</th></tr>
+    <tr><td><code>select_by</code></td><td><code>input</code> | <code>name</code> | <code>id</code> | <code>all</code> — which transcripts (deduped by video id, captions preferred).</td></tr>
+    <tr><td><code>merge</code> + <code>output_name</code></td><td>When <code>merge:true</code>, combine ALL selected transcripts into one <code>&lt;output_name&gt;.word_cloud.json</code> (counts summed). Good for a whole series.</td></tr>
+    <tr><td><code>language</code></td><td><code>en</code> | <code>fr</code> | <code>ro</code> — picks the built-in stopword list.</td></tr>
+    <tr><td><code>min_length</code> / <code>max_words</code> / <code>lowercase</code> / <code>stopwords_extra</code></td><td>Tokenizer tuning.</td></tr>
+  </table>
+  <div class="note warn">
+    <strong>Same-language rule.</strong> A word cloud uses one stopword list, so a
+    batch/merge must be a single language. If the selected transcripts' language
+    suffixes don't all match <code>language</code>, the run aborts and lists the
+    offenders — narrow the selection or set <code>language</code> per run.
+  </div>
+
+  <h3>Render it</h3>
+  <p>
+    Open <code>wordcloud.html</code>, click <strong>Load a JSON</strong>, and pick a file
+    from <code>data/wordclouds/</code>. Word size scales with frequency. (Opening from
+    disk uses the picker; to use the <code>?file=</code> URL param instead, serve the
+    folder with <code>python -m http.server</code>.)
+  </p>
+</section>
+
 <section id="whisper">
   <h2>Whisper transcription quality</h2>
   <p>
@@ -618,7 +672,8 @@ flowchart LR
     <tr><td><code>requirements.txt</code> fixed, pinned, ffmpeg documented</td><td class="status done">Done</td></tr>
     <tr><td>Dev Container aligned to Python 3.12</td><td class="status done">Done</td></tr>
     <tr><td>Short-URL and output-folder bug fixes</td><td class="status done">Done</td></tr>
-    <tr><td>Helper batch files (<code>c/r/t/s/p/w</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Helper batch files (<code>c/r/t/s/p/w/d/wc</code>)</td><td class="status done">Done</td></tr>
+    <tr><td>Word cloud (<code>make_wordcloud.py</code> + <code>wordcloud.html</code>)</td><td class="status done">Done</td></tr>
     <tr><td>Reusable <code>lib/</code> package (net, textutil, paths, youtube)</td><td class="status done">Done</td></tr>
     <tr><td>Playlists tool (<code>list_playlists.py</code>) &rarr; <code>data/playlists.json</code></td><td class="status done">Done</td></tr>
     <tr><td>Whisper speech-to-text + translate (<code>transcribe_audio.py</code>)</td><td class="status done">Done</td></tr>
@@ -643,7 +698,7 @@ flowchart LR
     <tr><td>Audio to audio at a different bit rate</td><td>todo #4</td><td class="status todo">To do</td></tr>
     <tr><td>Text summarization notebook</td><td>todo #5</td><td class="status partial">Partial — <code>make_summaries.py</code> (<kbd>s</kbd>) reads caption + Whisper transcripts and hands off to Kiro; standalone notebook still open</td></tr>
     <tr><td>Text to speech with special voices</td><td>todo #6</td><td class="status todo">To do</td></tr>
-    <tr><td>Create word cloud</td><td>todo #7</td><td class="status todo">To do</td></tr>
+    <tr><td>Create word cloud</td><td>todo #7</td><td class="status done">Done — <code>make_wordcloud.py</code> (<kbd>d</kbd>/<kbd>wc</kbd>) → <code>word_cloud.json</code>, rendered by <code>wordcloud.html</code> (wordcloud2.js); batch + merge + language guard, no matplotlib</td></tr>
     <tr><td>Video &rarr; mindmap recording</td><td>todo notes</td><td class="status todo">To do</td></tr>
     <tr><td>Prompt-building logic doc</td><td>todo notes</td><td class="status todo">To do</td></tr>
     <tr><td>Codespaces / remote-run doc</td><td>todo notes</td><td class="status done">Done — see "How to run it"</td></tr>
@@ -655,7 +710,7 @@ flowchart LR
 graph TD
   P0["Phase 0 - Foundation<br/>downloader + transcripts + lib/ (done)"]
   P1["Phase 1 - Audio to Text<br/>Whisper STT + translate (done); bitrate open"]
-  P2["Phase 2 - Text to Knowledge<br/>summarization prep (done); word cloud open"]
+  P2["Phase 2 - Text to Knowledge<br/>summarization prep + word cloud (done)"]
   P3["Phase 3 - Text to Speech<br/>edge-tts, special voices"]
   P4["Phase 4 - Consolidation<br/>mindmap, Obsidian, prompt docs"]
   P5["Phase 5 - Polish<br/>Streamlit, CI (optional)"]
@@ -669,11 +724,12 @@ graph TD
   </div>
   <div class="note">
     <strong>Delivered:</strong> playlists, the reusable <code>lib/</code>, Whisper
-    speech-to-text + translation with a captions-first source flow, and a summaries
-    hook that reads both caption and Whisper transcripts.
-    <strong>Recommended next steps (from plan.md):</strong> a word cloud over any
-    transcript, then text-to-speech (<code>edge-tts</code>), an <code>ffmpeg</code>
-    bitrate helper, and optionally a single <code>data/</code> output root.
+    speech-to-text + translation with a captions-first source flow, a summaries
+    hook that reads both caption and Whisper transcripts, and a word cloud
+    (data-only Python + wordcloud2.js renderer, with batch/merge).
+    <strong>Recommended next steps (from plan.md):</strong> text-to-speech
+    (<code>edge-tts</code>), an <code>ffmpeg</code> bitrate helper, and optionally a
+    single <code>data/</code> output root.
   </div>
 </section>
 
@@ -687,6 +743,7 @@ graph TD
 &#9474;  &#9500;&#9472; transcribe_audio.py     # Whisper speech-to-text + translate (w.bat)
 &#9474;  &#9500;&#9472; compare_transcripts.py  # Whisper-vs-captions quality check
 &#9474;  &#9500;&#9472; make_summaries.py       # lists transcripts needing a summary (s.bat)
+&#9474;  &#9500;&#9472; make_wordcloud.py       # transcript -> word_cloud.json (d.bat / wc.bat)
 &#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader
 &#9474;  &#9492;&#9472; languages.json          # subtitle languages to fetch (en, fr, ro)
 &#9500;&#9472; lib/                       # reusable helpers: net, textutil, paths, youtube
@@ -700,8 +757,9 @@ graph TD
 &#9500;&#9472; config/                    # Whisper run configs: config_transcribe*.json
 &#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
 &#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, mini_todo.md, notes
+&#9500;&#9472; wordcloud.html             # renders a word_cloud.json (wordcloud2.js)
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
-&#9500;&#9472; c.bat r.bat t.bat s.bat p.bat w.bat  # helper runners
+&#9500;&#9472; c.bat r.bat t.bat s.bat p.bat w.bat d.bat wc.bat  # helper runners
 &#9500;&#9472; requirements.txt
 &#9500;&#9472; plan.md                    # roadmap and analysis (single source of truth)
 &#9492;&#9472; README.md</code></pre>

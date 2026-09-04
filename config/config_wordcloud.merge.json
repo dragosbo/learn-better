@@ -1,0 +1,12 @@
+{
+  "_comment": "MERGE example (Phase W3+): combine several transcripts into ONE word cloud. Here we merge the 3 git-tutorial videos by id into a single cloud named 'git-series'. Output: data/wordclouds/git-series.word_cloud.json. All selected transcripts must be the same language (guard applies). Change 'select'/'select_by' to pick different transcripts; change 'output_name' to rename the combined file.",
+  "select_by": "id",
+  "select": ["tRZGeaHPoaw", "F2DBSH2VoHQ", "9llCMADxvzI"],
+  "merge": true,
+  "output_name": "git-series",
+  "min_length": 3,
+  "max_words": 150,
+  "lowercase": true,
+  "language": "en",
+  "stopwords_extra": []
+}

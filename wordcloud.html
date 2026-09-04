@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>learn-better — Word cloud</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #171e2e;
+    --panel-2: #1e2740;
+    --text: #e7ecf5;
+    --muted: #9aa7bd;
+    --accent: #4f9cff;
+    --accent-2: #38d39f;
+    --border: #2a3550;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1a2340 0%, #0f1420 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 24px 22px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 6px; font-size: 1.8rem; letter-spacing: -0.02em; }
+  header p { margin: 2px 0; color: var(--muted); font-size: 0.95rem; }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+  .stats { color: var(--muted); font-size: 0.9rem; margin: 10px 0 4px; text-align: center; }
+  .stats strong { color: var(--text); }
+  .cloud-wrap {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; margin: 16px 0;
+  }
+  #cloud { display: block; width: 100%; height: 560px; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    justify-content: center; margin: 8px 0 4px; color: var(--muted); font-size: 0.9rem;
+  }
+  .controls input[type="file"] { color: var(--muted); font-size: 0.85rem; }
+  button {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 0.9rem;
+  }
+  button:hover { border-color: var(--accent); }
+  .note {
+    border-left: 3px solid var(--accent); background: var(--panel-2);
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0;
+    color: var(--muted); font-size: 0.9rem;
+  }
+  .note.warn { border-left-color: #ffb454; }
+  code {
+    background: #0b0f18; padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, Menlo, monospace; font-size: 0.85em; color: #ffd28a;
+  }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Word cloud</h1>
+  <p>Renders a <code>word_cloud.json</code> produced by <code>code/make_wordcloud.py</code> (run <code>d.bat</code>).</p>
+</header>
+
+<main>
+  <div class="note" style="border-left-color:var(--accent-2)">
+    <strong>Which file do I load?</strong> Pick a <code>*.word_cloud.json</code> from the
+    <code>data/wordclouds/</code> folder (inside this repo,
+    <code>learn-better/data/wordclouds/</code>). Each file is one video, named
+    <code>&lt;video title&gt; [&lt;id&gt;].word_cloud.json</code>.
+    <ul style="margin:8px 0 0 18px">
+      <li><strong>Don't see any files?</strong> Generate one first: run <code>d</code>
+        (or <code>python code\make_wordcloud.py</code>) from the repo root. It reads a
+        transcript and writes the JSON into <code>data/wordclouds/</code>.</li>
+      <li>Then click <strong>Browse</strong> below and open that folder, or use the
+        server route in the note further down.</li>
+    </ul>
+  </div>
+
+  <div class="controls">
+    <label>Load a JSON: <input type="file" id="filePicker" accept="application/json,.json" /></label>
+    <button id="reloadBtn">Reload</button>
+    <span style="font-size:0.82rem">&larr; browse to <code>data/wordclouds/</code> and pick a <code>*.word_cloud.json</code></span>
+  </div>
+
+  <div id="title" class="stats"></div>
+  <div id="stats" class="stats"></div>
+
+  <div class="cloud-wrap">
+    <canvas id="cloud" width="960" height="560"></canvas>
+  </div>
+
+  <div id="message" class="note" style="display:none"></div>
+
+  <div class="note">
+    <strong>How this works:</strong> the Python script writes only data
+    (<code>data/wordclouds/&lt;base&gt;.word_cloud.json</code>). This page renders it
+    client-side with <a href="https://github.com/timdream/wordcloud2.js">wordcloud2.js</a>
+    (loaded from a CDN). Word size scales with frequency.
+  </div>
+
+  <div class="note warn">
+    <strong>Opening from disk?</strong> Browsers block <code>fetch()</code> of a local
+    file when you open this page via <code>file://</code>. Two options:
+    <ol style="margin:8px 0 0 18px">
+      <li>Use the <strong>Load a JSON</strong> picker above (works offline, no server).</li>
+      <li>Or serve the folder and pass <code>?file=</code>:
+        <br><code>python -m http.server 8000</code>
+        then open
+        <code>http://localhost:8000/wordcloud.html?file=data/wordclouds/&lt;base&gt;.word_cloud.json</code>
+      </li>
+    </ol>
+  </div>
+</main>
+
+<!-- wordcloud2.js from CDN (timdream/wordcloud2.js, npm package "wordcloud").
+     src/wordcloud2.js is the published entry file; jsdelivr serves it directly. -->
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+<script>
+  // Default sample if no ?file= is given.
+  const DEFAULT_FILE =
+    "data/wordclouds/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].word_cloud.json";
+
+  const canvas = document.getElementById("cloud");
+  const titleEl = document.getElementById("title");
+  const statsEl = document.getElementById("stats");
+  const msgEl = document.getElementById("message");
+
+  function showMessage(html, warn) {
+    msgEl.style.display = "block";
+    msgEl.className = "note" + (warn ? " warn" : "");
+    msgEl.innerHTML = html;
+  }
+
+  // Map word_cloud.json -> wordcloud2 list [ [text, weight], ... ] with a
+  // readable font-size range (min..max px), scaled from raw weights.
+  function toList(words) {
+    if (!words.length) return [];
+    const weights = words.map(w => w.weight);
+    const maxW = Math.max(...weights);
+    const minW = Math.min(...weights);
+    const MIN_PX = 12, MAX_PX = 96;
+    const span = maxW - minW || 1;
+    return words.map(w => {
+      const size = MIN_PX + (MAX_PX - MIN_PX) * ((w.weight - minW) / span);
+      return [w.text, Math.round(size)];
+    });
+  }
+
+  const palette = ["#4f9cff", "#38d39f", "#ffb454", "#e7ecf5", "#9aa7bd", "#7ec8ff"];
+
+  function render(data) {
+    if (!window.WordCloud) {
+      showMessage("wordcloud2.js failed to load (no internet / CDN blocked). " +
+        "The JSON loaded fine; try again online.", true);
+      return;
+    }
+    msgEl.style.display = "none";
+    titleEl.innerHTML = data.title
+      ? `<strong>${data.title}</strong> <span style="color:var(--muted)">[${data.video_id || ""}] (${data.language || "?"})</span>`
+      : "";
+    statsEl.textContent =
+      `${data.total_tokens ?? "?"} tokens · ${data.unique_words ?? "?"} unique · showing top ${data.words?.length ?? 0}`;
+
+    // Size the canvas to its displayed width for crisp rendering.
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.max(600, Math.floor(rect.width));
+    canvas.height = 560;
+
+    WordCloud(canvas, {
+      list: toList(data.words || []),
+      gridSize: 8,
+      weightFactor: 1,          // sizes are already in px from toList()
+      fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      color: (word, weight) => palette[Math.floor(Math.random() * palette.length)],
+      backgroundColor: "transparent",
+      rotateRatio: 0.35,
+      rotationSteps: 2,
+      shrinkToFit: true,
+      drawOutOfBound: false,
+    });
+  }
+
+  function validate(data) {
+    if (!data || !Array.isArray(data.words)) {
+      throw new Error("Not a word_cloud.json (missing 'words' array).");
+    }
+    return data;
+  }
+
+  function getFileParam() {
+    const p = new URLSearchParams(location.search).get("file");
+    return p || DEFAULT_FILE;
+  }
+
+  async function loadFromUrl(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      render(validate(await res.json()));
+    } catch (err) {
+      showMessage(
+        `Couldn't auto-load <code>${url}</code> (${err.message}). This is normal when ` +
+        `the page is opened from disk. <strong>Use the "Load a JSON" button above</strong> ` +
+        `and browse to the <code>data/wordclouds/</code> folder in this repo, then pick a ` +
+        `<code>*.word_cloud.json</code> file. (No files there yet? Run <code>d</code> first.)`,
+        true);
+    }
+  }
+
+  // File picker (works offline, no server / CORS).
+  document.getElementById("filePicker").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try { render(validate(JSON.parse(reader.result))); }
+      catch (err) { showMessage(`Invalid JSON: ${err.message}`, true); }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("reloadBtn").addEventListener("click", () => {
+    loadFromUrl(getFileParam());
+  });
+  window.addEventListener("resize", () => {
+    // Re-render on resize so the cloud fills the new width.
+    loadFromUrl(getFileParam());
+  });
+
+  // Initial load.
+  loadFromUrl(getFileParam());
+</script>
+</body>
+</html>

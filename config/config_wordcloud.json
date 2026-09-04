@@ -1,0 +1,11 @@
+{
+  "_comment": "Word cloud generation config (Phase W3). select_by is one of input|name|id|all. For 'name', select is a list of case-insensitive substrings matched against transcript file names. For 'id', select is a list of 11-char YouTube ids (the [<id>] in the file name). For 'all', select is ignored and every transcript in transcripts/ + generated_transcripts/ is processed (captions preferred per video). For 'input', only the single INPUT file/id is processed. min_length/max_words/lowercase/language/stopwords_extra tune the tokenizer. language picks the built-in stopword list (en|fr|ro). Outputs go to data/wordclouds/*.word_cloud.json (skip-if-exists).",
+  "select_by": "all",
+  "select": [],
+  "input": "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt",
+  "min_length": 3,
+  "max_words": 150,
+  "lowercase": true,
+  "language": "en",
+  "stopwords_extra": []
+}

@@ -26,7 +26,8 @@ single source of truth for what remains to be done.
 | `notebooks/yt_download.ipynb` | working | Cleaner refactor with `vl` / `y2a` / `vm` helpers and metadata DataFrame. |
 | `.devcontainer/` | fixed | Codespaces-ready; Python versions were mismatched (now aligned to 3.12). |
 | `requirements.txt` | fixed | Typo fixed; pinned; added `yt-dlp`, `ipykernel`, `faster-whisper`; documented `ffmpeg` as a system dep. |
-| Downstream notebooks (TTS, word cloud) | not started | Remaining from `todo.md` (STT + translation + summarization prep now exist as scripts). |
+| `code/make_wordcloud.py` | **working** | Transcript → `data/wordclouds/*.word_cloud.json` (data only); batch + merge + single-language guard; JSON-config driven (`d.bat` / `wc.bat`). Rendered by `wordcloud.html` (wordcloud2.js). |
+| Remaining (TTS, bitrate) | not started | The last `todo.md` items; STT + translation + summarization prep + word cloud now exist as scripts. |
 
 ### Fixes already applied
 - **`requirements.txt`**: corrected `youtoube-transcript-api` → `youtube-transcript-api`,
@@ -164,7 +165,14 @@ isolation.
       instruction; Kiro then applies `skill_summary.md` and writes
       `summaries/*.summary.md`. A fully self-contained notebook (local HF model /
       API prompt) is still open.
-- [ ] `03_word_cloud` — word cloud from a transcript (`wordcloud` + `matplotlib`).
+- [x] **Word cloud** (item 7) — done as scripts + JS, NOT matplotlib.
+      `make_wordcloud.py` (`d.bat` one file, `wc.bat` batch/merge via a
+      `config/config_wordcloud*.json`) tokenizes a transcript, drops stopwords
+      (built-in en/fr/ro), and writes `data/wordclouds/<base>.word_cloud.json`.
+      `wordcloud.html` renders it client-side with wordcloud2.js. Extras: a
+      single-language guard, and a merge mode (combine several transcripts into
+      one cloud, e.g. `git-series`). The JSON is renderer-agnostic (d3-cloud /
+      ECharts could be swapped in).
 
 ### Phase 3 — Text → Speech (`todo` items 3, 6)
 - [ ] `04_text_to_speech.ipynb` — baseline TTS (`edge-tts`, free, many voices).
@@ -223,14 +231,16 @@ archived in `ignore/`.)
 
 The next high-value moves, in order:
 
-1. **Word cloud** (`todo` item 7) — quick, self-contained win over any transcript
-   (`wordcloud` + `matplotlib`).
-2. **Text to speech** (`todo` items 3, 6) — `edge-tts` (free, many voices) as a
+1. **Text to speech** (`todo` items 3, 6) — `edge-tts` (free, many voices) as a
    baseline; then special/custom voices.
-3. **Audio bitrate** (`todo` item 4) — a small `ffmpeg` re-encode helper.
-4. **Consolidate outputs** under a single `data/` root, or a self-contained
+2. **Audio bitrate** (`todo` item 4) — a small `ffmpeg` re-encode helper.
+3. **Consolidate outputs** under a single `data/` root, or a self-contained
    summarization notebook (local HF model / API prompt) if you want summaries
    without the manual Kiro paste step.
+
+(**Word cloud**, `todo` item 7, is now done — see the Phase 2 checklist: a
+data-only Python script writes `word_cloud.json` and `wordcloud.html` renders it
+with wordcloud2.js, no matplotlib.)
 
 (The old `scrapetube`/API-key script `get_my_playlists.py` has been retired to
 `ignore/`, so no migration of it is needed; the no-key `yt-dlp` tools cover its

@@ -293,9 +293,22 @@ failure, (c) download-then-transcribe ordering, (d) CPU/GPU/TPU guidance,
 ✅ Extras beyond spec: accelerator detection, 429-avoidance (English-only),
 French-later cell, file-access + logout sections.
 
+**Codespaces validation + devcontainer fix (found during F2.4 user test):** the
+user's first Codespaces build failed \u2014 `.devcontainer/Dockerfile` pulled the
+RETIRED image `mcr.microsoft.com/vscode/devcontainers/python:0-3.12-bullseye`
+(404 on `docker pull` \u2192 recovery mode). FIXED: switched both the Dockerfile and
+`devcontainer.json` build-arg to the current image
+`mcr.microsoft.com/devcontainers/python:3.12-bookworm` (verified on Microsoft's
+Artifact Registry; old `vscode/` namespace + `0-`/`bullseye` tags are retired).
+Repointed the `3.12-bullseye` wording in README/youtube/plan to `3.12 (bookworm)`.
+USER re-created the Codespace: **built with no errors**, terminal confirmed
+`ffmpeg 5.1.9`, `import yt_dlp, faster_whisper, pandas -> OK`, and
+`python code/make_summaries.py` ran against the correct `data/` paths. Codespaces
+one-click **USER-VALIDATED**.
+
 ---
 
-## Phase F3 — Update `youtube.html` (self-contained, visual) — DONE (awaiting user review)
+## Phase F3 — Update `youtube.html` (self-contained, visual) — DONE, USER-VALIDATED
 - [x] **F3.1** Replaced the `how_to_deploy.md` note with a self-contained
       **"⚡ 1-click deploy"** callout (Colab / Codespaces / Dev Container) that
       points to README's "Deploying / running anywhere" section. No external-doc
@@ -324,24 +337,41 @@ visual page stands on its own. Report back; then F4.
 
 ---
 
-## Phase F4 — Fix stale examples in shipped artifacts + `plan.md` claims — TODO
-- [ ] **F4.1** `Dockerfile.standalone` header comments: change the mount examples
-      from `-v $(pwd)/audio:...`/`transcripts` to the single
-      `-v $(pwd)/data:/app/data`; keep the `python code/<script>.py` note.
-- [ ] **F4.2** `plan.md` Phase 6: correct the "included assets" wording —
-      `colab_setup.ipynb` now real (point at `notebooks/`); image scripts either
-      added (D3b) or reworded to "documented in README" (D3a); repoint the
-      "detailed research lives in `how_to_deploy.md`" line to "archived in
-      `ignore/`; full setup now in README".
-- [ ] **F4.3** Grep the repo for any other `how_to_deploy.md` / `YOUR_USER` /
-      `code/transcribe.py` references and fix/remove them.
+## Phase F4 — Fix stale examples in shipped artifacts + `plan.md` claims — DONE (awaiting user review)
+- [x] **F4.1** `Dockerfile.standalone` header comments fixed: the two run
+      examples now use the single `-v $(pwd)/data:/app/data` mount (were
+      `-v $(pwd)/audio:...` + `-v $(pwd)/transcripts:...`); kept the
+      `python code/<script>.py` note.
+- [x] **F4.2** `plan.md` Phase 6 rewritten: dropped the fictitious "included"
+      assets (`colab_setup.py`, `setup_codespaces.sh`, `podman_setup.sh` never
+      existed) and listed the REAL ones (`Dockerfile.standalone`, `.dockerignore`,
+      patched `.devcontainer/`, `notebooks/colab_setup.ipynb`); per-platform setup
+      is copy-paste in README (D3a, no `setup_*.sh` files); repointed the
+      "research lives in `how_to_deploy.md`" line to "migrated into README/youtube
+      + archived to `ignore/`"; added the 1-click + base-image-fix bullets.
+- [x] **F4.3** Repo-wide grep (excluding `chats/`, `ignore/`, the doc itself):
+      the ONLY remaining `how_to_deploy`/`YOUR_USER`/`code/transcribe.py` hits are
+      inside **`todo4.md`** (which documents the migration) + the repo-layout
+      trees still listing `how_to_deploy.md` as a file. No stale refs in live docs
+      or code. The layout-tree listing + the file's existence are handled by F5.
 
-**Review & hand off (STOP):**
-```cmd
-findstr /s /i /c:"how_to_deploy" /c:"YOUR_USER" /c:"code/transcribe.py" *.md *.html code\*.py
-```
-**Expect:** the only remaining `how_to_deploy` hit is the file itself (about to be
-archived in F5); no `YOUR_USER`; no `code/transcribe.py`. Report back; then F5.
+- [x] **F4.4 (extra, user-requested)** Captured the "verify a fresh environment"
+      guidance that had only been given in chat (it was nowhere in a file, so it
+      would have been lost). Added a **"Verify your environment"** subsection to
+      `README.md` (in the deploy section, before Known gotchas) and a **"Phase 0 —
+      Verify a fresh environment"** block to `how_to_test.md`: the three checks
+      (`ffmpeg -version`, the import check, `python code/make_summaries.py` as a
+      network-free smoke test) + the Codespaces/Dev Container rebuild note.
+      Deliberately NOT put in `how_to_deploy.md` (archived in F5).
+
+**Verified:** grep clean across README / youtube.html / plan.md / `code/*.py` /
+`Dockerfile.standalone` (no `YOUR_USER`, no `code/transcribe.py`, no how_to_deploy
+pointer). Only todo4's own descriptive text + the pending layout-tree entry remain.
+
+**Review & hand off (STOP for user feedback):** skim `Dockerfile.standalone`'s
+header comment (data/ mount) and `plan.md` Phase 6 (accurate asset list). **Pass =**
+no shipped artifact shows a stale mount/command; plan.md claims match reality.
+Report back; then F5 archives `how_to_deploy.md`.
 
 ---
 

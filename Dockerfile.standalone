@@ -9,11 +9,12 @@
 #   docker build -f Dockerfile.standalone -t learn-better .
 #   podman build -f Dockerfile.standalone -t learn-better .
 #
-# Run interactively (mount folders you want to persist):
-#   docker run -it --rm -v "$(pwd)/audio:/app/audio" -v "$(pwd)/transcripts:/app/transcripts" learn-better
+# Run interactively (mount data/ so all outputs persist \u2014 one folder covers
+# audio, transcripts, generated_transcripts, summaries, tts_output, wordclouds):
+#   docker run -it --rm -v "$(pwd)/data:/app/data" learn-better
 #
 # Run a specific tool non-interactively, e.g.:
-#   docker run --rm -v "$(pwd)/audio:/app/audio" learn-better python code/read_channel.py
+#   docker run --rm -v "$(pwd)/data:/app/data" learn-better python code/read_channel.py
 #
 # NOTE: the .bat helpers (c/r/t/s/p/w/d/wc/a/v) are Windows-only; inside this
 # Linux image call the scripts directly with `python code/<script>.py`.

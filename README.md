@@ -357,6 +357,30 @@ Notes for Colab:
 - Sessions are ephemeral: save anything in `data/` to Google Drive before the
   runtime disconnects (see the notebook's Drive cell).
 
+### Verify your environment
+
+After any setup — local, a freshly built **Dev Container**, a new **Codespace**,
+or a Docker/Podman shell — confirm the environment is ready with these three
+checks. On Linux/containers/Colab run them in the container's bash shell; locally
+activate the env first.
+
+```bash
+ffmpeg -version                                              # a version banner, NOT "command not found"
+python -c "import yt_dlp, faster_whisper, pandas; print('OK')"   # prints OK
+python code/make_summaries.py                                # runs; lists transcripts (or says none yet)
+```
+
+**Expect:** an ffmpeg version line, then `OK`, then `make_summaries.py` printing
+either the transcripts needing a summary or *"No English transcripts found in
+data/transcripts/ …"* (both are success — the latter just means nothing has been
+downloaded yet). `make_summaries.py` uses only the standard library, so it's a
+good "does the repo run here?" smoke test that needs no network.
+
+> **Fresh Codespace / Dev Container after a config change:** if a build fails or
+> you edited `.devcontainer/`, rebuild via the Command Palette →
+> **Codespaces: Rebuild Container** (or **Dev Containers: Rebuild Container**),
+> or delete the codespace and recreate it from the badge.
+
 ### Known gotchas
 
 | Symptom | Fix |

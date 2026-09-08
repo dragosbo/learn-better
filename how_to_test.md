@@ -84,6 +84,31 @@ c                 :: activate the learn-better conda env (c.bat)
 
 ---
 
+## Phase 0 — Verify a fresh environment (local / container / Codespaces / Colab)
+
+Run these first after any setup — a new local env, a freshly built Dev Container,
+a new Codespace, a Docker/Podman shell, or Colab. Locally activate the env first
+(`c`); in a Linux container/Codespace/Colab run them in bash (no `c`).
+
+```bash
+ffmpeg -version
+python -c "import yt_dlp, faster_whisper, pandas; print('OK')"
+python code/make_summaries.py
+```
+
+**Expect:** an ffmpeg version banner (NOT `command not found`); then `OK`; then
+`make_summaries.py` prints either the transcripts needing a summary or
+`No English transcripts found in data/transcripts/ …` — **both are a pass** (the
+latter just means nothing has been downloaded yet). `make_summaries.py` is
+standard-library only, so it's a network-free "does the repo run here?" smoke test.
+
+> **Codespaces / Dev Container:** if the build failed or you changed
+> `.devcontainer/`, rebuild via the Command Palette → **Codespaces: Rebuild
+> Container** / **Dev Containers: Rebuild Container**, or recreate the codespace
+> from the badge. A clean run of the three checks above = the environment is ready.
+
+---
+
 ## Phase A — Playlists (no API key)
 
 ```cmd

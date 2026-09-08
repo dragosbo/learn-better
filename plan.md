@@ -217,35 +217,44 @@ isolation.
 - [ ] Light CI: lint + "notebooks execute" smoke test.
 
 ### Phase 6 — Deployment & packaging (reproducible setup anywhere)
-> Distinct from Phase 4's "how to run it" quick-start: this is a full,
-> comparison-driven guide to reproducibly standing up the environment on any
-> target (local, container, or cloud), plus the container/image scripts to do it.
-> Detailed research + copy-paste scripts live in `how_to_deploy.md` (repo root).
-- [x] **Deployment matrix documented** — `how_to_deploy.md` ranks 12 platforms by
-      complexity vs. capabilities: local (conda / pip+venv / uv), containers
-      (VS Code & Kiro dev containers, Docker, Podman), and cloud (Colab,
-      Codespaces, Gitpod; Replit/Binder noted as not-recommended). Includes
-      ready-to-use `Dockerfile.standalone`, a patched `.devcontainer/Dockerfile`,
-      `colab_setup.py`, `setup_codespaces.sh`, and `podman_setup.sh`.
-- [x] **Fix the devcontainer ffmpeg gap** — applied: `.devcontainer/Dockerfile`
-      now installs `ffmpeg` via an `apt-get install --no-install-recommends
-      ffmpeg` layer (was missing — the #1 setup-failure cause per
-      `how_to_deploy.md`). Also done: removed the unused `azure-cli` feature from
-      `devcontainer.json` and added a `~/.cache` model-cache volume (faster-whisper
-      + Piper weights survive rebuilds).
-- [x] **Add the standalone container assets to the repo** — added
-      `Dockerfile.standalone` (slim Python base, ffmpeg, non-root user) and a
-      `.dockerignore` (keeps the build context lean, mirrors the git-ignored
-      outputs) so Docker/Podman/CI users get a lighter, IDE-free image.
-- [x] **Link `how_to_deploy.md` from README / youtube.html** — linked from both,
-      next to the "How to run it" quick-start, so the deployment guide is
-      discoverable.
-- [x] **`.bat` helpers vs. Linux** — added matching `.sh` runners for all ten
-      helpers (`c/r/t/p/s/d/w/wc/a/v`) so the tools work inside the Linux
-      containers/cloud shells. They activate conda if present, else use the
-      current `python` (Docker/Codespaces style). `.gitattributes` forces `*.sh`
-      to LF (a CRLF shebang breaks on Linux) and keeps `*.bat` CRLF. Documented
-      in README + how_to_test.md.
+> Distinct from Phase 4's "how to run it" quick-start: this is the full,
+> comparison-driven guidance for reproducibly standing up the environment on any
+> target (local, container, or cloud), plus the container assets to do it. This
+> guidance now lives **in `README.md`** ("Deploying / running anywhere",
+> including a 1-click deploy block + a known-gotchas table). The earlier research
+> doc `how_to_deploy.md` was migrated into README/youtube.html and **archived to
+> `ignore/`** (todo4).
+- [x] **Deployment guidance documented (in README)** — covers local (conda /
+      pip+venv / uv), containers (VS Code & Kiro dev containers, Docker, Podman),
+      and cloud (Colab, Codespaces; Gitpod/Replit/Binder noted). Real assets in
+      the repo: `Dockerfile.standalone`, `.dockerignore`, the patched
+      `.devcontainer/` (Dockerfile + devcontainer.json), and
+      `notebooks/colab_setup.ipynb` (the Open-In-Colab target). Per-platform
+      setup commands are copy-paste blocks in README (no separate
+      `setup_*.sh` script files).
+- [x] **1-click deploy** — README carries three badges/actions, each landing a
+      ready-to-run env: **Colab** (`notebooks/colab_setup.ipynb`), **GitHub
+      Codespaces** (`codespaces.new/dragosbo/learn-better`), and **VS Code / Kiro
+      Dev Container** (Reopen in Container). All three user-validated (todo4 F2).
+- [x] **Fix the devcontainer ffmpeg gap** — `.devcontainer/Dockerfile` installs
+      `ffmpeg` via an `apt-get install --no-install-recommends ffmpeg` layer (was
+      missing — the #1 setup-failure cause). Removed the unused `azure-cli`
+      feature from `devcontainer.json` and added a `~/.cache` model-cache volume
+      (faster-whisper + Piper weights survive rebuilds).
+- [x] **Fix the devcontainer base image** — the retired
+      `mcr.microsoft.com/vscode/devcontainers/python:0-3.12-bullseye` (404 on pull
+      → Codespaces recovery mode) was replaced with the current
+      `mcr.microsoft.com/devcontainers/python:3.12-bookworm` in both the
+      Dockerfile and `devcontainer.json`. Codespaces build verified clean (todo4).
+- [x] **Add the standalone container assets** — `Dockerfile.standalone` (slim
+      Python base, ffmpeg, non-root user) + `.dockerignore` (lean build context,
+      mirrors the git-ignored outputs); one `-v <repo>/data:/app/data` mount
+      persists all outputs.
+- [x] **`.bat` helpers vs. Linux** — matching `.sh` runners for all ten helpers
+      (`c/r/t/p/s/d/w/wc/a/v`), now living in `scripts/` (add to PATH / `init.bat`).
+      They activate conda if present, else use the current `python`
+      (Docker/Codespaces style). `.gitattributes` forces `*.sh` LF and keeps
+      `*.bat` CRLF. Documented in README + how_to_test.md.
 
 ---
 

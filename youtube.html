@@ -705,7 +705,7 @@ flowchart LR
   <h3>In progress / partial <span class="tag">partial</span></h3>
   <table>
     <tr><th>Item</th><th>Status</th></tr>
-    <tr><td>Migrate downloads off <code>pytube</code>/<code>scrapetube</code> to <code>yt-dlp</code></td><td class="status partial">Partial — done in the active tools; <code>get_my_playlists.py</code> retired to <code>ignore/</code>; notebook still pending</td></tr>
+    <tr><td>Migrate downloads off <code>pytube</code>/<code>scrapetube</code> to <code>yt-dlp</code></td><td class="status done">Done — all active tools + notebook use yt-dlp; legacy <code>youtube_download.py</code> / <code>get_my_playlists.py</code> retired to <code>ignore/</code> and <code>pytube</code>/<code>google-api-python-client</code> dropped from <code>requirements.txt</code></td></tr>
   </table>
 
   <h3>Remaining <span class="tag">todo</span></h3>
@@ -767,7 +767,6 @@ graph TD
 &#9474;  &#9500;&#9472; make_wordcloud.py       # transcript -> word_cloud.json (d / wc)
 &#9474;  &#9500;&#9472; reencode_audio.py       # re-encode audio at a target bitrate (a)
 &#9474;  &#9500;&#9472; generate_speech.py      # text -> speech via Piper (v)
-&#9474;  &#9500;&#9472; youtube_download.py     # legacy pytube audio downloader
 &#9474;  &#9492;&#9472; languages.json          # subtitle languages to fetch (en, fr, ro)
 &#9500;&#9472; lib/                       # reusable helpers: net, textutil, paths, youtube
 &#9500;&#9472; notebooks/                 # yt_download.ipynb

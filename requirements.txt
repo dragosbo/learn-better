@@ -20,14 +20,13 @@ youtube-transcript-api>=0.6,<1
 # bot", empty subtitle responses). This is REQUIRED for downloads/transcripts.
 yt-dlp[default,curl-cffi]>=2024.4.9
 
-# --- Legacy, only for archived/legacy scripts (not the active workflow) ---
-# pytube: still imported by code/youtube_download.py (fragile; superseded by
-#   yt-dlp). google-api-python-client: only used by the retired
-#   ignore/get_my_playlists.py. scrapetube was dropped entirely (broken since
-#   2025, no active code uses it). Keep pytube only while youtube_download.py
-#   remains; the others can go once the notebook is migrated to yt-dlp.
-pytube>=15.0,<16
-google-api-python-client>=2.100,<3
+# --- Legacy deps: REMOVED (no active code uses them) ---
+# pytube (fragile; superseded by yt-dlp) was only imported by the old
+#   code/youtube_download.py, now retired to ignore/. google-api-python-client
+#   was only used by the retired ignore/get_my_playlists.py. scrapetube was
+#   dropped earlier (broken since 2025). All downloading/listing now goes
+#   through yt-dlp. If you ever revive a legacy script from ignore/, pip install
+#   its dep manually (pytube / google-api-python-client) — it's not pinned here.
 
 # curl_cffi is also listed explicitly so `import curl_cffi` is guaranteed
 # present even if the extra name changes across yt-dlp versions.

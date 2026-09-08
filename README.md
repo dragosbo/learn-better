@@ -24,13 +24,13 @@ roadmap.
 | `pandas` | Metadata tables/dataframes. |
 | `ipykernel` | Lets the Jupyter notebooks run inside this environment. |
 
-**Legacy packages** (kept only for older/archived scripts, not the active tools):
-`pytube` is still imported by `code/youtube_download.py` (fragile; superseded by
-yt-dlp), and `google-api-python-client` is only used by the retired
-`ignore/get_my_playlists.py`. `scrapetube` was **dropped** (broken since 2025;
-no active code uses it) — `yt-dlp` replaces it.
+**Legacy packages** (all removed — `yt-dlp` replaces them): `pytube` (fragile;
+was used only by the retired `ignore/youtube_download.py`),
+`google-api-python-client` (only used by the retired `ignore/get_my_playlists.py`),
+and `scrapetube` (broken since 2025) are **no longer dependencies**. If you revive
+a legacy script from `ignore/`, `pip install` its dep manually.
 
-Install them all with (see step 3 for the full flow):
+Install the active stack with (see step 3 for the full flow):
 
 ```cmd
 pip install -r requirements.txt
@@ -179,9 +179,10 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-This installs `yt-dlp`, `youtube-transcript-api`, `curl_cffi`, `pandas`, and
-`ipykernel` (the active stack), plus the legacy `pytube` and
-`google-api-python-client`. Pinned versions live in `requirements.txt`.
+This installs the active stack: `yt-dlp`, `youtube-transcript-api`, `curl_cffi`,
+`pandas`, `ipykernel`, `faster-whisper`, and `piper-tts`. Pinned versions live in
+`requirements.txt`. (The old `pytube` / `google-api-python-client` / `scrapetube`
+deps have been removed — nothing active uses them.)
 
 ### 3b. Install ffmpeg (needed to download/convert audio)
 
@@ -392,6 +393,21 @@ good "does the repo run here?" smoke test that needs no network.
 > you edited `.devcontainer/`, rebuild via the Command Palette →
 > **Codespaces: Rebuild Container** (or **Dev Containers: Rebuild Container**),
 > or delete the codespace and recreate it from the badge.
+
+### Continuous integration
+
+A light GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push
+and pull request to `main`, mirroring the checks above:
+
+- **lint** — `ruff check --select E9,F` (syntax errors + real bugs like undefined
+  names / unused imports) and `compileall`; `black --check` runs advisory (reports
+  formatting drift without failing the build).
+- **smoke** — installs ffmpeg + `requirements.txt`, verifies imports and
+  `lib.paths`, then runs the standard-library-only `code/make_summaries.py`.
+
+It's **network-free by design** — it does not run yt-dlp / Whisper / Piper (those
+need network and are slow). The goal is to catch the stale-import / broken-path /
+bad-base-image class of regression early, not to exercise downloads.
 
 ### Known gotchas
 
@@ -812,14 +828,13 @@ speed). Re-running **skips** files that already exist. Output goes to
 ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "data\tts_output\<file>.wav"
 ```
 
-### Download audio from YouTube (legacy)
+### Download audio from YouTube (legacy — retired)
 
-`pytube`-based downloader for a search, a public playlist, or single videos.
-Audio is saved to the `data/audio/` folder.
-
-```cmd
-python code\youtube_download.py
-```
+The old `pytube`-based `youtube_download.py` has been **retired** to `ignore/`
+(and `pytube` dropped from `requirements.txt`). Use `read_channel.py` (`r`) for
+audio + transcripts, or the `notebooks/yt_download.ipynb` helpers — both use the
+robust `yt-dlp` backend. To revive the old script, restore it from `ignore/` and
+`pip install pytube` manually.
 
 ### Explore in Jupyter
 
@@ -914,7 +929,7 @@ pipeline, which cares about meaning, the `base` output is already good enough.
 | `python --version` still shows 3.7 after activating | Environment not actually active in this shell. | Re-run the activate command; open a new terminal if needed. |
 | `conda create` can't find `python=3.12` | Old conda. | `conda update -n base conda -y`, then retry. |
 | `ModuleNotFoundError` when running a script | Wrong interpreter / deps not installed in this env. | Activate the env, re-run steps 3–4. |
-| `pytube` errors / downloads failing | `pytube` breaks often against YouTube changes. | `yt-dlp` is installed as the robust alternative; prefer it (migration is on the roadmap in `plan.md`). |
+| `pytube` errors / downloads failing | The `pytube` downloader was retired (it broke often against YouTube changes). | Use `read_channel.py` (`r`) or the notebook — both use `yt-dlp`, the robust replacement. |
 | `ffmpeg not found` / yt-dlp can't convert to mp3 | ffmpeg not installed or not on PATH. | Install ffmpeg (step 3b / Dependencies section); open a new terminal; check `ffmpeg -version`. |
 | yt-dlp: `Sign in to confirm you're not a bot` | YouTube is blocking anonymous downloads. | Pass browser cookies to yt-dlp (`cookiesfrombrowser`) or an exported `cookies.txt`; update yt-dlp with `pip install -U yt-dlp`. |
 | yt-dlp: `No supported JavaScript runtime could be found` | No JS runtime installed. Harmless (subtitles/audio still work). | Install Deno (`winget install DenoLand.Deno`; see "Recommended: a JavaScript runtime"), open a new terminal. The code also sets `no_warnings`, so it stays quiet even without Deno. |
@@ -936,7 +951,6 @@ learn-better/
 │   ├── make_wordcloud.py      # transcript -> word_cloud.json (d.bat / wc.bat)
 │   ├── reencode_audio.py      # re-encode audio at a target bitrate (a.bat)
 │   ├── generate_speech.py     # text -> speech via Piper (v.bat)
-│   ├── youtube_download.py    # legacy pytube audio downloader
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
 ├── lib/                 # reusable helpers: net, textutil, paths, youtube
 ├── notebooks/           # yt_download.ipynb (reusable helpers + metadata)

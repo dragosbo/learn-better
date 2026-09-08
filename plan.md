@@ -21,7 +21,7 @@ single source of truth for what remains to be done.
 | `code/transcribe_audio.py` | **working** | Whisper speech-to-text (`faster-whisper`): transcribe audio to `data/generated_transcripts/`, translate to English, select by name/id/all/source, JSON-config driven (`w`). |
 | `code/make_summaries.py` | **working** | Prep step for summaries: scans caption + Whisper transcripts (captions preferred), one per video, prints a paste-ready Kiro instruction (`s.bat`). |
 | `code/compare_transcripts.py` | **working** | Quality check: Whisper output vs. YouTube captions (~95% word accuracy on the sample). |
-| `code/youtube_download.py` | working (fragile) | Simple `pytube` audio downloader (search / playlist / single video). |
+| `code/youtube_download.py` | **retired** | Old `pytube` audio downloader; superseded by `read_channel.py`/notebook (yt-dlp). Moved to `ignore/`; `pytube` dropped from `requirements.txt`. |
 | `get_my_playlists.py` | **retired** | Old YouTube Data API + `scrapetube` script. Depended on an API key and the broken `scrapetube`; superseded by the no-key `yt-dlp` tools. Moved to the git-ignored `ignore/` folder rather than deleted. |
 | `notebooks/yt_download.ipynb` | working | Cleaner refactor with `vl` / `y2a` / `vm` helpers and metadata DataFrame. |
 | `.devcontainer/` | fixed | Codespaces-ready; Python versions were mismatched (now aligned to 3.12). |
@@ -213,13 +213,20 @@ isolation.
 
 ### Phase 5 — Polish (optional)
 - [x] Migrate downloads from `pytube`/`scrapetube` to `yt-dlp` for reliability.
-      Done across the board: the active tools use yt-dlp; the `scrapetube`-based
-      `get_my_playlists.py` was retired to `ignore/`; and `notebooks/yt_download.ipynb`
-      is now rewritten on `lib/` + yt-dlp (`vl`/`y2a`/`vm` helpers, no `pytube`).
-      The only remaining `pytube` user is the legacy `code/youtube_download.py`;
-      `pytube` can be dropped from `requirements.txt` if/when that script is retired.
+      Done across the board: all active tools + `notebooks/yt_download.ipynb` use
+      yt-dlp (via `lib/`). The legacy `code/youtube_download.py` (last `pytube`
+      user) and `get_my_playlists.py` (API-key/`scrapetube`) are retired to
+      `ignore/`, and `pytube` + `google-api-python-client` are **dropped from
+      `requirements.txt`** (no active code uses them; scrapetube was dropped
+      earlier). Revive-from-`ignore/` needs a manual `pip install` of the dep.
 - [ ] Optional Streamlit front-end (the author already explores Streamlit elsewhere).
-- [ ] Light CI: lint + "notebooks execute" smoke test.
+- [x] Light CI — `.github/workflows/ci.yml` (GitHub Actions on push/PR to `main`):
+      a **lint** job (`ruff check --select E9,F` for syntax + real errors, plus
+      `compileall`; `black --check` advisory) and a **smoke** job (installs ffmpeg
+      + `requirements.txt`, verifies imports + `lib.paths`, and runs the
+      stdlib-only `make_summaries.py`). Network-free by design — it does NOT run
+      yt-dlp/Whisper/Piper; it catches the stale-import/path/base-image class of
+      regression that has actually bitten this repo.
 
 ### Phase 6 — Deployment & packaging (reproducible setup anywhere)
 > Distinct from Phase 4's "how to run it" quick-start: this is the full,
@@ -275,6 +282,7 @@ learn-better/
 ├── config/              # Whisper run configs: config_transcribe*.json
 ├── notebooks/           # yt_download.ipynb + colab_setup.ipynb (1-click Colab)
 ├── docs/                # video_to_mindmap.md, prompt_building.md (Phase 4 guides)
+├── .github/workflows/   # ci.yml — light CI (lint + network-free smoke test)
 ├── data/                # ALL generated outputs (git-ignored, except summaries/)
 │   ├── audio/               # downloaded audio (git-ignored)
 │   ├── audio_reencoded/     # re-encoded audio (git-ignored)

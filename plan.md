@@ -309,9 +309,9 @@ The next high-value moves, in order:
 3. **Docs / consolidation** — the "video → mindmap" walkthrough and the
    prompt-building doc (Phase 4).
 
-(The **devcontainer ffmpeg gap** flagged in `how_to_deploy.md` is now fixed —
-`.devcontainer/Dockerfile` installs `ffmpeg` — so Dev Containers / Codespaces
-handle audio/mp3 out of the box.)
+(The **devcontainer ffmpeg gap** is now fixed — `.devcontainer/Dockerfile`
+installs `ffmpeg` — so Dev Containers / Codespaces handle audio/mp3 out of the
+box. Deploy guidance lives in the README.)
 
 (**Word cloud** (item 7), the **audio-bitrate helper** (item 4), and the **TTS
 baseline** (item 3) are now done. Word cloud: a data-only Python script writes

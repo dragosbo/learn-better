@@ -375,12 +375,24 @@ Report back; then F5 archives `how_to_deploy.md`.
 
 ---
 
-## Phase F5 — Retire `how_to_deploy.md` to `ignore/` — TODO
-- [ ] **F5.1** Confirm F1–F4 leave NO inbound links to `how_to_deploy.md`
-      (README, youtube.html, plan.md all self-contained).
-- [ ] **F5.2** `git mv how_to_deploy.md ignore/how_to_deploy.md` (archive, not
-      delete). Verify `git status` shows a rename and `git check-ignore
-      ignore/how_to_deploy.md` echoes it (now ignored).
+## Phase F5 — Retire `how_to_deploy.md` to `ignore/` — DONE (awaiting user review)
+- [x] **F5.1** Confirmed NO inbound links remain: grep of README / youtube.html /
+      `code/*.py` / `Dockerfile.standalone` for `how_to_deploy` → clean. Removed
+      the last two layout-tree entries (README dropped the `how_to_deploy.md`
+      line + repointed `Dockerfile.standalone`'s "see how_to_deploy.md" → README;
+      plan.md's ffmpeg-gap aside repointed to README). plan.md's Phase 6 note now
+      correctly says the doc was "migrated into README/youtube + archived to
+      `ignore/`". (Remaining mentions live only in `todo4.md`, which documents
+      the migration.)
+- [x] **F5.2** `git mv how_to_deploy.md ignore/how_to_deploy.md` — git recorded a
+      **rename** (`R how_to_deploy.md -> ignore/how_to_deploy.md`); repo root no
+      longer has the file (file_search confirms); it now sits in the git-ignored
+      `ignore/` (same archive pattern as `todo1/2/3`, `mini_todo`, `tts`).
+
+**Review & hand off (STOP for user feedback):** `how_to_deploy.md` is gone from
+the repo root and all deploy guidance lives in README / youtube.html / plan.md.
+**Pass =** nothing points at the archived doc; docs are self-sufficient. Report
+back; then F6 (remaining Phase 4 docs).
 
 **Review & hand off (STOP):**
 ```cmd

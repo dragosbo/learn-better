@@ -954,9 +954,8 @@ learn-better/
 │   ├── wc.bat / wc.sh   # activate env + run make_wordcloud.py (config: batch/merge)
 │   ├── a.bat / a.sh     # activate env + run reencode_audio.py (audio bitrate)
 │   └── v.bat / v.sh     # activate env + run generate_speech.py (text to speech)
-├── Dockerfile.standalone # slim Docker/Podman/CI image (ffmpeg, non-root); see how_to_deploy.md
+├── Dockerfile.standalone # slim Docker/Podman/CI image (ffmpeg, non-root); deploy guide in this README
 ├── .dockerignore        # keeps the Docker build context lean
-├── how_to_deploy.md     # deployment guide: 12 platforms + image scripts
 ├── requirements.txt
 ├── plan.md              # roadmap and analysis
 └── README.md

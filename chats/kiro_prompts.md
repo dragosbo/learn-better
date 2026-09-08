@@ -461,3 +461,165 @@ commit to main. add also tts an dskill_todo
 
 ## 124
 update the kiro prompts an dconversation inchats to capture the latest interactions
+
+## 125
+become familiar with the repo again
+
+## 126
+hi
+
+## 127
+Explain the purpose of this repository.
+
+## 128
+hi
+
+## 129
+I believe phase T3 from todo3 was not completed. please check and do the necessary changes where needed
+
+## 130
+OK remove refernces to shims as they are not needed and let me know if I need to do some test to confirm that T3 is done
+
+## 131
+I lik ethe suggestion with teh path. add it in teh documentaion of todo3 and readme and whereever needed
+
+## 132
+ok proceed with T4
+
+## 133
+continue
+
+## 134
+continue
+
+## 135
+is this true ? [Verified but not fully executable here: v (TTS) - Piper isn't installed ...] if yes why, does not the requirements.txt refer this package what is wrong
+
+## 136
+retry / hdjhfdjhéà$ / dfdf
+
+## 137
+are you ok
+
+## 138
+weird when I am in learn-better environment and I gave pip list I see piper-tts 1.7.0. why do you say that the package is not available
+
+## 139
+ok so from todo3 where are we, what remains to be done. how do you recommend to proceed
+
+## 140
+proceed with T5 and update everything that is needed
+
+## 141
+ok create in the root a bat file that correctly initialize the path of the current session so that i can run c, r, v,... call this bat file init.bat
+
+## 142
+update github with latest changes
+
+## 143
+ok where are we with plan.md what was done and what remains. how do you recommend to proceed
+
+## 144
+are topics covered in how_to_deploy.md completely solved or not ?
+
+## 145
+retry / are you still working
+
+## 146
+ok use the skill_todo to create todo4.md to cover all the topics above mentioned in how_to_deploy and not yet addressed in plan.md. Normally after implementation the how_to_deploy file will become obsolete as all the relevant info and guidance should lay in the relevant files readme, youtube and plan. proceed and let me know when the file is ready for review. also cover remaining topic from plan.md that are not yet solved
+
+## 147
+are you still working / resume / continue
+
+## 148
+please make sure that it has logic to configure 1 click install for google colab, github workspaces and/or dev container. tell me when ready and then I will start reading the todo4 file
+
+## 149
+update github with latest changes
+
+## 150
+push everything to main. stop with branches until i tell you to use them
+
+## 151
+ok proceed with F0 and ask me when you need guidance
+
+## 152
+retry
+
+## 153
+it looks good proceed further. modify todo4 only after i validate the changes. proceed with F2
+
+## 154
+is it possible to trigger the 1 click install by clicking the badge from the readme file? comment how to do it
+
+## 155
+ok proceed with the step 1 and then i will check the next two
+
+## 156
+almost working. I have seen this. I also have errors on google drive. provide guidance on what to do [Cell 2 pip dependency conflicts (ipykernel); Cell 3 ValueError: mount failed]
+
+## 157
+I see this. how do i access the files [Cell 4 verify OK; Cell 5 "No audio files matched"]
+
+## 158
+ok include this additional guidance in the notebook somehow and do the previous suggested changes. let me know when i should retest and how
+
+## 159
+also add guidance on how to logout
+
+## 160
+continue
+
+## 161
+yes commit and push then tell me what next
+
+## 162
+I also see [Cell 5 works: download + Whisper transcription]. how do i know if i have cpu, tpu or gpu. can you provide guidance in the notebook also
+
+## 163
+also add guidance on how to logout
+
+## 164
+ok. done for today we continue next week. push all remaining changes to github
+
+## 165
+ok i confirm F2 ok. proceed with F3
+
+## 166
+to be fair i only partially reviewed F2.2. Now I am trying F2.4 for the first time so I am not sure how it will work. I reach this. I get errors. hopefully you can fix it [Codespaces: No manifest found for mcr.microsoft.com/vscode/devcontainers/python:0-3.12-bullseye -> recovery mode]
+
+## 167
+yes proceed with the fix and tell me what todo afterwards
+
+## 168
+ok the codespace was installed without errors. do i need to test something in the terminal ? / retry / are you still working
+
+## 169
+retry
+
+## 170
+[Codespaces terminal] ffmpeg version 5.1.9 ... OK ... make_summaries.py "No English transcripts found in data/transcripts/ ..."
+
+## 171
+commit + push F5 and then stop
+
+## 172
+befor e we proceed with F6. recapitulate what are the testing or use possibilities: local, colab, codespaces,...? would it be possible to add guidance on deploying to vercel from github ? if yes what will be the benefits, would it be easy, how should it be done. if possible update all relevant documents. if it does not make sense then do not do that
+
+## 173
+I hope this nice summary is somewhere in the doc, if not make it so. then proceed with F6
+
+## 174
+ok commit and push then move todo4 to ignore. review plan.md and reassess if additional work is needed or planned. how much we already covered
+
+## 175
+yes implement the two recommended actions
+
+## 176
+so do i need to test something ?
+
+## 177
+how_to_test.md is not referred into the readme file. should it be or is its content already integrated in other files. if yes move it to ignore otherwise clarify its purpose
+
+## 178
+ok update the kiro documents in the chats to reflect all interactions we had

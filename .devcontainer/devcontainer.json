@@ -8,9 +8,9 @@
 		"context": "..",
 		"args": { 
 			// Update 'VARIANT' to pick a Python version: 3, 3.12, 3.11, 3.10.
-			// Append -bullseye or -bookworm to pin to an OS version.
-			// Use -bullseye variants on local on arm64/Apple Silicon.
-			"VARIANT": "3.12-bullseye",
+			// Append -bookworm or -trixie to pin the OS (the old -bullseye tags
+			// on mcr.microsoft.com/devcontainers/python are retired).
+			"VARIANT": "3.12-bookworm",
 			// Options
 			"NODE_VERSION": "none"
 		}

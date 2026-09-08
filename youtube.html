@@ -369,11 +369,16 @@ curl -fsSL https://deno.land/install.sh | sh   :: Linux</code></pre>
     3.12 environment with <code>requirements.txt</code> installed. Pick whichever fits.
   </p>
   <div class="note">
-    For a deeper, comparison-driven deployment guide &mdash; 12 platforms (local
-    conda/pip/uv, Docker, Podman, dev containers, Colab, Codespaces, Gitpod)
-    ranked by complexity vs. capabilities, plus ready-to-use image scripts like
-    <code>Dockerfile.standalone</code> &mdash; see <code>how_to_deploy.md</code>
-    in the repo root.
+    <strong>&#9889; 1-click deploy (zero local setup):</strong> three targets get
+    you a ready-to-run environment (ffmpeg + deps + the <code>data/</code> layout)
+    in one click &mdash;
+    <strong>Google Colab</strong> (Open-In-Colab badge &rarr;
+    <code>notebooks/colab_setup.ipynb</code>, then <em>Run all</em>),
+    <strong>GitHub Codespaces</strong> (<code>codespaces.new/dragosbo/learn-better</code>),
+    and a <strong>VS Code / Kiro Dev Container</strong> (<em>Reopen in Container</em>).
+    See the <strong>Deploying / running anywhere</strong> section of the
+    <code>README</code> for the badges, per-platform setup (conda / pip / uv /
+    Docker / Podman), and a known-gotchas table.
   </div>
   <div class="mermaid">
 flowchart LR
@@ -388,24 +393,26 @@ flowchart LR
 
   <table>
     <tr><th>Where</th><th>Best for</th><th>Setup</th></tr>
-    <tr><td><strong>Local</strong></td><td>Everyday use on your own machine.</td><td>Manual env (see Installation).</td></tr>
-    <tr><td><strong>Dev Container</strong></td><td>Reproducible local env in VS Code + Docker.</td><td>One click.</td></tr>
-    <tr><td><strong>GitHub Codespaces</strong></td><td>Zero local install; runs in the cloud/browser.</td><td>One click.</td></tr>
-    <tr><td><strong>Google Colab</strong></td><td>Quick experiments; free GPU for later ASR work.</td><td>Paste a cell.</td></tr>
+    <tr><td><strong>Google Colab</strong></td><td>Free GPU for Whisper; quick experiments.</td><td><strong>1-click</strong> (badge).</td></tr>
+    <tr><td><strong>GitHub Codespaces</strong></td><td>Zero local install; runs in the cloud/browser.</td><td><strong>1-click</strong> (badge).</td></tr>
+    <tr><td><strong>Dev Container</strong></td><td>Reproducible local env in VS Code / Kiro + Docker.</td><td><strong>1-click</strong> (Reopen in Container).</td></tr>
+    <tr><td><strong>Local (conda / pip / uv)</strong></td><td>Everyday use on your own machine.</td><td>Manual env (see Installation).</td></tr>
+    <tr><td><strong>Docker / Podman</strong></td><td>CI, servers, scripted batch runs.</td><td>Build an image.</td></tr>
   </table>
 
   <h3>1. Local</h3>
   <p>
-    Follow <a href="#install">Installation</a> (conda or venv), then run with the
-    <kbd>c</kbd>/<kbd>r</kbd>/<kbd>t</kbd>/<kbd>s</kbd> batch files or
-    <code>python code/&lt;script&gt;.py</code>.
+    Follow <a href="#install">Installation</a> (conda / pip / uv), then run with the
+    <kbd>c</kbd>/<kbd>r</kbd>/<kbd>t</kbd>/<kbd>s</kbd> runners in
+    <code>scripts/</code> (add it to PATH, or <code>init.bat</code>) or
+    <code>python code/&lt;script&gt;.py</code> directly.
   </p>
 
   <h3>2. Dev Container (VS Code + Docker)</h3>
   <p>
-    The repo ships a <code>.devcontainer/</code> on <strong>Python 3.12-bullseye</strong>
-    that installs <code>requirements.txt</code> automatically and preloads the Python +
-    Jupyter extensions.
+    The repo ships a <code>.devcontainer/</code> on <strong>Python 3.12 (Debian bookworm)</strong>
+    that installs ffmpeg + <code>requirements.txt</code> automatically and preloads the
+    Python + Jupyter extensions.
   </p>
   <ol>
     <li>Install Docker and the VS Code <strong>Dev Containers</strong> extension.</li>
@@ -413,7 +420,7 @@ flowchart LR
     <li>After the build, run directly (deps are already installed):</li>
   </ol>
 <pre><code>python code/read_channel.py</code></pre>
-  <div class="note">Add ffmpeg in the container with <code>sudo apt install ffmpeg</code> (or set <code>AUDIO_FORMAT = None</code> to skip mp3 conversion).</div>
+  <div class="note">ffmpeg is already installed by the <code>.devcontainer/</code> &mdash; no manual step. Run a tool directly.</div>
 
   <h3>3. GitHub Codespaces (nothing to install)</h3>
   <p>Codespaces runs the same <code>.devcontainer/</code> in the cloud.</p>
@@ -781,8 +788,7 @@ graph TD
 &#9500;&#9472; skill_summary.md           # reusable summary format/procedure
 &#9500;&#9472; scripts/                   # one-letter runners c/r/t/s/p/w/d/wc/a/v (.bat + .sh; add to PATH)
 &#9500;&#9472; init.bat                   # adds scripts/ to PATH for the current cmd session
-&#9500;&#9472; Dockerfile.standalone      # slim Docker/Podman/CI image (see how_to_deploy.md)
-&#9500;&#9472; how_to_deploy.md           # deployment guide: 12 platforms + image scripts
+&#9500;&#9472; Dockerfile.standalone      # slim Docker/Podman/CI image (deploy guide: README)
 &#9500;&#9472; requirements.txt
 &#9500;&#9472; plan.md                    # roadmap and analysis (single source of truth)
 &#9492;&#9472; README.md</code></pre>

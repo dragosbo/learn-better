@@ -281,9 +281,9 @@ pip install -r requirements.txt   # or:  uv pip install -r requirements.txt
 
 ### Dev Container (VS Code / Kiro + Docker)
 
-The repo ships a `.devcontainer/` on **Python 3.12-bullseye** that **installs
-ffmpeg** (via the Dockerfile) and `requirements.txt` (via `postCreateCommand`),
-and preloads the Python + Jupyter extensions — nothing manual.
+The repo ships a `.devcontainer/` on **Python 3.12 (Debian bookworm)** that
+**installs ffmpeg** (via the Dockerfile) and `requirements.txt` (via
+`postCreateCommand`), and preloads the Python + Jupyter extensions — nothing manual.
 
 1. Install [Docker](https://www.docker.com/) and the **Dev Containers** extension.
 2. Open the repo and choose **Reopen in Container**.

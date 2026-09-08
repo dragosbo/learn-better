@@ -37,7 +37,10 @@ single source of truth for what remains to be done.
   added `ipykernel` (so the notebooks run in this env), and documented `ffmpeg`
   as a required **system** dependency (not pip-installable).
 - **Devcontainer**: aligned `devcontainer.json` (`3.8-bullseye`) and `Dockerfile`
-  (`3.10-bullseye`) to a single supported version (`3.12-bullseye`); replaced the
+  (`3.10-bullseye`) to a single supported version (now `3.12-bookworm` on the
+  current `mcr.microsoft.com/devcontainers/python` image — the old
+  `vscode/devcontainers` path + `bullseye` tags were retired and 404 on pull);
+  replaced the
   removed `python.linting.*` / `python.formatting.*` settings with the current
   black-formatter setup; added the Jupyter extension; fixed `postCreateCommand`.
 - **Bug fixes**: invalid short URLs (`https://youtu.be/v=<id>` → `https://youtu.be/<id>`)

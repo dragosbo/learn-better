@@ -229,7 +229,7 @@ Colab notebook / image-script files. No files changed in F0 (decisions only).
 
 ---
 
-## Phase F1 — Migrate + FIX deploy guidance into `README.md` — DONE (awaiting user review)
+## Phase F1 — Migrate + FIX deploy guidance into `README.md` — DONE, USER-VALIDATED
 - [x] **F1.1** Replaced "How to run it" with **"Deploying / running anywhere"**:
       platform-overview table + condensed per-platform setup (conda; pip/venv/uv;
       Dev Container; Codespaces; Docker + Podman with `-v <repo>/data:/app/data`
@@ -263,59 +263,60 @@ layout tree, pending F5). **Pass =** a newcomer could deploy from README alone.
 
 ---
 
-## Phase F2 — ONE-CLICK install: Colab notebook + 3 badges + verify — TODO
+## Phase F2 — ONE-CLICK install: Colab notebook + 3 badges + verify — DONE, USER-VALIDATED
 > The heart of goal B. Deliver a single "1-click deploy" block in README with
 > three working entry points, each landing in a ready-to-run env.
 
 **Colab (build the missing piece):**
-- [ ] **F2.1** Author `notebooks/colab_setup.ipynb` (valid nbformat v4 JSON),
-      idempotent cells: (1) `!apt-get install -y ffmpeg -q` + clone
-      `https://github.com/dragosbo/learn-better.git` (skip if present) + `%cd`;
-      (2) `!pip install -q -r requirements.txt`; (3) optional Drive mount + make
-      the `data/` subdirs mirroring `lib/paths.py`; (4) verify (`ffmpeg -version`,
-      `import yt_dlp, faster_whisper, pandas`, `nvidia-smi`); (5) example run with
-      the REAL script `!python code/transcribe_audio.py config/config_transcribe.json`.
-- [ ] **F2.2** README **"Open In Colab"** badge →
-      `https://colab.research.google.com/github/dragosbo/learn-better/blob/main/notebooks/colab_setup.ipynb`.
-- [ ] **F2.3** Validate the notebook is valid JSON / nbformat.
+- [x] **F2.1** Authored `notebooks/colab_setup.ipynb` (valid nbformat v4). Final
+      cells: (1) ffmpeg + clone (skip-if-present) + `%cd`; (2) `pip install`
+      **minus `ipykernel`** (Colab supplies its own → no noisy conflict warnings);
+      (3) OPTIONAL Drive mount wrapped in try/except (graceful "not mounted" msg,
+      won't halt Run-all); (4) **accelerator detection CPU/GPU/TPU** + verify
+      (ffmpeg, imports); (5) example **download→transcribe** (English-only, real
+      scripts `read_channel.py` + `transcribe_audio.py`); (6) OPTIONAL add-French
+      cell; + "Accessing your files" and "Finishing up / logging out" sections.
+- [x] **F2.2** README **"Open In Colab"** badge → the notebook. Confirmed correct URL.
+- [x] **F2.3** Notebook validated (`nbformat.validate` OK; 17 cells, 8 code).
+- [x] **F2.4** README **"Open in GitHub Codespaces"** badge →
+      `codespaces.new/dragosbo/learn-better` (reuses `.devcontainer/`).
+- [x] **F2.5** README **"Reopen in Container"** one-click line (same `.devcontainer/`).
+- [x] **F2.6** Grouped into the **"⚡ 1-click deploy"** block near the top of README.
 
-**Codespaces (verify + advertise; env already correct):**
-- [ ] **F2.4** README **"Open in GitHub Codespaces"** badge →
-      `https://codespaces.new/dragosbo/learn-better`. Confirm `.devcontainer/`
-      builds a ready env (ffmpeg + `postCreateCommand` pip install) — one click
-      from GitHub, no manual steps to *run* a tool.
-
-**Dev Container (verify + advertise; env already correct):**
-- [ ] **F2.5** README one-click line for **"Reopen in Container"** (VS Code /
-      Kiro) — the same `.devcontainer/` builds Python 3.12 + ffmpeg + deps +
-      Jupyter automatically. Optionally add the `vscode://` dev-container open
-      link. Confirm the flow needs no manual ffmpeg/pip step.
-
-**Assemble:**
-- [ ] **F2.6** Group the three into a single **"⚡ 1-click deploy"** block near the
-      top of README (above the manual setup), each with a one-line "what you get".
-
-**Review & hand off (STOP):**
-```cmd
-python -c "import json; json.load(open('notebooks/colab_setup.ipynb', encoding='utf-8')); print('valid JSON')"
-```
-**Expect:** `valid JSON`; README shows the 1-click block with three badges
-(Colab → the new notebook; Codespaces → `codespaces.new/dragosbo/learn-better`;
-Dev Container → "Reopen in Container"). **Pass =** each entry point lands a
-newcomer in a ready-to-run env with zero manual dependency steps. (Colab/
-Codespaces actual boot is user-verified in their browser; the notebook validity +
-badge URLs are verified here.) Report back; then F3.
+**How this was tested (record):** USER ran the Colab flow end-to-end from the
+badge — install clean, accelerator reported CPU, English-only download avoided
+the earlier French `429`, Whisper transcribed the clip (English detected,
+timestamps printed). Notebook `nbformat.validate` OK locally. Iterated on real
+user feedback: (a) silenced pip/ipykernel conflicts, (b) graceful Drive-mount
+failure, (c) download-then-transcribe ordering, (d) CPU/GPU/TPU guidance,
+(e) English-only + French-later, (f) logout guidance. **USER confirmed "F2 ok".**
+✅ Extras beyond spec: accelerator detection, 429-avoidance (English-only),
+French-later cell, file-access + logout sections.
 
 ---
 
-## Phase F3 — Update `youtube.html` (self-contained, visual) — TODO
-- [ ] **F3.1** Replace the `how_to_deploy.md` note with a one-liner pointing to
-      README's deploy section (no external-doc dependency).
-- [ ] **F3.2** Sanity-check the deploy diagram/table labels still match (Colab,
-      Dev Container, Codespaces, Gitpod, Docker/Podman) and the runner UX line
-      references `scripts/`/PATH.
-- [ ] **F3.3** Mention the three **1-click** entry points (Colab / Codespaces /
-      Dev Container) in the deploy overview so the visual page matches README.
+## Phase F3 — Update `youtube.html` (self-contained, visual) — DONE (awaiting user review)
+- [x] **F3.1** Replaced the `how_to_deploy.md` note with a self-contained
+      **"⚡ 1-click deploy"** callout (Colab / Codespaces / Dev Container) that
+      points to README's "Deploying / running anywhere" section. No external-doc
+      dependency.
+- [x] **F3.2** Deploy table reworked to lead with the 1-click targets + add
+      Docker/Podman; the Local row now references `scripts/` + PATH/`init.bat`
+      (was "batch files"). Deploy flowchart labels unchanged (still valid).
+- [x] **F3.3** The three 1-click entry points are named in the callout + table.
+- [x] **Bonus fixes:** removed the stale "Add ffmpeg with `sudo apt install
+      ffmpeg`" Dev Container note (the `.devcontainer/` installs it); dropped the
+      `how_to_deploy.md` line from the repo-layout tree and repointed
+      `Dockerfile.standalone`'s "see how_to_deploy.md" → "deploy guide: README"
+      (ahead of the F5 archive).
+
+**Verified:** grep of `youtube.html` for `how_to_deploy` → **no matches**; page
+is self-contained.
+
+**Review & hand off (STOP for user feedback):** open `youtube.html` and check the
+**Deployment** section: the 1-click callout names Colab/Codespaces/Dev Container
+and points to README; no `how_to_deploy.md` reference anywhere. **Pass =** the
+visual page stands on its own. Report back; then F4.
 
 **Review & hand off (STOP):** open `youtube.html`.
 **Expect:** no mention of `how_to_deploy.md`; deploy overview stands on its own.

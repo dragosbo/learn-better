@@ -409,6 +409,25 @@ It's **network-free by design** — it does not run yt-dlp / Whisper / Piper (th
 need network and are slow). The goal is to catch the stale-import / broken-path /
 bad-base-image class of regression early, not to exercise downloads.
 
+**What to expect from a run:**
+- **Timing.** The two jobs run in parallel, so a run takes about **1–2 minutes**
+  wall-clock: **lint** finishes in ~10–20s, **smoke** in ~50s (its slow part is
+  `pip install -r requirements.txt` — faster-whisper etc.). Add a few seconds of
+  runner queue/startup.
+- **Where to check (fastest).** The repo's **Actions** tab
+  (`github.com/<owner>/learn-better/actions`) shows each run live — lint + smoke,
+  green ✅ or red ❌ — within about a minute. This is more reliable than waiting
+  for email.
+- **Email.** GitHub emails the result **after the run finishes** (a few seconds to
+  ~2 min to arrive, so ~2–4 min from push). By default GitHub notifies on
+  **failures** and on the **first success after a failure** — it won't email every
+  green run. If no mail arrives in ~5 min, check spam or
+  *GitHub → Settings → Notifications → Actions*.
+- **Deprecation warnings.** If a run shows a "Node.js NN is deprecated" warning on
+  the actions (`actions/checkout`, `actions/setup-python`), that's GitHub phasing
+  out an action runtime — it does **not** fail the build. Fix it by bumping those
+  actions to their current major versions in `ci.yml`.
+
 ### Manual test playbook
 
 For the full, hands-on validation that CI intentionally skips (the network tools:

@@ -390,13 +390,13 @@ def check_language_consistency(selected):
         if file_lang and file_lang != LANGUAGE:
             offenders.append((rel, file_lang))
     if offenders:
-        print(f"\n!! LANGUAGE MISMATCH — refusing to run a mixed-language batch.")
+        print("\n!! LANGUAGE MISMATCH — refusing to run a mixed-language batch.")
         print(f"   Stopwords are set for LANGUAGE={LANGUAGE!r}, but these "
               f"selected transcripts are a different language:")
         for rel, lang in offenders:
             print(f"     [{lang}] {rel}")
-        print(f"   A word cloud uses ONE stopword list, so mixing languages "
-              f"gives poor results.")
+        print("   A word cloud uses ONE stopword list, so mixing languages "
+              "gives poor results.")
         print(f"   Fix: narrow the selection to one language (by name/id), or "
               f"set LANGUAGE to {sorted({l for _, l in offenders})} and run those "
               f"separately.")

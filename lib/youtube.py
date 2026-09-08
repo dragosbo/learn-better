@@ -219,7 +219,7 @@ def download_transcript(video_id, title, languages, output_dir=None):
                if not os.path.exists(
                    os.path.join(output_dir, f"{base}.{lang}.txt"))]
     if not missing:
-        print(f"   all requested transcripts already exist (skip)")
+        print("   all requested transcripts already exist (skip)")
         return []
 
     url = f"https://www.youtube.com/watch?v={video_id}"

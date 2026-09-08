@@ -409,6 +409,15 @@ It's **network-free by design** — it does not run yt-dlp / Whisper / Piper (th
 need network and are slow). The goal is to catch the stale-import / broken-path /
 bad-base-image class of regression early, not to exercise downloads.
 
+### Manual test playbook
+
+For the full, hands-on validation that CI intentionally skips (the network tools:
+downloading, Whisper transcription, TTS), see [`how_to_test.md`](how_to_test.md).
+It's a chronological, copy-paste playbook — one command per step, ordered the way
+the tools were built — with the expected output and file for each, plus the
+"should fail cleanly" bad-input cases. Start with its **Phase 0** (verify a fresh
+environment), then work top to bottom to exercise every tool end-to-end.
+
 ### Known gotchas
 
 | Symptom | Fix |
@@ -953,7 +962,7 @@ learn-better/
 │   ├── generate_speech.py     # text -> speech via Piper (v.bat)
 │   └── languages.json         # subtitle languages to fetch (en, fr, ro)
 ├── lib/                 # reusable helpers: net, textutil, paths, youtube
-├── notebooks/           # yt_download.ipynb (reusable helpers + metadata)
+├── notebooks/           # yt_download.ipynb (helpers + metadata) + colab_setup.ipynb (1-click Colab)
 ├── .devcontainer/       # Codespaces / Dev Container (Python 3.12)
 ├── data/                # ALL generated outputs live here (git-ignored, except summaries/)
 │   ├── audio/               # downloaded audio (git-ignored)
@@ -965,10 +974,14 @@ learn-better/
 │   ├── wordclouds/          # *.word_cloud.json (git-ignored)
 │   └── playlists.json       # channel playlists (git-ignored)
 ├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
+├── docs/                # video_to_mindmap.md, prompt_building.md (Phase 4 guides)
+├── .github/workflows/   # ci.yml — light CI (lint + network-free smoke test)
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
-├── ignore/              # git-ignored: retired code + todo.md, mini_todo.md, notes
+├── ignore/              # git-ignored: retired code + todo*.md, mini_todo.md, notes
 ├── wordcloud.html       # renders a word_cloud.json (wordcloud2.js)
+├── how_to_test.md       # manual test playbook (validate every tool end-to-end)
 ├── skill_summary.md     # reusable summary format/procedure
+├── skill_todo.md        # reusable procedure for writing todoN.md mini-plans
 ├── scripts/             # one-letter runners (add to PATH for c/r/t/s/p/w/d/wc/a/v)
 │   ├── c.bat / c.sh     # activate the learn-better conda env
 │   ├── r.bat / r.sh     # activate env + run read_channel.py

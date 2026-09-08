@@ -1,0 +1,72 @@
+name: CI
+
+# Light CI for learn-better: a fast lint gate + a network-free smoke test.
+# It does NOT run yt-dlp / Whisper / Piper (those need network + are slow) —
+# it verifies the code compiles, has no obvious errors, and that the stdlib-only
+# tooling runs against the data/ layout. That's the class of regression that has
+# actually bitten this repo (stale imports/paths, a broken base image, etc.).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  lint:
+    name: Lint (syntax + real errors)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install linters
+        run: python -m pip install --upgrade pip ruff black
+
+      # Hard gate: syntax errors + pyflakes-class real bugs (undefined names,
+      # unused imports, etc.). Style-only issues are NOT failed here.
+      - name: Ruff (errors only)
+        run: ruff check --select E9,F code lib
+
+      # Belt-and-suspenders: every file must compile.
+      - name: Compile all
+        run: python -m compileall -q code lib
+
+      # Advisory only: report black formatting drift without failing the build.
+      - name: Black (format check, advisory)
+        continue-on-error: true
+        run: black --check code lib
+
+  smoke:
+    name: Smoke (imports + stdlib tool, no network)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ffmpeg (system binary, not pip-installable)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify toolchain
+        run: |
+          ffmpeg -version | head -1
+          python -c "import yt_dlp, faster_whisper, pandas, curl_cffi, youtube_transcript_api; print('imports OK')"
+          python -c "from lib import paths; print('paths OK:', paths.DATA_DIR)"
+
+      # make_summaries.py is standard-library only (no network), so it's a safe
+      # end-to-end 'does the repo run here?' check. On a fresh checkout it prints
+      # 'No English transcripts found ...' and exits 0 — that's a pass.
+      - name: Smoke-run a stdlib tool
+        run: python code/make_summaries.py

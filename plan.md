@@ -199,9 +199,14 @@ isolation.
       voice **cloning** (XTTS/Chatterbox) remain deferred (todo2 Phase D4).
 
 ### Phase 4 — Knowledge consolidation & docs (`todo` section B)
-- [ ] "Video → mindmap" walkthrough (Markdown; link the recorded video when ready).
-- [ ] Prompt-building doc capturing the author's logic, referenced from the
-      summarization notebook.
+- [x] "Video → mindmap" walkthrough — `docs/video_to_mindmap.md`: the end-to-end
+      flow (download → transcript → summary → mindmap) with the real command
+      sequence and how a `data/summaries/*.summary.md` maps onto mindmap branches
+      (Obsidian / Markmap / by hand). Recorded-video link to be added when ready.
+- [x] Prompt-building doc — `docs/prompt_building.md`: how the summarization
+      prompt is built (deterministic script + AI split), what `skill_summary.md`
+      encodes (rules, template, grounding), the design principles, and how to
+      change how summaries read. Referenced from the summaries flow.
 - [x] Codespaces / remote-run doc: covered by the "How to run it" section in the
       README (local, Dev Container, GitHub Codespaces, Google Colab). The old
       `learning_codspaces.txt` notes are archived in `ignore/`.
@@ -268,7 +273,8 @@ learn-better/
 │                        #          transcribe_audio, compare_transcripts, make_summaries)
 ├── lib/                 # shared helpers: net, textutil, paths, youtube
 ├── config/              # Whisper run configs: config_transcribe*.json
-├── notebooks/           # yt_download.ipynb (future: one per capability)
+├── notebooks/           # yt_download.ipynb + colab_setup.ipynb (1-click Colab)
+├── docs/                # video_to_mindmap.md, prompt_building.md (Phase 4 guides)
 ├── data/                # ALL generated outputs (git-ignored, except summaries/)
 │   ├── audio/               # downloaded audio (git-ignored)
 │   ├── audio_reencoded/     # re-encoded audio (git-ignored)
@@ -284,9 +290,10 @@ learn-better/
 └── plan.md
 ```
 
-Still open (roadmap): a `docs/` folder for mindmap / prompt-building notes. The
-git-ignored outputs are now **consolidated under `data/`** (done in `todo3.md`),
-and the one-letter runners live in `scripts/` (add to PATH via `init.bat`).
+Docs live in `docs/` (the "video → mindmap" walkthrough + the prompt-building
+note, added in `todo4.md`). The git-ignored outputs are **consolidated under
+`data/`** (done in `todo3.md`), and the one-letter runners live in `scripts/`
+(add to PATH via `init.bat`).
 
 ---
 

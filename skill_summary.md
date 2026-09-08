@@ -7,7 +7,7 @@ clear, structured summary. Give this file plus a transcript to an assistant
 ## How to use
 
 > Apply `skill_summary.md` to `<transcript file>` and save the result to
-> `summaries/<same base name>.summary.md`.
+> `data/summaries/<same base name>.summary.md`.
 
 The assistant should read the transcript in full, then produce one Markdown
 file following the template below. Keep it concise: the summary should be a
@@ -21,11 +21,11 @@ fraction of the transcript length, not a rewrite.
 
 ## Output
 
-- One Markdown file named `<transcript base name>.summary.md` inside a
-  `summaries/` folder (create the folder if missing).
+- One Markdown file named `<transcript base name>.summary.md` inside the
+  `data/summaries/` folder (create the folder if missing).
 - Base name = the transcript filename without the `.<lang>.txt` suffix.
   Example: `Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt`
-  -> `summaries/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].summary.md`.
+  -> `data/summaries/Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].summary.md`.
 
 ## Rules
 
@@ -86,7 +86,7 @@ Copy this structure into the output file and fill it in.
 
 ## Checklist before saving
 
-- [ ] File is in `summaries/` and named `<base>.summary.md`.
+- [ ] File is in `data/summaries/` and named `<base>.summary.md`.
 - [ ] Table of contents has real timestamps from the transcript.
 - [ ] Every section maps to actual transcript content.
 - [ ] Strengths AND weaknesses are both filled in (not left blank).

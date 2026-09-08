@@ -405,24 +405,37 @@ guidance lives in README/youtube/plan. Report back; then F6.
 
 ---
 
-## Phase F6 — Remaining `plan.md` roadmap gaps (docs) — TODO
+## Phase F6 — Remaining `plan.md` roadmap gaps (docs) — DONE (awaiting user review)
 > Scope: the non-deploy open items. Optional/deferred items (Kokoro, cloning,
 > Streamlit, CI) stay out unless the user asks.
-- [ ] **F6.1** Phase 4 — **"Video → mindmap" walkthrough**: a short Markdown doc
-      (or a README section) describing the end-to-end flow (r → w/t → s → Kiro →
-      mindmap), with the command sequence. Link the recorded video when ready.
-- [ ] **F6.2** Phase 4 — **Prompt-building doc**: capture the summarization logic
-      (`skill_summary.md`) and how prompts are constructed, referenced from the
-      summaries section.
-- [ ] **F6.3** Phase 2 — **self-contained summarization** (OPTIONAL, confirm):
-      only if the user wants to remove the manual Kiro-paste step (local HF model
-      / API). Otherwise leave `[~]` as-is and note it stays intentionally manual.
-- [ ] **F6.4** Tick the corresponding `plan.md` Phase 4 boxes + update status.
+- [x] **F6.1** Phase 4 — **"Video → mindmap" walkthrough**: created
+      `docs/video_to_mindmap.md` — the end-to-end flow (download → transcript →
+      summary → mindmap) with the real command sequence and a step-by-step
+      table, plus how a `data/summaries/*.summary.md` maps onto mindmap branches
+      (Obsidian / Markmap / by hand). Placeholder for the recorded-video link.
+- [x] **F6.2** Phase 4 — **Prompt-building doc**: created
+      `docs/prompt_building.md` — why it's split (script + AI), the two-part
+      prompt (generated instruction + `skill_summary.md`), what the skill file
+      encodes, the design principles (deterministic-where-possible, grounding,
+      idempotent, structured-for-reuse), and how to change how summaries read.
+      Cross-links `video_to_mindmap.md`.
+- [~] **F6.3** Phase 2 — **self-contained summarization**: LEFT INTENTIONALLY
+      MANUAL (not built). Documented as such in `docs/prompt_building.md` +
+      `plan.md` Phase 2. Building it (local HF model / API to drop the Kiro-paste
+      step) is a real feature needing a NEW decision + likely a new dep — **out of
+      TODO4 scope; confirm separately if you want it.**
+- [x] **F6.4** `plan.md`: ticked both Phase 4 boxes with what was delivered;
+      added `docs/` to the Section 4 layout tree (+ `notebooks/colab_setup.ipynb`);
+      updated the "Still open (roadmap)" note (docs now exist).
+- [x] **Bonus fix:** `skill_summary.md` still said `summaries/` — repointed the 3
+      mentions to `data/summaries/` (the docs reference it as the format source of
+      truth, so it had to be accurate).
 
-**Review & hand off (STOP):** open the new docs + `plan.md`.
-**Expect:** Phase 4 doc items done and ticked; any optional item explicitly
-marked in/out per the user. **Pass =** plan.md reflects reality. This completes
-TODO4.
+**Review & hand off (STOP for user feedback):** open `docs/video_to_mindmap.md`
+and `docs/prompt_building.md`, and skim `plan.md` Phase 4. **Expect:** the
+walkthrough reads as a usable end-to-end guide; the prompt doc explains the
+summarization logic; plan.md Phase 4 both boxes ticked. **Pass =** the Phase 4
+doc gap is closed. This completes TODO4 (F6.3 optional item deferred by design).
 
 ---
 

@@ -250,6 +250,18 @@ the `data/` output layout) with a single click — no manual install steps:
 | **Docker / Podman** | CI, servers, scripted batch runs. | Build an image. |
 | **Google Colab** | Free GPU for Whisper; quick experiments. | 1-click (above). |
 
+> **Not a web app — why there's no Vercel/Netlify/serverless deploy.** This is a
+> **batch command-line pipeline**: you run a script, it downloads audio and runs
+> Whisper/Piper (long CPU jobs), and writes files under `data/`. It is *not* an
+> HTTP service. Web/serverless hosts like **Vercel** or **Netlify** don't fit and
+> would fail on hard limits: they can't install the **ffmpeg** system binary,
+> cap function runtime at seconds–minutes (a real transcription runs far longer),
+> and give no persistent filesystem for `data/`. So the options above (local /
+> notebook / cloud IDE / container) are the full realistic range. The only static
+> asset here, `wordcloud.html`, just needs a browser (or `python -m http.server`)
+> — no deploy. If you ever want an always-on hosted run, use a small VM or a
+> container from `Dockerfile.standalone`, not a serverless web host.
+
 ### Local — conda (recommended)
 
 Conda is the only method that installs **ffmpeg** into the same environment, and

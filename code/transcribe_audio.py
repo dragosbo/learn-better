@@ -88,27 +88,27 @@ AUDIO_DIR = os.path.join(_REPO_ROOT, paths.AUDIO_DIR)
 OUTPUT_DIR = os.path.join(_REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR)
 
 # Which audio files to transcribe. See the module docstring for the modes.
-SELECT_BY = "name"       # "name" | "id" | "all" | "source"
-SELECT = [               # substrings (name) or video ids (id); ignored for "all"/"source"
+SELECT_BY = "name"  # "name" | "id" | "all" | "source"
+SELECT = [  # substrings (name) or video ids (id); ignored for "all"/"source"
     "Git and GitHub",
 ]
 
 # For SELECT_BY = "source" (C3): pick ONE source, leave the others None.
-SOURCE_PLAYLIST_ID = None    # a playlist id, e.g. "PLxxxx"
-SOURCE_CHANNEL = None        # a channel: "@handle", "UC...", or full URL
-SOURCE_SEARCH = None         # a search string
-SOURCE_LIMIT = 5             # max videos to consider from the source
+SOURCE_PLAYLIST_ID = None  # a playlist id, e.g. "PLxxxx"
+SOURCE_CHANNEL = None  # a channel: "@handle", "UC...", or full URL
+SOURCE_SEARCH = None  # a search string
+SOURCE_LIMIT = 5  # max videos to consider from the source
 # Caption languages to try before falling back to Whisper. None = languages.json.
 SOURCE_LANGUAGES = None
 
 AUDIO_EXTS = (".mp3", ".m4a", ".webm", ".wav", ".opus")
 
 # Whisper settings.
-MODEL_SIZE = "base"      # tiny | base | small | medium | large-v3 (bigger = slower, better)
-DEVICE = "cpu"           # "cuda" if you have a working GPU + CUDA
-COMPUTE_TYPE = "int8"    # int8 is fast + low-memory on CPU
-TASK = "transcribe"      # "translate" would produce English from any language
-LANGUAGE = None          # None = auto-detect; or pin e.g. "en"
+MODEL_SIZE = "base"  # tiny | base | small | medium | large-v3 (bigger = slower, better)
+DEVICE = "cpu"  # "cuda" if you have a working GPU + CUDA
+COMPUTE_TYPE = "int8"  # int8 is fast + low-memory on CPU
+TASK = "transcribe"  # "translate" would produce English from any language
+LANGUAGE = None  # None = auto-detect; or pin e.g. "en"
 
 # The `[<id>]` YouTube ids embed in downloaded file names, e.g. "... [tRZGeaHPoaw].mp3".
 _ID_IN_NAME_RE = re.compile(r"\[([A-Za-z0-9_-]{11})\]")
@@ -178,8 +178,7 @@ def list_audio_files():
     """All audio file names (not paths) in AUDIO_DIR."""
     if not os.path.isdir(AUDIO_DIR):
         return []
-    return [f for f in os.listdir(AUDIO_DIR)
-            if f.lower().endswith(AUDIO_EXTS)]
+    return [f for f in os.listdir(AUDIO_DIR) if f.lower().endswith(AUDIO_EXTS)]
 
 
 def pick_audio_files(select_by, select):
@@ -195,8 +194,7 @@ def pick_audio_files(select_by, select):
 
     if select_by == "name":
         wanted = [s.lower() for s in select]
-        return sorted(f for f in files
-                      if any(w in f.lower() for w in wanted))
+        return sorted(f for f in files if any(w in f.lower() for w in wanted))
 
     if select_by == "id":
         wanted = set(select)
@@ -271,8 +269,10 @@ def _transcribe_path(audio_path, base, model):
     print(f"\n{action}:\n  {audio_path}")
     segments, info = model.transcribe(audio_path, task=TASK, language=LANGUAGE)
     detected = info.language
-    print(f"  detected source language: {detected} "
-          f"(probability {info.language_probability:.2f})")
+    print(
+        f"  detected source language: {detected} "
+        f"(probability {info.language_probability:.2f})"
+    )
 
     # Output language label: English for translate, else the detected/pinned lang.
     out_lang = "en" if TASK == "translate" else detected
@@ -325,8 +325,10 @@ def run_local_flow():
         if transcribe_one(name, model):
             written += 1
 
-    print(f"\nDone. {written} new transcript(s) written, "
-          f"{len(selected) - written} skipped, in:\n  {OUTPUT_DIR}")
+    print(
+        f"\nDone. {written} new transcript(s) written, "
+        f"{len(selected) - written} skipped, in:\n  {OUTPUT_DIR}"
+    )
 
 
 def run_source_flow():
@@ -336,15 +338,20 @@ def run_source_flow():
     languages = SOURCE_LANGUAGES
     if not languages:
         from lib.textutil import load_languages
+
         languages = load_languages()
 
-    label, url = youtube.build_url(playlist_id=SOURCE_PLAYLIST_ID,
-                                   channel=SOURCE_CHANNEL,
-                                   search=SOURCE_SEARCH,
-                                   limit=SOURCE_LIMIT)
+    label, url = youtube.build_url(
+        playlist_id=SOURCE_PLAYLIST_ID,
+        channel=SOURCE_CHANNEL,
+        search=SOURCE_SEARCH,
+        limit=SOURCE_LIMIT,
+    )
     if not url:
-        print("SELECT_BY='source' but no source set. Set one of "
-              "playlist_id / channel / search in the config.")
+        print(
+            "SELECT_BY='source' but no source set. Set one of "
+            "playlist_id / channel / search in the config."
+        )
         return
 
     print(f"Source: {label}")
@@ -391,9 +398,11 @@ def run_source_flow():
         else:
             skipped += 1
 
-    print(f"\nDone (source flow). {len(videos)} video(s): "
-          f"{have_caption} had captions, {whispered} Whisper-transcribed, "
-          f"{skipped} skipped.\nWhisper output in:\n  {OUTPUT_DIR}")
+    print(
+        f"\nDone (source flow). {len(videos)} video(s): "
+        f"{have_caption} had captions, {whispered} Whisper-transcribed, "
+        f"{skipped} skipped.\nWhisper output in:\n  {OUTPUT_DIR}"
+    )
 
 
 def main():

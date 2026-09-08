@@ -77,15 +77,15 @@ SUMMARY_DIR = os.path.join(_REPO_ROOT, paths.SUMMARY_DIR)
 OUTPUT_DIR = os.path.join(_REPO_ROOT, paths.TTS_OUTPUT_DIR)
 VOICE_DIR = os.path.join(OUTPUT_DIR, ".voices")  # downloaded .onnx models cache
 
-SELECT_BY = "name"       # "name" | "id" | "all"
+SELECT_BY = "name"  # "name" | "id" | "all"
 SELECT = ["Git and GitHub"]  # substrings (name) or video ids (id); ignored for all
 
-ENGINE = "piper"         # only "piper" in the baseline
+ENGINE = "piper"  # only "piper" in the baseline
 VOICE = "en_US-lessac-medium"  # Piper voice id; model downloads on first use
-FORMAT = "wav"           # "wav" (Piper native) or "mp3" (converted via ffmpeg)
-LENGTH_SCALE = 1.0       # speaking speed (Piper --length-scale): >1 slower, <1 faster.
-                         # Handy presets: 0.9 (faster), 1.0 (normal), 1.15 (slower/clearer).
-MAX_CHARS = None         # optional cap on input length for a quick test; None = all
+FORMAT = "wav"  # "wav" (Piper native) or "mp3" (converted via ffmpeg)
+LENGTH_SCALE = 1.0  # speaking speed (Piper --length-scale): >1 slower, <1 faster.
+# Handy presets: 0.9 (faster), 1.0 (normal), 1.15 (slower/clearer).
+MAX_CHARS = None  # optional cap on input length for a quick test; None = all
 
 # JSON config keys -> the module globals they set.
 _CONFIG_KEYS = {
@@ -119,8 +119,10 @@ def find_piper():
     if exe:
         return exe
     print("!! piper not found on PATH.")
-    print("   This tool synthesizes speech with Piper (free, MIT, CPU-only). "
-          "Install it, then re-run:")
+    print(
+        "   This tool synthesizes speech with Piper (free, MIT, CPU-only). "
+        "Install it, then re-run:"
+    )
     print("     pip install piper-tts")
     print("   Verify: piper --help")
     return None
@@ -166,6 +168,7 @@ def pick_text(select_by, select):
 
     Dedupes by video id, preferring summary > caption > whisper (the yield order),
     so we produce one narration per video."""
+
     def matches(fname):
         if select_by == "all":
             return True
@@ -199,11 +202,11 @@ def _strip_markdown(text):
         if in_fence:
             continue
         s = line
-        s = re.sub(r"^\s{0,3}#{1,6}\s*", "", s)          # headings
-        s = re.sub(r"^\s*[-*+]\s+", "", s)               # bullet markers
-        s = re.sub(r"^\s*\d+\.\s+", "", s)               # numbered markers
+        s = re.sub(r"^\s{0,3}#{1,6}\s*", "", s)  # headings
+        s = re.sub(r"^\s*[-*+]\s+", "", s)  # bullet markers
+        s = re.sub(r"^\s*\d+\.\s+", "", s)  # numbered markers
         s = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", s)  # links/images -> text
-        s = re.sub(r"[*_`>#]", "", s)                    # stray emphasis/code marks
+        s = re.sub(r"[*_`>#]", "", s)  # stray emphasis/code marks
         out.append(s)
     return "\n".join(out)
 
@@ -236,15 +239,20 @@ def ensure_voice(voice):
     net.apply_no_proxy_env()  # same corporate-proxy bypass Phase C uses for HF
     print(f"  downloading voice {voice!r} -> {VOICE_DIR} (first use only)...")
     result = subprocess.run(
-        [sys.executable, "-m", "piper.download_voices", voice,
-         "--data-dir", VOICE_DIR],
-        capture_output=True, text=True, encoding="utf-8", errors="replace")
+        [sys.executable, "-m", "piper.download_voices", voice, "--data-dir", VOICE_DIR],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     if result.returncode != 0 or not os.path.exists(onnx):
         reason = (result.stderr or result.stdout or "").strip().splitlines()
         reason = reason[-1] if reason else f"exit code {result.returncode}"
         print(f"  ! voice download failed: {reason}")
-        print(f"    Try manually: python -m piper.download_voices {voice} "
-              f"--data-dir \"{VOICE_DIR}\"")
+        print(
+            f"    Try manually: python -m piper.download_voices {voice} "
+            f'--data-dir "{VOICE_DIR}"'
+        )
         return None
     return onnx
 
@@ -272,8 +280,14 @@ def synthesize_one(piper, onnx, abspath, filename):
     if float(LENGTH_SCALE) != 1.0:
         cmd += ["--length-scale", str(LENGTH_SCALE)]
     print(f"  -> {VOICE} {FORMAT} (speed {LENGTH_SCALE}): {out_name}")
-    result = subprocess.run(cmd, input=text, capture_output=True, text=True,
-                            encoding="utf-8", errors="replace")
+    result = subprocess.run(
+        cmd,
+        input=text,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     if result.returncode != 0 or not os.path.exists(wav_path):
         reason = (result.stderr or "").strip().splitlines()
         reason = reason[-1] if reason else f"piper exit code {result.returncode}"
@@ -297,13 +311,28 @@ def _wav_to_mp3(wav_path, mp3_path):
     """Convert wav -> mp3 via ffmpeg (reuses the already-required binary)."""
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
-        print("  ! ffmpeg not found (needed for mp3). Install it or use "
-              "format=wav.")
+        print("  ! ffmpeg not found (needed for mp3). Install it or use " "format=wav.")
         return False
     result = subprocess.run(
-        [ffmpeg, "-hide_banner", "-loglevel", "error", "-y", "-i", wav_path,
-         "-c:a", "libmp3lame", "-b:a", "96k", mp3_path],
-        capture_output=True, text=True, encoding="utf-8", errors="replace")
+        [
+            ffmpeg,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            wav_path,
+            "-c:a",
+            "libmp3lame",
+            "-b:a",
+            "96k",
+            mp3_path,
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     if result.returncode != 0:
         reason = (result.stderr or "").strip().splitlines()
         print(f"  ! mp3 conversion failed: {reason[-1] if reason else ''}")
@@ -364,8 +393,10 @@ def main():
         if float(LENGTH_SCALE) <= 0:
             raise ValueError
     except (TypeError, ValueError):
-        print(f"!! Invalid length_scale {LENGTH_SCALE!r}. Use a positive number "
-              f"(e.g. 0.9 faster, 1.0 normal, 1.15 slower).")
+        print(
+            f"!! Invalid length_scale {LENGTH_SCALE!r}. Use a positive number "
+            f"(e.g. 0.9 faster, 1.0 normal, 1.15 slower)."
+        )
         return
     if SELECT_BY not in ("name", "id", "all"):
         print(f"!! Invalid select_by {SELECT_BY!r}. Use one of: name | id | all.")
@@ -381,12 +412,16 @@ def main():
     selected = pick_text(SELECT_BY, SELECT)
     if not selected:
         print(f"No text matched SELECT_BY={SELECT_BY!r} SELECT={SELECT!r}")
-        print(f"(looked in {paths.SUMMARY_DIR}\\, {paths.TRANSCRIPT_DIR}\\, "
-              f"{paths.GENERATED_TRANSCRIPT_DIR}\\)")
+        print(
+            f"(looked in {paths.SUMMARY_DIR}\\, {paths.TRANSCRIPT_DIR}\\, "
+            f"{paths.GENERATED_TRANSCRIPT_DIR}\\)"
+        )
         return
 
-    print(f"Selected {len(selected)} text file(s) via SELECT_BY={SELECT_BY!r}, "
-          f"voice {VOICE!r} -> {FORMAT}:")
+    print(
+        f"Selected {len(selected)} text file(s) via SELECT_BY={SELECT_BY!r}, "
+        f"voice {VOICE!r} -> {FORMAT}:"
+    )
     for _abs, f, label in selected:
         print(f"  - [{label}] {f}")
 
@@ -404,8 +439,10 @@ def main():
         empty += status == "empty"
         failed += status == "failed"
 
-    print(f"\nDone. {written} synthesized, {skipped} skipped, {empty} empty, "
-          f"{failed} failed, in:\n  {OUTPUT_DIR}")
+    print(
+        f"\nDone. {written} synthesized, {skipped} skipped, {empty} empty, "
+        f"{failed} failed, in:\n  {OUTPUT_DIR}"
+    )
 
 
 if __name__ == "__main__":

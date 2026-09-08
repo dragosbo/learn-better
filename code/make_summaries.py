@@ -49,7 +49,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSCRIPT_DIR = os.path.join(_REPO_ROOT, paths.TRANSCRIPT_DIR)
 GENERATED_DIR = os.path.join(_REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR)
 SUMMARY_DIR = os.path.join(_REPO_ROOT, paths.SUMMARY_DIR)
-SKILL_FILE = "skill_summary.md"          # relative path, for the printed hint
+SKILL_FILE = "skill_summary.md"  # relative path, for the printed hint
 
 # Forward-slash relative forms of the folders, for the messages/instruction we
 # print (so the paste-ready Kiro instruction points at the real data/ dirs).
@@ -57,8 +57,8 @@ _TRANSCRIPT_REL = paths.TRANSCRIPT_DIR.replace("\\", "/")
 _GENERATED_REL = paths.GENERATED_TRANSCRIPT_DIR.replace("\\", "/")
 _SUMMARY_REL = paths.SUMMARY_DIR.replace("\\", "/")
 
-CAPTION_SUFFIX = ".en.txt"               # <transcripts>/<base>.en.txt
-WHISPER_SUFFIX = ".whisper.en.txt"       # <generated_transcripts>/<base>.whisper.en.txt
+CAPTION_SUFFIX = ".en.txt"  # <transcripts>/<base>.en.txt
+WHISPER_SUFFIX = ".whisper.en.txt"  # <generated_transcripts>/<base>.whisper.en.txt
 
 # The `[<id>]` YouTube id embedded in a transcript file name. This is the true
 # per-video identity, and it survives filename sanitizing (the caption and
@@ -101,8 +101,11 @@ def find_candidates():
                 continue
             if name.endswith(CAPTION_SUFFIX):
                 base = name[: -len(CAPTION_SUFFIX)]
-                candidates[_video_key(base)] = ("caption", base,
-                                                f"{_TRANSCRIPT_REL}/{name}")
+                candidates[_video_key(base)] = (
+                    "caption",
+                    base,
+                    f"{_TRANSCRIPT_REL}/{name}",
+                )
 
     # 2) Whisper fills gaps: add only videos not already covered by a caption.
     if os.path.isdir(GENERATED_DIR):
@@ -111,8 +114,7 @@ def find_candidates():
                 base = name[: -len(WHISPER_SUFFIX)]
                 key = _video_key(base)
                 if key not in candidates:
-                    candidates[key] = ("whisper", base,
-                                       f"{_GENERATED_REL}/{name}")
+                    candidates[key] = ("whisper", base, f"{_GENERATED_REL}/{name}")
 
     return candidates
 
@@ -122,8 +124,10 @@ def main():
 
     candidates = find_candidates()
     if not candidates:
-        print(f"No English transcripts found in {_TRANSCRIPT_REL}/ (*{CAPTION_SUFFIX}) "
-              f"or {_GENERATED_REL}/ (*{WHISPER_SUFFIX}).")
+        print(
+            f"No English transcripts found in {_TRANSCRIPT_REL}/ (*{CAPTION_SUFFIX}) "
+            f"or {_GENERATED_REL}/ (*{WHISPER_SUFFIX})."
+        )
         print("Run t (captions) or w (Whisper) first.")
         return
 
@@ -136,8 +140,10 @@ def main():
     done.sort()
     missing.sort()
 
-    print(f"Found {len(candidates)} video(s) with an English transcript "
-          f"(captions preferred, Whisper fills gaps):")
+    print(
+        f"Found {len(candidates)} video(s) with an English transcript "
+        f"(captions preferred, Whisper fills gaps):"
+    )
     for base, source, _ in done:
         print(f"  [have summary]  ({source}) {base}")
     for base, source, _ in missing:
@@ -146,7 +152,9 @@ def main():
 
     if not missing:
         print(f"All videos already have a summary in {_SUMMARY_REL}/.")
-        print(f"To force-refresh one, delete its {_SUMMARY_REL}/*.summary.md and re-run.")
+        print(
+            f"To force-refresh one, delete its {_SUMMARY_REL}/*.summary.md and re-run."
+        )
         return
 
     # Print a single copy-paste instruction for Kiro. The AI does the actual
@@ -154,15 +162,19 @@ def main():
     print("=" * 70)
     print("NEXT STEP - paste this into Kiro (the AI writes the summaries):")
     print("=" * 70)
-    print(f"Apply {SKILL_FILE} to these transcripts and save each to "
-          f"{_SUMMARY_REL}/<base>.summary.md:")
+    print(
+        f"Apply {SKILL_FILE} to these transcripts and save each to "
+        f"{_SUMMARY_REL}/<base>.summary.md:"
+    )
     for base, source, rel in missing:
         print(f"  - {rel}")
     print()
-    print("(Kiro reads each transcript and writes a summary following "
-          f"{SKILL_FILE}. Whisper transcripts live in {_GENERATED_REL}/, "
-          f"caption transcripts in {_TRANSCRIPT_REL}/; both map to the same "
-          "summary base name.)")
+    print(
+        "(Kiro reads each transcript and writes a summary following "
+        f"{SKILL_FILE}. Whisper transcripts live in {_GENERATED_REL}/, "
+        f"caption transcripts in {_TRANSCRIPT_REL}/; both map to the same "
+        "summary base name.)"
+    )
 
 
 if __name__ == "__main__":

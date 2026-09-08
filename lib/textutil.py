@@ -38,9 +38,9 @@ def safe_filename(name):
 
 def clean_text(raw):
     """Strip VTT/HTML tags, decode entities, normalize whitespace on one line."""
-    text = re.sub(r"<[^>]+>", "", raw)          # drop <...> tags
-    text = html.unescape(text)                  # &nbsp; &amp; &#39; -> chars
-    text = text.replace("\u00a0", " ")          # nbsp -> normal space
+    text = re.sub(r"<[^>]+>", "", raw)  # drop <...> tags
+    text = html.unescape(text)  # &nbsp; &amp; &#39; -> chars
+    text = text.replace("\u00a0", " ")  # nbsp -> normal space
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -63,10 +63,12 @@ def vtt_to_text(vtt_path):
         if m:
             current_ts = m.group(1)
             continue
-        if (not stripped
-                or stripped.startswith("WEBVTT")
-                or stripped.startswith(("Kind:", "Language:", "NOTE"))
-                or stripped.isdigit()):
+        if (
+            not stripped
+            or stripped.startswith("WEBVTT")
+            or stripped.startswith(("Kind:", "Language:", "NOTE"))
+            or stripped.isdigit()
+        ):
             continue
         text = clean_text(line)
         if not text or text == last_text:

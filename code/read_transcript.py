@@ -24,7 +24,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lib import net, textutil, youtube  # noqa: E402
-from lib.paths import TRANSCRIPT_DIR      # noqa: E402
+from lib.paths import TRANSCRIPT_DIR  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Source: fill in ONE (playlist, then channel, then search is used).
@@ -35,7 +35,7 @@ from lib.paths import TRANSCRIPT_DIR      # noqa: E402
 PLAYLIST_ID = "PLsWyhklHwjExuXrXjJktcdYkCFL0PNdW7"  # or None
 CHANNEL = None
 SEARCH = None
-LIMIT = 5                      # max videos to process (never more than this)
+LIMIT = 5  # max videos to process (never more than this)
 
 # Cookies / proxy live in lib.net (COOKIES_FILE auto-detects code/cookies.txt,
 # NO_PROXY=True by default). Override here if needed, e.g.:
@@ -47,8 +47,9 @@ def main():
     languages = textutil.load_languages()
     print(f"Languages (from languages.json): {languages}\n")
 
-    label, url = youtube.build_url(playlist_id=PLAYLIST_ID, channel=CHANNEL,
-                                   search=SEARCH, limit=LIMIT)
+    label, url = youtube.build_url(
+        playlist_id=PLAYLIST_ID, channel=CHANNEL, search=SEARCH, limit=LIMIT
+    )
     if url is None:
         print("No source set. Fill in PLAYLIST_ID, CHANNEL, or SEARCH.")
         return
@@ -63,12 +64,15 @@ def main():
     no_transcript = []
     for i, (vid, title) in enumerate(videos, 1):
         print(f"--- [{i}/{len(videos)}] {title} ({vid}) ---")
-        saved = youtube.download_transcript(vid, title, languages,
-                                            output_dir=TRANSCRIPT_DIR)
+        saved = youtube.download_transcript(
+            vid, title, languages, output_dir=TRANSCRIPT_DIR
+        )
         # Treat "already on disk" as success, not a missing transcript.
         base = textutil.safe_filename(f"{title} [{vid}]")
-        on_disk = any(os.path.exists(os.path.join(TRANSCRIPT_DIR,
-                      f"{base}.{lang}.txt")) for lang in languages)
+        on_disk = any(
+            os.path.exists(os.path.join(TRANSCRIPT_DIR, f"{base}.{lang}.txt"))
+            for lang in languages
+        )
         if not saved and not on_disk:
             no_transcript.append((vid, title))
         print()

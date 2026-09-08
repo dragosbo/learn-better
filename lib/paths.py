@@ -8,11 +8,21 @@ the scripts/runners are run from.
 
 import os
 
-DATA_DIR = "data"              # single root for all outputs (structured + generated)
-AUDIO_DIR = os.path.join("data", "audio")            # downloaded audio (mp3/webm/m4a)
-AUDIO_REENCODED_DIR = os.path.join("data", "audio_reencoded")  # re-encoded audio at a target bitrate
-TRANSCRIPT_DIR = os.path.join("data", "transcripts")  # saved transcript .txt files (from YouTube captions)
-GENERATED_TRANSCRIPT_DIR = os.path.join("data", "generated_transcripts")  # Whisper-generated transcripts
-WORDCLOUD_DIR = os.path.join("data", "wordclouds")   # word_cloud.json outputs
-TTS_OUTPUT_DIR = os.path.join("data", "tts_output")  # text-to-speech audio (wav/mp3) from text sources
-SUMMARY_DIR = os.path.join("data", "summaries")      # AI-generated summaries (tracked via .gitignore negation)
+DATA_DIR = "data"  # single root for all outputs (structured + generated)
+AUDIO_DIR = os.path.join("data", "audio")  # downloaded audio (mp3/webm/m4a)
+AUDIO_REENCODED_DIR = os.path.join(
+    "data", "audio_reencoded"
+)  # re-encoded audio at a target bitrate
+TRANSCRIPT_DIR = os.path.join(
+    "data", "transcripts"
+)  # saved transcript .txt files (from YouTube captions)
+GENERATED_TRANSCRIPT_DIR = os.path.join(
+    "data", "generated_transcripts"
+)  # Whisper-generated transcripts
+WORDCLOUD_DIR = os.path.join("data", "wordclouds")  # word_cloud.json outputs
+TTS_OUTPUT_DIR = os.path.join(
+    "data", "tts_output"
+)  # text-to-speech audio (wav/mp3) from text sources
+SUMMARY_DIR = os.path.join(
+    "data", "summaries"
+)  # AI-generated summaries (tracked via .gitignore negation)

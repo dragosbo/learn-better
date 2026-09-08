@@ -65,6 +65,7 @@ def impersonate_opts():
     try:
         import curl_cffi  # noqa: F401
         from yt_dlp.networking.impersonate import ImpersonateTarget
+
         return {"impersonate": ImpersonateTarget()}
     except Exception:
         return {}
@@ -85,8 +86,16 @@ def apply_no_proxy_env():
     """
     if not NO_PROXY:
         return
-    for var in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
-                "ALL_PROXY", "all_proxy", "NO_PROXY", "no_proxy"):
+    for var in (
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "http_proxy",
+        "https_proxy",
+        "ALL_PROXY",
+        "all_proxy",
+        "NO_PROXY",
+        "no_proxy",
+    ):
         os.environ.pop(var, None)
 
 

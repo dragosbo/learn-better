@@ -62,14 +62,14 @@ AUDIO_DIR = os.path.join(_REPO_ROOT, paths.AUDIO_DIR)
 OUTPUT_DIR = os.path.join(_REPO_ROOT, paths.AUDIO_REENCODED_DIR)
 
 # Selection: what to process. See the module docstring for the modes.
-SELECT_BY = "name"       # "name" | "id" | "all"
+SELECT_BY = "name"  # "name" | "id" | "all"
 SELECT = ["Git and GitHub"]  # substrings (name) or video ids (id); ignored for all
 
-BITRATE = "64k"          # target audio bitrate (ffmpeg -b:a), e.g. 64k / 128k / 96k
-FORMAT = "mp3"           # output container/extension: mp3 | m4a | ogg | opus | wav
-CODEC = "libmp3lame"     # audio encoder; libmp3lame is the free, universal default
-SAMPLE_RATE = None       # ffmpeg -ar (e.g. 44100); None = keep source
-CHANNELS = None          # ffmpeg -ac (e.g. 1 = mono to shrink size); None = keep source
+BITRATE = "64k"  # target audio bitrate (ffmpeg -b:a), e.g. 64k / 128k / 96k
+FORMAT = "mp3"  # output container/extension: mp3 | m4a | ogg | opus | wav
+CODEC = "libmp3lame"  # audio encoder; libmp3lame is the free, universal default
+SAMPLE_RATE = None  # ffmpeg -ar (e.g. 44100); None = keep source
+CHANNELS = None  # ffmpeg -ac (e.g. 1 = mono to shrink size); None = keep source
 
 # JSON config keys -> the module globals they set.
 _CONFIG_KEYS = {
@@ -92,6 +92,7 @@ def human_size(num_bytes):
             return f"{size:.0f} {unit}" if unit in ("B", "KB") else f"{size:.1f} {unit}"
         size /= 1024
 
+
 # Audio extensions we accept as input.
 _AUDIO_EXTS = (".mp3", ".m4a", ".webm", ".opus", ".ogg", ".wav")
 # The `[<id>]` YouTube id embedded in audio file names.
@@ -105,10 +106,14 @@ def find_ffmpeg():
     if exe:
         return exe
     print("!! ffmpeg not found on PATH.")
-    print("   This tool re-encodes audio with ffmpeg (free, already used by "
-          "yt-dlp). Install it, then re-run:")
-    print("     conda install -c conda-forge ffmpeg -y   :: into the active env "
-          "(recommended)")
+    print(
+        "   This tool re-encodes audio with ffmpeg (free, already used by "
+        "yt-dlp). Install it, then re-run:"
+    )
+    print(
+        "     conda install -c conda-forge ffmpeg -y   :: into the active env "
+        "(recommended)"
+    )
     print("     winget install ffmpeg                     :: Windows, system-wide")
     print("     brew install ffmpeg                       :: macOS")
     print("     sudo apt install ffmpeg                    :: Debian / Ubuntu")
@@ -123,11 +128,11 @@ def normalize_bitrate(value):
     Returns (None, None) on nonsense so the caller can abort with a message.
     """
     s = str(value).strip().lower()
-    m = re.fullmatch(r"(\d+)\s*k(?:bps|bit)?", s)   # "64k", "64kbps", "64kbit"
+    m = re.fullmatch(r"(\d+)\s*k(?:bps|bit)?", s)  # "64k", "64kbps", "64kbit"
     if m:
         kbps = int(m.group(1))
     else:
-        m = re.fullmatch(r"(\d+)", s)               # plain integer
+        m = re.fullmatch(r"(\d+)", s)  # plain integer
         if not m:
             return None, None
         n = int(m.group(1))
@@ -177,8 +182,20 @@ def reencode_one(ffmpeg, src_abs, filename, ffmpeg_bitrate, name_tag):
 
     # List-form command (no shell=True) so titles with spaces/accents/emoji are
     # safe. -vn drops any cover-art video stream; -y overwrites a stale partial.
-    cmd = [ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
-           "-i", src_abs, "-vn", "-c:a", CODEC, "-b:a", ffmpeg_bitrate]
+    cmd = [
+        ffmpeg,
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-y",
+        "-i",
+        src_abs,
+        "-vn",
+        "-c:a",
+        CODEC,
+        "-b:a",
+        ffmpeg_bitrate,
+    ]
     if SAMPLE_RATE:
         cmd += ["-ar", str(SAMPLE_RATE)]
     if CHANNELS:
@@ -186,8 +203,9 @@ def reencode_one(ffmpeg, src_abs, filename, ffmpeg_bitrate, name_tag):
     cmd.append(out_path)
 
     print(f"  -> {name_tag} {FORMAT}: {out_name}")
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
-                            errors="replace")
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
     if result.returncode != 0:
         reason = (result.stderr or "").strip().splitlines()
         reason = reason[-1] if reason else f"ffmpeg exit code {result.returncode}"
@@ -203,8 +221,10 @@ def reencode_one(ffmpeg, src_abs, filename, ffmpeg_bitrate, name_tag):
     src_size = os.path.getsize(src_abs)
     out_size = os.path.getsize(out_path)
     saved = (1 - out_size / src_size) * 100 if src_size else 0
-    print(f"     {human_size(src_size)} -> {human_size(out_size)} "
-          f"(saved {saved:.0f}%)")
+    print(
+        f"     {human_size(src_size)} -> {human_size(out_size)} "
+        f"(saved {saved:.0f}%)"
+    )
     return "written"
 
 
@@ -257,8 +277,10 @@ def main():
         print(f"!! Invalid select_by {SELECT_BY!r}. Use one of: name | id | all.")
         return
     if SELECT_BY in ("name", "id") and not SELECT:
-        print(f"!! select_by={SELECT_BY!r} needs a non-empty 'select' list "
-              f"({'name substrings' if SELECT_BY == 'name' else 'video ids'}).")
+        print(
+            f"!! select_by={SELECT_BY!r} needs a non-empty 'select' list "
+            f"({'name substrings' if SELECT_BY == 'name' else 'video ids'})."
+        )
         return
 
     selected = pick_audio(SELECT_BY, SELECT)
@@ -267,8 +289,10 @@ def main():
         print(f"(looked in {AUDIO_DIR}\\)")
         return
 
-    print(f"Selected {len(selected)} audio file(s) via SELECT_BY={SELECT_BY!r}, "
-          f"target {ffmpeg_bitrate} {FORMAT} ({CODEC}):")
+    print(
+        f"Selected {len(selected)} audio file(s) via SELECT_BY={SELECT_BY!r}, "
+        f"target {ffmpeg_bitrate} {FORMAT} ({CODEC}):"
+    )
     for _abs, f in selected:
         print(f"  - {f}")
 
@@ -282,8 +306,10 @@ def main():
         skipped += status == "skipped"
         failed += status == "failed"
 
-    print(f"\nDone. {written} re-encoded, {skipped} skipped, {failed} failed, in:"
-          f"\n  {OUTPUT_DIR}")
+    print(
+        f"\nDone. {written} re-encoded, {skipped} skipped, {failed} failed, in:"
+        f"\n  {OUTPUT_DIR}"
+    )
 
 
 if __name__ == "__main__":

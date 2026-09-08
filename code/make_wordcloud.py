@@ -81,8 +81,8 @@ GENERATED_DIR = os.path.join(_REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR)
 OUTPUT_DIR = os.path.join(_REPO_ROOT, paths.WORDCLOUD_DIR)
 
 # Selection: what to process. See the module docstring for the modes.
-SELECT_BY = "input"      # "input" | "name" | "id" | "all"
-SELECT = []              # substrings (name) or video ids (id); ignored for input/all
+SELECT_BY = "input"  # "input" | "name" | "id" | "all"
+SELECT = []  # substrings (name) or video ids (id); ignored for input/all
 INPUT = "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt"  # for SELECT_BY="input"
 
 # Merge mode: combine ALL selected transcripts into ONE word cloud.
@@ -92,11 +92,11 @@ INPUT = "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt"  # for SELE
 MERGE = False
 OUTPUT_NAME = "combined"  # base name of the merged file (MERGE=True only)
 
-MIN_LENGTH = 3           # drop tokens shorter than this
-MAX_WORDS = 150          # keep the top-N most frequent words
-LOWERCASE = True         # fold case before counting
-LANGUAGE = "en"          # picks the built-in stopword list: en | fr | ro
-STOPWORDS_EXTRA = []     # extra words to always drop (project/domain noise)
+MIN_LENGTH = 3  # drop tokens shorter than this
+MAX_WORDS = 150  # keep the top-N most frequent words
+LOWERCASE = True  # fold case before counting
+LANGUAGE = "en"  # picks the built-in stopword list: en | fr | ro
+STOPWORDS_EXTRA = []  # extra words to always drop (project/domain noise)
 
 # JSON config keys -> the module globals they set.
 _CONFIG_KEYS = {
@@ -124,39 +124,289 @@ _ID_IN_NAME_RE = re.compile(r"\[([A-Za-z0-9_-]{11})\]")
 # STOPWORDS_EXTRA. (A heavier NLP list, e.g. nltk, is a possible future upgrade.)
 _STOPWORDS = {
     "en": {
-        "the", "and", "a", "an", "to", "of", "in", "is", "it", "that", "this",
-        "for", "on", "you", "i", "we", "he", "she", "they", "with", "as", "at",
-        "be", "are", "was", "were", "so", "if", "or", "but", "not", "no", "yes",
-        "have", "has", "had", "do", "does", "did", "can", "could", "will",
-        "would", "should", "my", "your", "our", "their", "his", "her", "its",
-        "me", "us", "them", "him", "what", "when", "where", "which", "who",
-        "how", "why", "here", "there", "then", "than", "just", "like", "get",
-        "got", "up", "out", "about", "into", "over", "all", "some", "any", "one",
-        "now", "also", "from", "by", "let", "going", "want", "make", "see",
-        "use", "using", "very", "really", "well", "okay", "ok", "yeah", "gonna",
-        "im", "youre", "dont", "thats", "were", "its", "ive", "youll", "well",
-        "s", "t", "re", "ll", "ve", "m", "d",
+        "the",
+        "and",
+        "a",
+        "an",
+        "to",
+        "of",
+        "in",
+        "is",
+        "it",
+        "that",
+        "this",
+        "for",
+        "on",
+        "you",
+        "i",
+        "we",
+        "he",
+        "she",
+        "they",
+        "with",
+        "as",
+        "at",
+        "be",
+        "are",
+        "was",
+        "were",
+        "so",
+        "if",
+        "or",
+        "but",
+        "not",
+        "no",
+        "yes",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "can",
+        "could",
+        "will",
+        "would",
+        "should",
+        "my",
+        "your",
+        "our",
+        "their",
+        "his",
+        "her",
+        "its",
+        "me",
+        "us",
+        "them",
+        "him",
+        "what",
+        "when",
+        "where",
+        "which",
+        "who",
+        "how",
+        "why",
+        "here",
+        "there",
+        "then",
+        "than",
+        "just",
+        "like",
+        "get",
+        "got",
+        "up",
+        "out",
+        "about",
+        "into",
+        "over",
+        "all",
+        "some",
+        "any",
+        "one",
+        "now",
+        "also",
+        "from",
+        "by",
+        "let",
+        "going",
+        "want",
+        "make",
+        "see",
+        "use",
+        "using",
+        "very",
+        "really",
+        "well",
+        "okay",
+        "ok",
+        "yeah",
+        "gonna",
+        "im",
+        "youre",
+        "dont",
+        "thats",
+        "were",
+        "its",
+        "ive",
+        "youll",
+        "well",
+        "s",
+        "t",
+        "re",
+        "ll",
+        "ve",
+        "m",
+        "d",
     },
     "fr": {
-        "le", "la", "les", "un", "une", "des", "de", "du", "et", "ou", "que",
-        "qui", "quoi", "dont", "pour", "par", "avec", "sans", "dans", "sur",
-        "sous", "est", "sont", "ete", "etre", "avoir", "je", "tu", "il", "elle",
-        "nous", "vous", "ils", "elles", "on", "ce", "cet", "cette", "ces", "mon",
-        "ton", "son", "ma", "ta", "sa", "mes", "tes", "ses", "notre", "votre",
-        "leur", "leurs", "ne", "pas", "plus", "moins", "tres", "bien", "aussi",
-        "mais", "donc", "car", "si", "comme", "quand", "ou", "y", "en", "au",
-        "aux", "se", "sa", "ses", "cela", "ca", "oui", "non", "fait", "faire",
-        "a", "l", "d", "j", "c", "n", "s", "t", "m", "qu", "ll",
+        "le",
+        "la",
+        "les",
+        "un",
+        "une",
+        "des",
+        "de",
+        "du",
+        "et",
+        "ou",
+        "que",
+        "qui",
+        "quoi",
+        "dont",
+        "pour",
+        "par",
+        "avec",
+        "sans",
+        "dans",
+        "sur",
+        "sous",
+        "est",
+        "sont",
+        "ete",
+        "etre",
+        "avoir",
+        "je",
+        "tu",
+        "il",
+        "elle",
+        "nous",
+        "vous",
+        "ils",
+        "elles",
+        "on",
+        "ce",
+        "cet",
+        "cette",
+        "ces",
+        "mon",
+        "ton",
+        "son",
+        "ma",
+        "ta",
+        "sa",
+        "mes",
+        "tes",
+        "ses",
+        "notre",
+        "votre",
+        "leur",
+        "leurs",
+        "ne",
+        "pas",
+        "plus",
+        "moins",
+        "tres",
+        "bien",
+        "aussi",
+        "mais",
+        "donc",
+        "car",
+        "si",
+        "comme",
+        "quand",
+        "ou",
+        "y",
+        "en",
+        "au",
+        "aux",
+        "se",
+        "sa",
+        "ses",
+        "cela",
+        "ca",
+        "oui",
+        "non",
+        "fait",
+        "faire",
+        "a",
+        "l",
+        "d",
+        "j",
+        "c",
+        "n",
+        "s",
+        "t",
+        "m",
+        "qu",
+        "ll",
     },
     "ro": {
-        "si", "sa", "sau", "de", "la", "in", "un", "o", "cu", "ca", "ce", "cel",
-        "cea", "cei", "cele", "este", "sunt", "era", "fi", "am", "ai", "are",
-        "avem", "aveti", "au", "eu", "tu", "el", "ea", "noi", "voi", "ei", "ele",
-        "pe", "din", "prin", "pentru", "dar", "insa", "deci", "daca", "cand",
-        "unde", "care", "cine", "cum", "mai", "foarte", "bine", "asa", "acest",
-        "aceasta", "acesti", "aceste", "meu", "tau", "sau", "nostru", "vostru",
-        "lor", "nu", "da", "se", "isi", "il", "ii", "le", "ne", "va", "te",
-        "ma", "mi", "ti", "l", "s", "i",
+        "si",
+        "sa",
+        "sau",
+        "de",
+        "la",
+        "in",
+        "un",
+        "o",
+        "cu",
+        "ca",
+        "ce",
+        "cel",
+        "cea",
+        "cei",
+        "cele",
+        "este",
+        "sunt",
+        "era",
+        "fi",
+        "am",
+        "ai",
+        "are",
+        "avem",
+        "aveti",
+        "au",
+        "eu",
+        "tu",
+        "el",
+        "ea",
+        "noi",
+        "voi",
+        "ei",
+        "ele",
+        "pe",
+        "din",
+        "prin",
+        "pentru",
+        "dar",
+        "insa",
+        "deci",
+        "daca",
+        "cand",
+        "unde",
+        "care",
+        "cine",
+        "cum",
+        "mai",
+        "foarte",
+        "bine",
+        "asa",
+        "acest",
+        "aceasta",
+        "acesti",
+        "aceste",
+        "meu",
+        "tau",
+        "sau",
+        "nostru",
+        "vostru",
+        "lor",
+        "nu",
+        "da",
+        "se",
+        "isi",
+        "il",
+        "ii",
+        "le",
+        "ne",
+        "va",
+        "te",
+        "ma",
+        "mi",
+        "ti",
+        "l",
+        "s",
+        "i",
     },
 }
 
@@ -168,8 +418,10 @@ def resolve_input(name):
     first, then data/generated_transcripts/. If `name` is an 11-char id, match by `[<id>]`.
     """
     candidates = []
-    for folder, rel_prefix in ((TRANSCRIPT_DIR, paths.TRANSCRIPT_DIR),
-                               (GENERATED_DIR, paths.GENERATED_TRANSCRIPT_DIR)):
+    for folder, rel_prefix in (
+        (TRANSCRIPT_DIR, paths.TRANSCRIPT_DIR),
+        (GENERATED_DIR, paths.GENERATED_TRANSCRIPT_DIR),
+    ):
         if not os.path.isdir(folder):
             continue
         for f in sorted(os.listdir(folder)):
@@ -220,8 +472,10 @@ def resolve_config_path():
 
 def _all_transcripts():
     """Yield (abspath, source_rel, filename) for every .txt in both folders."""
-    for folder, rel_prefix in ((TRANSCRIPT_DIR, paths.TRANSCRIPT_DIR),
-                               (GENERATED_DIR, paths.GENERATED_TRANSCRIPT_DIR)):
+    for folder, rel_prefix in (
+        (TRANSCRIPT_DIR, paths.TRANSCRIPT_DIR),
+        (GENERATED_DIR, paths.GENERATED_TRANSCRIPT_DIR),
+    ):
         if not os.path.isdir(folder):
             continue
         for f in sorted(os.listdir(folder)):
@@ -251,16 +505,17 @@ def pick_transcripts(select_by, select, input_name):
         if select_by == "id":
             m = _ID_IN_NAME_RE.search(fname)
             return bool(m and m.group(1) in set(select))
-        raise ValueError(f"Unknown SELECT_BY: {select_by!r} "
-                         f"(use input|name|id|all)")
+        raise ValueError(
+            f"Unknown SELECT_BY: {select_by!r} " f"(use input|name|id|all)"
+        )
 
     chosen = {}
     for abspath, rel, fname in all_files:
         if not matches(fname):
             continue
         base, vid, _title, _lang = parse_meta(fname)
-        key = vid or base          # dedupe key: video id, else base name
-        if key not in chosen:      # captions come first -> win on conflict
+        key = vid or base  # dedupe key: video id, else base name
+        if key not in chosen:  # captions come first -> win on conflict
             chosen[key] = (abspath, rel, fname)
     return list(chosen.values())
 
@@ -341,7 +596,8 @@ def process_transcript(abspath, source_rel, filename):
     print(f"  reading: {source_rel}")
     text = read_transcript_text(abspath)
     words, total, unique = count_words(
-        text, language, MIN_LENGTH, MAX_WORDS, LOWERCASE, STOPWORDS_EXTRA)
+        text, language, MIN_LENGTH, MAX_WORDS, LOWERCASE, STOPWORDS_EXTRA
+    )
     if not words:
         print("  ! no words left after filtering — check language / min_length")
         return "empty"
@@ -366,8 +622,10 @@ def process_transcript(abspath, source_rel, filename):
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     top = ", ".join(f"{w['text']}({w['weight']})" for w in words[:8])
-    print(f"  -> {language}: {total} tokens, {unique} unique, top {len(words)} "
-          f"| {top}")
+    print(
+        f"  -> {language}: {total} tokens, {unique} unique, top {len(words)} "
+        f"| {top}"
+    )
     print(f"     wrote {out_path}")
     return "written"
 
@@ -391,15 +649,21 @@ def check_language_consistency(selected):
             offenders.append((rel, file_lang))
     if offenders:
         print("\n!! LANGUAGE MISMATCH — refusing to run a mixed-language batch.")
-        print(f"   Stopwords are set for LANGUAGE={LANGUAGE!r}, but these "
-              f"selected transcripts are a different language:")
+        print(
+            f"   Stopwords are set for LANGUAGE={LANGUAGE!r}, but these "
+            f"selected transcripts are a different language:"
+        )
         for rel, lang in offenders:
             print(f"     [{lang}] {rel}")
-        print("   A word cloud uses ONE stopword list, so mixing languages "
-              "gives poor results.")
-        print(f"   Fix: narrow the selection to one language (by name/id), or "
-              f"set LANGUAGE to {sorted({l for _, l in offenders})} and run those "
-              f"separately.")
+        print(
+            "   A word cloud uses ONE stopword list, so mixing languages "
+            "gives poor results."
+        )
+        print(
+            f"   Fix: narrow the selection to one language (by name/id), or "
+            f"set LANGUAGE to {sorted({l for _, l in offenders})} and run those "
+            f"separately."
+        )
         return False
     return True
 
@@ -417,8 +681,10 @@ def main():
 
     selected = pick_transcripts(SELECT_BY, SELECT, INPUT)
     if not selected:
-        print(f"No transcripts matched SELECT_BY={SELECT_BY!r} SELECT={SELECT!r}"
-              f" INPUT={INPUT!r}")
+        print(
+            f"No transcripts matched SELECT_BY={SELECT_BY!r} SELECT={SELECT!r}"
+            f" INPUT={INPUT!r}"
+        )
         print(f"(looked in {TRANSCRIPT_DIR}\\ and {GENERATED_DIR}\\)")
         return
 
@@ -445,8 +711,10 @@ def main():
         skipped += status == "skipped"
         empty += status == "empty"
 
-    print(f"\nDone. {written} written, {skipped} skipped, {empty} empty, in:"
-          f"\n  {OUTPUT_DIR}")
+    print(
+        f"\nDone. {written} written, {skipped} skipped, {empty} empty, in:"
+        f"\n  {OUTPUT_DIR}"
+    )
 
 
 def run_merge(selected):
@@ -460,14 +728,17 @@ def run_merge(selected):
         print("  (delete it to regenerate, or change OUTPUT_NAME)")
         return
 
-    print(f"\nMerging {len(selected)} transcript(s) -> one cloud "
-          f"'{out_name}' (language {language})...")
+    print(
+        f"\nMerging {len(selected)} transcript(s) -> one cloud "
+        f"'{out_name}' (language {language})..."
+    )
     combined = Counter()
     sources = []
     for abspath, rel, filename in selected:
         text = read_transcript_text(abspath)
         combined += count_transcript(
-            text, language, MIN_LENGTH, LOWERCASE, STOPWORDS_EXTRA)
+            text, language, MIN_LENGTH, LOWERCASE, STOPWORDS_EXTRA
+        )
         sources.append(rel)
         print(f"  + {rel}")
 
@@ -477,8 +748,8 @@ def run_merge(selected):
         return
 
     payload = {
-        "source": sources,                 # list of all merged transcripts
-        "video_id": None,                  # not a single video
+        "source": sources,  # list of all merged transcripts
+        "video_id": None,  # not a single video
         "title": f"{OUTPUT_NAME} (merged from {len(sources)} transcripts)",
         "language": language,
         "total_tokens": total,
@@ -498,8 +769,10 @@ def run_merge(selected):
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     top = ", ".join(f"{w['text']}({w['weight']})" for w in words[:10])
-    print(f"\n-> merged {language}: {total} tokens, {unique} unique, "
-          f"top {len(words)} | {top}")
+    print(
+        f"\n-> merged {language}: {total} tokens, {unique} unique, "
+        f"top {len(words)} | {top}"
+    )
     print(f"Done. Wrote:\n  {out_path}")
 
 

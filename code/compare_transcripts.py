@@ -19,11 +19,15 @@ sys.path.insert(0, _REPO_ROOT)
 from lib import paths  # noqa: E402
 
 WHISPER_FILE = os.path.join(
-    _REPO_ROOT, paths.GENERATED_TRANSCRIPT_DIR,
-    "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt")
+    _REPO_ROOT,
+    paths.GENERATED_TRANSCRIPT_DIR,
+    "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].whisper.en.txt",
+)
 YT_FILE = os.path.join(
-    _REPO_ROOT, paths.TRANSCRIPT_DIR,
-    "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt")
+    _REPO_ROOT,
+    paths.TRANSCRIPT_DIR,
+    "Git and GitHub Tutorial for Beginners [tRZGeaHPoaw].en.txt",
+)
 
 TIMESTAMP_RE = re.compile(r"\[\d{2}:\d{2}:\d{2}\]")
 WORD_RE = re.compile(r"[a-z0-9]+")
@@ -89,8 +93,8 @@ def main():
 
     # 3) Some concrete divergences: words the reference has that Whisper lacks
     #    (candidate errors), most common first.
-    missing = (cy - cw)
-    extra = (cw - cy)
+    missing = cy - cw
+    extra = cw - cy
     print("=== Top words in YouTube but under-represented in Whisper ===")
     for word, n in missing.most_common(15):
         print(f"  -{n:>3}  {word}")

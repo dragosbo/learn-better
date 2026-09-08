@@ -31,14 +31,14 @@ from lib.paths import AUDIO_DIR, TRANSCRIPT_DIR  # noqa: E402
 # The FIRST source that is set wins (playlist, then channel, then search).
 # ---------------------------------------------------------------------------
 PLAYLIST_ID = "PLsWyhklHwjExuXrXjJktcdYkCFL0PNdW7"  # or None
-CHANNEL = None               # e.g. "@dragosborosgpt" or "UCtXMX2QDtGA__BoLNIu4o5w"
-SEARCH = None                # e.g. "Manolis Kellis Lex Fridman"
-LIMIT = 5                    # max videos to process (never more than this)
+CHANNEL = None  # e.g. "@dragosborosgpt" or "UCtXMX2QDtGA__BoLNIu4o5w"
+SEARCH = None  # e.g. "Manolis Kellis Lex Fridman"
+LIMIT = 5  # max videos to process (never more than this)
 
 # STEP 3 download settings
-DOWNLOAD = True              # set False to skip the audio download step
-AUDIO_FORMAT = "mp3"         # or None to keep native webm/m4a (no ffmpeg needed)
-AUDIO_QUALITY = "192"        # mp3 bitrate in kbps (only used when AUDIO_FORMAT set)
+DOWNLOAD = True  # set False to skip the audio download step
+AUDIO_FORMAT = "mp3"  # or None to keep native webm/m4a (no ffmpeg needed)
+AUDIO_QUALITY = "192"  # mp3 bitrate in kbps (only used when AUDIO_FORMAT set)
 
 # Cookies / proxy live in lib.net (COOKIES_FILE auto-detects code/cookies.txt,
 # NO_PROXY=True). Override here if needed, e.g.:
@@ -50,8 +50,9 @@ def main():
     languages = textutil.load_languages()
     print(f"Languages (from languages.json): {languages}")
 
-    label, url = youtube.build_url(playlist_id=PLAYLIST_ID, channel=CHANNEL,
-                                   search=SEARCH, limit=LIMIT)
+    label, url = youtube.build_url(
+        playlist_id=PLAYLIST_ID, channel=CHANNEL, search=SEARCH, limit=LIMIT
+    )
     if url is None:
         print("STEP 1: no source set. Fill in PLAYLIST_ID, CHANNEL, or SEARCH.")
         return
@@ -59,8 +60,10 @@ def main():
     print(f"STEP 1: listing up to {LIMIT} video(s) from {label} ...")
     videos = youtube.list_videos(url, limit=LIMIT)
     if not videos:
-        print("STEP 1: no videos returned. Is the playlist/channel PUBLIC and "
-              "non-empty?")
+        print(
+            "STEP 1: no videos returned. Is the playlist/channel PUBLIC and "
+            "non-empty?"
+        )
         return
 
     print(f"\nProcessing {len(videos)} clip(s) (max {LIMIT})...\n")
@@ -69,19 +72,25 @@ def main():
         print(f"--- [{i}/{len(videos)}] {title} ({vid}) ---")
 
         # STEP 2 - transcripts. Treat "already on disk" as success.
-        saved = youtube.download_transcript(vid, title, languages,
-                                            output_dir=TRANSCRIPT_DIR)
+        saved = youtube.download_transcript(
+            vid, title, languages, output_dir=TRANSCRIPT_DIR
+        )
         base = textutil.safe_filename(f"{title} [{vid}]")
-        on_disk = any(os.path.exists(os.path.join(TRANSCRIPT_DIR,
-                      f"{base}.{lang}.txt")) for lang in languages)
+        on_disk = any(
+            os.path.exists(os.path.join(TRANSCRIPT_DIR, f"{base}.{lang}.txt"))
+            for lang in languages
+        )
         if not saved and not on_disk:
             missing_transcripts.append((vid, title))
 
         # STEP 3 - audio.
         if DOWNLOAD:
-            youtube.download_audio(vid, output_dir=AUDIO_DIR,
-                                   audio_format=AUDIO_FORMAT,
-                                   audio_quality=AUDIO_QUALITY)
+            youtube.download_audio(
+                vid,
+                output_dir=AUDIO_DIR,
+                audio_format=AUDIO_FORMAT,
+                audio_quality=AUDIO_QUALITY,
+            )
         print()
 
     print("=" * 60)

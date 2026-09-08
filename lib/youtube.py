@@ -99,10 +99,17 @@ def list_videos(url, limit=5):
 # Listing a channel's playlists (Phase A logic)
 # ---------------------------------------------------------------------------
 class _NullLogger:
-    def debug(self, m): pass
-    def info(self, m): pass
-    def warning(self, m): pass
-    def error(self, m): pass
+    def debug(self, m):
+        pass
+
+    def info(self, m):
+        pass
+
+    def warning(self, m):
+        pass
+
+    def error(self, m):
+        pass
 
 
 def fetch_playlist_videos(playlist_id):
@@ -133,10 +140,9 @@ def fetch_playlist_videos(playlist_id):
     if not info:
         return None
     videos = []
-    for e in (info.get("entries") or []):
+    for e in info.get("entries") or []:
         if e and e.get("id"):
-            videos.append({"id": e.get("id"),
-                           "title": e.get("title", "(no title)")})
+            videos.append({"id": e.get("id"), "title": e.get("title", "(no title)")})
     return videos
 
 
@@ -153,10 +159,17 @@ def list_playlists(channel):
     warnings_seen = []
 
     class _WarnLogger:
-        def debug(self, m): pass
-        def info(self, m): pass
-        def warning(self, m): warnings_seen.append(m)
-        def error(self, m): warnings_seen.append(m)
+        def debug(self, m):
+            pass
+
+        def info(self, m):
+            pass
+
+        def warning(self, m):
+            warnings_seen.append(m)
+
+        def error(self, m):
+            warnings_seen.append(m)
 
     opts = {
         "quiet": True,
@@ -176,7 +189,7 @@ def list_playlists(channel):
 
     playlists = []
     seen_ids = set()
-    for entry in (info.get("entries") or []):
+    for entry in info.get("entries") or []:
         if not entry:
             continue
         pid = entry.get("id")
@@ -184,22 +197,37 @@ def list_playlists(channel):
             continue
         if pid:
             seen_ids.add(pid)
-        count = (entry.get("playlist_count")
-                 or entry.get("video_count")
-                 or entry.get("n_entries"))
+        count = (
+            entry.get("playlist_count")
+            or entry.get("video_count")
+            or entry.get("n_entries")
+        )
         purl = entry.get("url") or (
-            f"https://www.youtube.com/playlist?list={pid}" if pid else None)
-        playlists.append({"title": entry.get("title", "(untitled)"),
-                          "id": pid, "url": purl, "count": count,
-                          "availability": entry.get("availability"),
-                          "videos": None})
+            f"https://www.youtube.com/playlist?list={pid}" if pid else None
+        )
+        playlists.append(
+            {
+                "title": entry.get("title", "(untitled)"),
+                "id": pid,
+                "url": purl,
+                "count": count,
+                "availability": entry.get("availability"),
+                "videos": None,
+            }
+        )
 
-    page_warnings = [w for w in warnings_seen
-                     if "initial data" in w.lower()
-                     or "retrying" in w.lower()
-                     or "giving up" in w.lower()]
-    return playlists, {"error": None, "warnings": warnings_seen,
-                       "incomplete": bool(page_warnings)}
+    page_warnings = [
+        w
+        for w in warnings_seen
+        if "initial data" in w.lower()
+        or "retrying" in w.lower()
+        or "giving up" in w.lower()
+    ]
+    return playlists, {
+        "error": None,
+        "warnings": warnings_seen,
+        "incomplete": bool(page_warnings),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -215,9 +243,11 @@ def download_transcript(video_id, title, languages, output_dir=None):
     os.makedirs(output_dir, exist_ok=True)
     base = textutil.safe_filename(f"{title} [{video_id}]") if title else video_id
 
-    missing = [lang for lang in languages
-               if not os.path.exists(
-                   os.path.join(output_dir, f"{base}.{lang}.txt"))]
+    missing = [
+        lang
+        for lang in languages
+        if not os.path.exists(os.path.join(output_dir, f"{base}.{lang}.txt"))
+    ]
     if not missing:
         print("   all requested transcripts already exist (skip)")
         return []
@@ -225,7 +255,7 @@ def download_transcript(video_id, title, languages, output_dir=None):
     url = f"https://www.youtube.com/watch?v={video_id}"
     opts = {
         "quiet": True,
-        "no_warnings": True,   # hush yt-dlp's "no JS runtime" style warnings
+        "no_warnings": True,  # hush yt-dlp's "no JS runtime" style warnings
         "skip_download": True,
         "writesubtitles": True,
         "writeautomaticsub": True,
@@ -250,8 +280,9 @@ def download_transcript(video_id, title, languages, output_dir=None):
         prefix = f"{base}."
         for name in os.listdir(output_dir):
             if name.startswith(prefix) and name.endswith(".vtt"):
-                vtt_by_lang[name[len(prefix):-len(".vtt")]] = \
-                    os.path.join(output_dir, name)
+                vtt_by_lang[name[len(prefix) : -len(".vtt")]] = os.path.join(
+                    output_dir, name
+                )
 
     if not vtt_by_lang:
         print(f"   !! no transcript found in {missing} for this video")
@@ -272,8 +303,7 @@ def download_transcript(video_id, title, languages, output_dir=None):
 # ---------------------------------------------------------------------------
 # Download the audio of one video (optionally transcode to mp3)
 # ---------------------------------------------------------------------------
-def download_audio(video_id, output_dir=None, audio_format="mp3",
-                   audio_quality="192"):
+def download_audio(video_id, output_dir=None, audio_format="mp3", audio_quality="192"):
     """Download bestaudio for a video into output_dir, skip if already present.
 
     If audio_format is set (e.g. "mp3"), transcode via ffmpeg. Returns the saved
@@ -286,25 +316,29 @@ def download_audio(video_id, output_dir=None, audio_format="mp3",
     for existing in os.listdir(output_dir):
         if f"[{video_id}]" in existing:
             if target_ext is None or existing.lower().endswith(f".{target_ext}"):
-                print(f"   audio already exists -> "
-                      f"{os.path.join(output_dir, existing)} (skip)")
+                print(
+                    f"   audio already exists -> "
+                    f"{os.path.join(output_dir, existing)} (skip)"
+                )
                 return os.path.join(output_dir, existing)
 
     url = f"https://www.youtube.com/watch?v={video_id}"
     opts = {
         "quiet": True,
-        "no_warnings": True,   # hush yt-dlp's "no JS runtime" style warnings
+        "no_warnings": True,  # hush yt-dlp's "no JS runtime" style warnings
         "format": "bestaudio/best",
         "outtmpl": os.path.join(output_dir, "%(title)s [%(id)s].%(ext)s"),
         **net.cookie_opts(),
         **net.proxy_opts(),
     }
     if audio_format:
-        opts["postprocessors"] = [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": audio_format,
-            "preferredquality": audio_quality,
-        }]
+        opts["postprocessors"] = [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": audio_format,
+                "preferredquality": audio_quality,
+            }
+        ]
     print(f"   downloading audio for {video_id} into '{output_dir}/' ...")
     try:
         with YoutubeDL(opts) as ydl:

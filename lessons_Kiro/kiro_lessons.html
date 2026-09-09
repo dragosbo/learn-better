@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kiro Lessons — build learn-better with an AI assistant</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1524; --bg2:#131c30; --card:#16203a; --edge:#26324f;
+    --fg:#e7ecf5; --muted:#9fb0cc; --accent:#4f9cff; --accent2:#38d39f;
+    --warn:#ffb454; --author:#c77dff; --pill:#1e2740;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{background:#0b1220;border:1px solid var(--edge);border-radius:5px;
+    padding:.08em .4em;font-size:.9em;color:#cfe0ff}
+  pre{background:#0b1220;border:1px solid var(--edge);border-radius:10px;
+    padding:14px 16px;overflow:auto;margin:.6em 0}
+  pre code{background:none;border:none;padding:0;color:#d7e3ff}
+
+  /* layout */
+  header.top{position:sticky;top:0;z-index:20;background:rgba(14,21,36,.92);
+    backdrop-filter:blur(6px);border-bottom:1px solid var(--edge);padding:10px 20px;
+    display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  header.top .brand{font-weight:700;letter-spacing:.3px}
+  header.top nav{display:flex;gap:6px;flex-wrap:wrap}
+  header.top nav a{font-size:.82rem;background:var(--pill);border:1px solid var(--edge);
+    border-radius:999px;padding:4px 10px;color:var(--muted)}
+  header.top nav a:hover{color:var(--fg);border-color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 80px}
+  section{scroll-margin-top:72px}
+  h1{font-size:2rem;margin:.2em 0 .1em}
+  h2{font-size:1.5rem;margin:1.6em 0 .5em;border-bottom:1px solid var(--edge);padding-bottom:.25em}
+  h3{font-size:1.15rem;margin:1.2em 0 .4em}
+  .sub{color:var(--muted)}
+  .lead{font-size:1.06rem;color:#d7e1f2}
+
+  .stars{color:var(--warn);letter-spacing:2px}
+  .pill{display:inline-block;background:var(--pill);border:1px solid var(--edge);
+    border-radius:999px;padding:2px 10px;font-size:.78rem;color:var(--muted);margin-right:6px}
+
+  /* lesson cards grid (overview) */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:1em 0}
+  .lcard{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:14px 16px;
+    display:flex;flex-direction:column;gap:8px;transition:border-color .15s,transform .15s}
+  .lcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .lcard .num{font-size:.8rem;color:var(--accent2);font-weight:700}
+  .lcard h4{margin:.1em 0;font-size:1.02rem}
+  .lcard .build{color:var(--muted);font-size:.9rem;flex:1}
+  .lcard .meta{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted)}
+
+  /* per-lesson blocks */
+  .lesson{background:var(--bg2);border:1px solid var(--edge);border-radius:14px;
+    padding:18px 22px;margin:1.4em 0}
+  .lesson .hdr{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .lesson .hdr .n{color:var(--accent2);font-weight:700}
+  .box{border-radius:10px;padding:10px 14px;margin:.7em 0;border:1px solid var(--edge)}
+  .goal{background:rgba(79,156,255,.08);border-color:#2f4d7a}
+  .prompt{background:rgba(56,211,159,.07);border-color:#1f5a45}
+  .check{background:rgba(255,180,84,.07);border-color:#6b5220}
+  .output{background:rgba(199,125,255,.07);border-color:#5a3a7a}
+  .box .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;
+    display:inline-block;margin-bottom:4px}
+  .goal .tag{color:var(--accent)} .prompt .tag{color:var(--accent2)}
+  .check .tag{color:var(--warn)} .output .tag{color:var(--author)}
+  ul.tight{margin:.3em 0 .3em 1.1em;padding:0}
+  ul.tight li{margin:.15em 0}
+
+  .navbtns{display:flex;justify-content:space-between;margin-top:12px;font-size:.9rem}
+  .navbtns a{background:var(--pill);border:1px solid var(--edge);border-radius:8px;padding:6px 12px}
+  .mermaid{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:14px;margin:1em 0;text-align:center}
+  .note{background:rgba(79,156,255,.08);border:1px solid #2f4d7a;border-radius:10px;padding:10px 14px;margin:1em 0;color:#d7e1f2}
+  footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--edge);padding-top:16px;margin-top:40px}
+  .legend span{margin-right:14px;font-size:.85rem;color:var(--muted)}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="brand">🎓 Kiro Lessons</span>
+  <nav>
+    <a href="#overview">Overview</a>
+    <a href="#arc">Arc</a>
+    <a href="#l01">01</a><a href="#l02">02</a><a href="#l03">03</a>
+    <a href="#l04">04</a><a href="#l05">05</a><a href="#l06">06</a>
+    <a href="#l07">07</a><a href="#l08">08</a><a href="#l09">09</a>
+    <a href="#troubleshoot">Troubleshoot</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <section id="overview">
+    <h1>Build <code>learn-better</code> with an AI assistant</h1>
+    <p class="lead">A hands-on, 9-lesson course that takes you from an <strong>empty
+    folder</strong> to a full toolkit that turns YouTube content into study material
+    (audio, transcripts, summaries, word clouds, narrated audio) — all free and
+    no-API-key. You build it <strong>by collaborating with an AI coding
+    assistant</strong>, learning <em>how to prompt, review, correct, and iterate</em>.</p>
+
+    <div class="note">
+      <strong>Assistant-agnostic.</strong> The lessons say "your AI assistant" and
+      work with any harness (Kiro, Claude, or another). Every step gives a
+      plain-language instruction <em>and</em> a ready-to-paste example prompt, plus a
+      <strong>Verify</strong> check. Source: the Markdown lessons in this folder —
+      each card below links to the full lesson.
+    </div>
+
+    <p class="legend">
+      <span><span class="dot" style="background:var(--accent)"></span>Goal</span>
+      <span><span class="dot" style="background:var(--accent2)"></span>Prompt</span>
+      <span><span class="dot" style="background:var(--warn)"></span>Check</span>
+      <span><span class="dot" style="background:var(--author)"></span>Output</span>
+    </p>
+
+    <div class="grid">
+      <a class="lcard" href="#l01"><span class="num">LESSON 01</span><h4>First contact + a minimal setup</h4><span class="build">An empty repo + a lightweight Python 3.12 + ffmpeg environment.</span><span class="meta"><span class="stars">★</span><span>~30–45 min</span></span></a>
+      <a class="lcard" href="#l02"><span class="num">LESSON 02</span><h4>Your first working tool (early win)</h4><span class="build">A no-API-key script that downloads a clip's audio + transcript.</span><span class="meta"><span class="stars">★★</span><span>~45–75 min</span></span></a>
+      <a class="lcard" href="#l03"><span class="num">LESSON 03</span><h4>Getting the environment right</h4><span class="build"><code>requirements.txt</code>, a solid <code>lib/paths.py</code>, a reproducible env.</span><span class="meta"><span class="stars">★★</span><span>~45–60 min</span></span></a>
+      <a class="lcard" href="#l04"><span class="num">LESSON 04</span><h4>Playlists + transcripts, config-driven</h4><span class="build"><code>list_playlists.py</code>, <code>read_transcript.py</code>, <code>config/</code>, first runners.</span><span class="meta"><span class="stars">★★★</span><span>~60–75 min</span></span></a>
+      <a class="lcard" href="#l05"><span class="num">LESSON 05</span><h4>Whisper transcription</h4><span class="build">Local speech-to-text with <code>faster-whisper</code>.</span><span class="meta"><span class="stars">★★★★</span><span>~60–90 min</span></span></a>
+      <a class="lcard" href="#l06"><span class="num">LESSON 06</span><h4>Runners + PATH + reusable <code>lib/</code></h4><span class="build">The full runner set, <code>init.bat</code>, a shared <code>lib/</code>, a quality check.</span><span class="meta"><span class="stars">★★★★</span><span>~60–90 min</span></span></a>
+      <a class="lcard" href="#l07"><span class="num">LESSON 07</span><h4>Summaries + word clouds (AI as author)</h4><span class="build"><code>make_summaries.py</code> + <code>skill_summary.md</code>; <code>make_wordcloud.py</code> + <code>wordcloud.html</code>.</span><span class="meta"><span class="stars">★★★★</span><span>~60–90 min</span></span></a>
+      <a class="lcard" href="#l08"><span class="num">LESSON 08</span><h4>TTS + tidy outputs + full pipeline</h4><span class="build">Piper TTS, audio re-encode, the end-to-end pipeline under <code>data/</code>.</span><span class="meta"><span class="stars">★★★★★</span><span>~75–90 min</span></span></a>
+      <a class="lcard" href="#l09"><span class="num">LESSON 09</span><h4>Deploy, 1-click, CI + close the loop</h4><span class="build">Dev Container, Colab notebook, CI, and linking it all together.</span><span class="meta"><span class="stars">★★★★★</span><span>~75–90 min</span></span></a>
+    </div>
+  </section>
+
+  <section id="arc">
+    <h2>The learning arc</h2>
+    <p class="sub">Each lesson builds on the previous one's files; complexity rises
+    monotonically from ★ to ★★★★★. The <strong>early win</strong> (Lesson 02) gets a
+    real file on disk before the deeper setup, so progress feels concrete.</p>
+    <div class="mermaid">
+flowchart LR
+  L1["01 · Setup<br/>★"] --> L2["02 · First tool<br/>★★ (early win)"]
+  L2 --> L3["03 · Env done right<br/>★★"]
+  L3 --> L4["04 · Playlists+configs<br/>★★★"]
+  L4 --> L5["05 · Whisper STT<br/>★★★★"]
+  L5 --> L6["06 · Runners + lib/<br/>★★★★"]
+  L6 --> L7["07 · Summaries+clouds<br/>★★★★"]
+  L7 --> L8["08 · TTS + pipeline<br/>★★★★★"]
+  L8 --> L9["09 · Deploy + CI<br/>★★★★★"]
+  style L2 fill:#123024,stroke:#38d39f,color:#e7ecf5
+  style L9 fill:#2a1e40,stroke:#c77dff,color:#e7ecf5
+    </div>
+
+    <h3>The pipeline you end up building</h3>
+    <div class="mermaid">
+flowchart LR
+  YT([YouTube]) --> R["r · download<br/>read_channel.py"]
+  R --> AUD[["data/audio/*.mp3"]]
+  R --> TR[["data/transcripts/*.txt"]]
+  AUD --> W["w · Whisper<br/>transcribe_audio.py"]
+  W --> GT[["data/generated_transcripts/"]]
+  TR --> S["s · summarize<br/>make_summaries.py + AI"]
+  GT --> S
+  S --> SUM[["data/summaries/*.md"]]
+  SUM --> V["v · speak<br/>generate_speech.py (Piper)"]
+  V --> WAV[["data/tts_output/*.wav"]]
+  TR --> D["d/wc · word cloud<br/>make_wordcloud.py"]
+  D --> WC[["data/wordclouds/*.json"]]
+  style YT fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style SUM fill:#2a1e40,stroke:#c77dff,color:#e7ecf5
+    </div>
+
+    <h3>The repeating loop in every lesson</h3>
+    <div class="mermaid">
+flowchart LR
+  G["🎯 Goal<br/>frame the request"] --> P["💬 Prompt<br/>instruction + optimized text"]
+  P --> A["🤖 AI acts"]
+  A --> C{"✅ Verify"}
+  C -->|pass| O["📦 Output<br/>files on disk"]
+  C -->|fail| F["🔁 Feed exact error back<br/>diagnose, then fix"]
+  F --> P
+  style G fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style O fill:#123024,stroke:#38d39f,color:#e7ecf5
+  style F fill:#3a2410,stroke:#ffb454,color:#e7ecf5
+    </div>
+  </section>
+
+  <!-- ===================== LESSON 01 ===================== -->
+  <section id="l01" class="lesson">
+    <div class="hdr"><span class="n">Lesson 01</span><h2 style="border:none;margin:.1em 0">First contact + a minimal setup</h2></div>
+    <p><span class="pill stars">★</span><span class="pill">~30–45 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/>An empty project folder, a <em>lightweight</em> Python 3.12 + ffmpeg environment, and a <code>.gitignore</code> — just enough to run something real next lesson. Learn to <strong>frame a request</strong>, adopt the <strong>review mindset</strong>, and keep a paste-ready <strong>Re-orient the AI</strong> block.</div>
+    <div class="box prompt"><span class="tag">Sample prompt</span><br/>"I want to build a small, free, no-API-key toolkit that downloads YouTube audio and transcripts, transcribes locally with Whisper, and generates summaries — runnable on my machine (I'm on <code>&lt;OS&gt;</code>). Before any code: in 5–8 bullets, what are the core building blocks and the one or two system tools I'll need?"</div>
+    <div class="box check"><span class="tag">Check</span><br/><code>python --version</code> → 3.12.x and <code>ffmpeg -version</code> → a banner (not "command not found"). This is the gate for the whole course.</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>learn-better/</code> with <code>.git/</code> + a minimal <code>.gitignore</code>; Python 3.12 + ffmpeg verified on PATH.</div>
+    <div class="navbtns"><span></span><a href="#l02">Next: Lesson 02 →</a></div>
+    <p class="sub">Full lesson: <a href="01_first_contact_and_setup.md">01_first_contact_and_setup.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 02 ===================== -->
+  <section id="l02" class="lesson">
+    <div class="hdr"><span class="n">Lesson 02</span><h2 style="border:none;margin:.1em 0">Your first working tool (early win)</h2></div>
+    <p><span class="pill stars">★★</span><span class="pill">~45–75 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/>A no-API-key script (<code>code/read_channel.py</code>) that lists a YouTube source and downloads a clip's <strong>audio + transcript</strong> into <code>data/</code> — a real file on disk. Plus the core skill: <strong>feed an error back and iterate</strong>.</div>
+    <div class="box prompt"><span class="tag">Sample prompt (plan first)</span><br/>"Before writing anything, list the file(s) and behavior. I want ONE script <code>code/read_channel.py</code>: reads a source at the top (playlist/channel/search + LIMIT); saves transcript + audio to <code>data/</code>; SKIPS what exists; flags clips with no transcript. No API key. Confirm the plan; don't code yet."</div>
+    <div class="box prompt"><span class="tag">Iterate-and-fix</span><br/>"Running it gave this exact output: <code>&lt;paste full error&gt;</code>. What's the root cause, and the smallest fix? Explain the cause first." → and, after two failed patches: "Step back — what's the actual root cause, and is there a fundamentally different approach?"</div>
+    <div class="box check"><span class="tag">Check</span><br/><code>dir data\audio</code> / <code>ls -R data</code> shows an <code>.mp3</code> + a <code>.txt</code>. A second run skips them. <code>git status</code> shows code, not the media (it's under ignored <code>data/</code>).</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>code/read_channel.py</code>; <code>data/audio/</code> + <code>data/transcripts/</code> with real files — your first working tool.</div>
+    <div class="navbtns"><a href="#l01">← Lesson 01</a><a href="#l03">Next: Lesson 03 →</a></div>
+    <p class="sub">Full lesson: <a href="02_first_working_tool.md">02_first_working_tool.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 03 ===================== -->
+  <section id="l03" class="lesson">
+    <div class="hdr"><span class="n">Lesson 03</span><h2 style="border:none;margin:.1em 0">Getting the environment right (properly)</h2></div>
+    <p><span class="pill stars">★★</span><span class="pill">~45–60 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/>A pinned <code>requirements.txt</code>, a <code>lib/paths.py</code> that becomes the <strong>single source of truth</strong> for output paths, and a reproducible env you understand — then repoint Lesson 02's tool through it. Learn to make the AI <strong>compare trade-offs</strong> before deciding.</div>
+    <div class="box prompt"><span class="tag">Sample prompt</span><br/>"Compare conda vs pip+venv vs uv for a Python 3.12 project that also needs <strong>ffmpeg</strong>, on <code>&lt;OS&gt;</code>. Short pros/cons each + a one-line recommendation. Note explicitly which can install ffmpeg and which can't."</div>
+    <div class="box check"><span class="tag">Check</span><br/><code>python -c "from lib import paths; print(paths.AUDIO_DIR)"</code> prints <code>data/audio</code>; re-running <code>read_channel.py</code> behaves identically and skip-if-exists still works (a behavior-preserving repoint).</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>requirements.txt</code> (ffmpeg documented as a system dep), <code>lib/paths.py</code> + <code>lib/__init__.py</code>, and <code>read_channel.py</code> importing paths from <code>lib/</code>.</div>
+    <div class="navbtns"><a href="#l02">← Lesson 02</a><a href="#l04">Next: Lesson 04 →</a></div>
+    <p class="sub">Full lesson: <a href="03_environment_done_right.md">03_environment_done_right.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 04 ===================== -->
+  <section id="l04" class="lesson">
+    <div class="hdr"><span class="n">Lesson 04</span><h2 style="border:none;margin:.1em 0">Playlists + transcripts, config-driven</h2></div>
+    <p><span class="pill stars">★★★</span><span class="pill">~60–75 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/>A playlist lister (<code>list_playlists.py</code> → <code>data/playlists.json</code>) and a transcript-only tool (<code>read_transcript.py</code>), the <code>config/</code> folder with JSON configs (<strong>config over code edits</strong>), and one-letter runners <code>p</code>, <code>t</code>, <code>r</code>.</div>
+    <div class="box prompt"><span class="tag">Sample prompt</span><br/>"Design a small JSON config (<code>config/config_transcribe.json</code>) with <code>select_by</code> (name|id|all) and a <code>select</code> list, and make one tool accept an optional config path as <code>sys.argv[1]</code> with a sensible default. Show the config and how the tool reads it."</div>
+    <div class="box check"><span class="tag">Check</span><br/>Open <code>data/playlists.json</code> (playlists + counts). Run a tool with and without a config path; the config actually changes what's processed. <code>t config/config_transcribe.json</code> passes the arg through.</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>list_playlists.py</code>, <code>read_transcript.py</code>, <code>config/config_transcribe.json</code>, and runners <code>p</code>/<code>t</code>/<code>r</code> (.bat + .sh).</div>
+    <div class="navbtns"><a href="#l03">← Lesson 03</a><a href="#l05">Next: Lesson 05 →</a></div>
+    <p class="sub">Full lesson: <a href="04_playlists_and_transcripts.md">04_playlists_and_transcripts.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 05 ===================== -->
+  <section id="l05" class="lesson">
+    <div class="hdr"><span class="n">Lesson 05</span><h2 style="border:none;margin:.1em 0">Whisper transcription (local speech-to-text)</h2></div>
+    <p><span class="pill stars">★★★★</span><span class="pill">~60–90 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/><code>code/transcribe_audio.py</code> using <code>faster-whisper</code> — free, no-API-key, CPU-friendly — for clips whose captions are disabled, config-driven with a <code>w</code> runner. Learn to <strong>add a dependency deliberately</strong> and <strong>validate ML output</strong>.</div>
+    <div class="box prompt"><span class="tag">Sample prompt</span><br/>"Create <code>code/transcribe_audio.py</code> using faster-whisper. Config: <code>select_by</code>, <code>select</code>, <code>model_size</code> (base), <code>device</code> (cpu), <code>compute_type</code> (int8), <code>task</code> (transcribe|translate), <code>language</code>. Output <code>data/generated_transcripts/&lt;audio base&gt;.whisper.&lt;lang&gt;.txt</code>. Skip-if-exists; lazy model load. Plan first."</div>
+    <div class="box check"><span class="tag">Check</span><br/>A <code>.whisper.&lt;lang&gt;.txt</code> appears under <code>data/generated_transcripts/</code>. Start a batch, Ctrl-C partway, re-run — finished files are skipped (long runs are safe/resumable).</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>transcribe_audio.py</code>, config variants (name/id/translate/fr), a <code>w</code> runner, and local speech-to-text filling caption gaps.</div>
+    <div class="navbtns"><a href="#l04">← Lesson 04</a><a href="#l06">Next: Lesson 06 →</a></div>
+    <p class="sub">Full lesson: <a href="05_whisper_transcription.md">05_whisper_transcription.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 06 ===================== -->
+  <section id="l06" class="lesson">
+    <div class="hdr"><span class="n">Lesson 06</span><h2 style="border:none;margin:.1em 0">Runner system + PATH + reusable <code>lib/</code></h2></div>
+    <p><span class="pill stars">★★★★</span><span class="pill">~60–90 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/>The complete one-letter runner set (all <code>.bat</code> + <code>.sh</code>), <code>init.bat</code> + a PATH setup so short names work anywhere, a reusable <code>lib/</code> extracted <strong>without changing behavior</strong>, and a <code>compare_transcripts.py</code> quality check.</div>
+    <div class="box prompt"><span class="tag">Sample prompt (verify sameness)</span><br/>"Extract logic used by more than one script into <code>lib/</code> (net, textutil, youtube), and rewrite the entry scripts as thin config + <code>main()</code> wrappers. Change ONLY structure — behavior must stay identical. Show before/after for one script."</div>
+    <div class="box check"><span class="tag">Check</span><br/>Re-run <code>r</code>/<code>t</code>/<code>p</code>/<code>w</code>: identical results, skip-if-exists still holds. <code>compare_transcripts.py</code> prints a word-accuracy % (≈95% on the sample at <code>base</code>). After <code>init</code>, <code>where r</code> resolves.</div>
+    <div class="box output"><span class="tag">You'll have</span> a DRY <code>lib/</code> (paths, net, textutil, youtube), the full runner set + <code>init.bat</code> + <code>.gitattributes</code>, and a measured quality number.</div>
+    <div class="navbtns"><a href="#l05">← Lesson 05</a><a href="#l07">Next: Lesson 07 →</a></div>
+    <p class="sub">Full lesson: <a href="06_runners_and_lib.md">06_runners_and_lib.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 07 ===================== -->
+  <section id="l07" class="lesson">
+    <div class="hdr"><span class="n">Lesson 07</span><h2 style="border:none;margin:.1em 0">Summaries + word clouds (AI as author, data/JS split)</h2></div>
+    <p><span class="pill stars">★★★★</span><span class="pill">~60–90 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/><code>make_summaries.py</code> + a reusable <code>skill_summary.md</code> (the <strong>AI authors</strong> the summaries), and <code>make_wordcloud.py</code> + <code>wordcloud.html</code> (<strong>Python data, browser rendering</strong>). Learn the <strong>script-vs-AI boundary</strong>.</div>
+    <div class="box prompt"><span class="tag">Sample prompt (the handoff)</span><br/>"Apply skill_summary.md to these transcripts and save each to data/summaries/&lt;base&gt;.summary.md: — data/transcripts/&lt;A&gt;.en.txt — data/generated_transcripts/&lt;B&gt;.whisper.en.txt" <em>(printed by <code>make_summaries.py</code>; the script finds what's missing, the AI writes the prose).</em></div>
+    <div class="box check"><span class="tag">Check</span><br/><code>data/summaries/</code> gets one structured <code>.summary.md</code> per video (grounded in the transcript, following the template). <code>d</code>/<code>wc</code> writes a <code>*.word_cloud.json</code>; opening <code>wordcloud.html</code> renders it.</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>skill_summary.md</code>, <code>make_summaries.py</code>, <code>make_wordcloud.py</code>, <code>wordcloud.html</code>, and runners <code>s</code>/<code>d</code>/<code>wc</code>.</div>
+    <div class="navbtns"><a href="#l06">← Lesson 06</a><a href="#l08">Next: Lesson 08 →</a></div>
+    <p class="sub">Full lesson: <a href="07_summaries_and_wordclouds.md">07_summaries_and_wordclouds.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 08 ===================== -->
+  <section id="l08" class="lesson">
+    <div class="hdr"><span class="n">Lesson 08</span><h2 style="border:none;margin:.1em 0">TTS + tidy outputs + full pipeline</h2></div>
+    <p><span class="pill stars">★★★★★</span><span class="pill">~75–90 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/><code>generate_speech.py</code> (Piper — free, local, CPU TTS), <code>reencode_audio.py</code> (bitrate re-encode), the end-to-end pipeline run, and a cross-cutting refactor that consolidates every output under a single <code>data/</code> root — <strong>without ever destroying inputs</strong>. Runners <code>v</code>, <code>a</code>.</div>
+    <div class="box prompt"><span class="tag">Sample prompt (consolidation)</span><br/>"Refactor so EVERY output lives under <code>data/</code>: update <code>lib/paths.py</code> FIRST (source of truth), grep for hard-coded output strings and fix them, physically MOVE existing outputs (never delete), then verify each tool still reads/writes the right place and skip-if-exists holds. Locations only — no behavior change."</div>
+    <div class="box check"><span class="tag">Check</span><br/><code>git check-ignore data/audio/x.mp3</code> echoes it (ignored); <code>git check-ignore data/summaries/foo.md</code> prints nothing (tracked). The full R→W→S→V run ends with a <code>.wav</code> narration of a summary.</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>generate_speech.py</code>, <code>reencode_audio.py</code>, runners <code>v</code>/<code>a</code>, all outputs under <code>data/</code> (ignored except <code>data/summaries/</code>), <code>piper-tts</code> in requirements.</div>
+    <div class="navbtns"><a href="#l07">← Lesson 07</a><a href="#l09">Next: Lesson 09 →</a></div>
+    <p class="sub">Full lesson: <a href="08_tts_and_full_pipeline.md">08_tts_and_full_pipeline.md</a></p>
+  </section>
+
+  <!-- ===================== LESSON 09 ===================== -->
+  <section id="l09" class="lesson">
+    <div class="hdr"><span class="n">Lesson 09</span><h2 style="border:none;margin:.1em 0">Deploy, 1-click, CI + close the loop</h2></div>
+    <p><span class="pill stars">★★★★★</span><span class="pill">~75–90 min</span></p>
+    <div class="box goal"><span class="tag">Goal</span><br/>A Dev Container, a standalone Docker image, 1-click badges (Colab / Codespaces / Dev Container) + a real Colab notebook, light CI (lint + network-free smoke), the reasoning for <em>why this isn't a web app</em> — then have the AI update the docs and link the lessons.</div>
+    <div class="box prompt"><span class="tag">Sample prompt (CI)</span><br/>"Add <code>.github/workflows/ci.yml</code>: a <strong>lint</strong> job (<code>ruff check --select E9,F</code> + <code>compileall</code>, black advisory) and a <strong>smoke</strong> job (ffmpeg + requirements + import/paths verify + run stdlib-only <code>make_summaries.py</code>). No network tools. Explain why they're excluded."</div>
+    <div class="box check"><span class="tag">Check</span><br/>"Reopen in Container" builds; inside, <code>ffmpeg -version</code> + imports succeed. The Colab notebook is valid JSON. CI goes green in ~1–2 min. You can restate why serverless (Vercel) doesn't fit.</div>
+    <div class="box output"><span class="tag">You'll have</span> <code>.devcontainer/</code>, <code>Dockerfile.standalone</code> + <code>.dockerignore</code>, <code>notebooks/colab_setup.ipynb</code>, <code>.github/workflows/ci.yml</code>, and README/youtube.html + <code>chats/</code> updated to link the lessons.</div>
+    <div class="navbtns"><a href="#l08">← Lesson 08</a><a href="#troubleshoot">Troubleshooting →</a></div>
+    <p class="sub">Full lesson: <a href="09_deploy_ci_handoff.md">09_deploy_ci_handoff.md</a></p>
+  </section>
+
+  <!-- ===================== TROUBLESHOOT ===================== -->
+  <section id="troubleshoot">
+    <h2>Troubleshooting your AI — the recap</h2>
+    <p class="sub">Every lesson has a "When the AI misbehaves" box; Lesson 09 gathers
+    them. Assume your assistant rarely <em>hard</em>-crashes — these are the everyday
+    snags and the move that fixes each.</p>
+    <ul class="tight">
+      <li><strong>It stalls / goes silent</strong> → wait, then "are you still there? continue"; for a lost thread, paste the lesson's <strong>Re-orient the AI</strong> block.</li>
+      <li><strong>A file write got interrupted</strong> → verify the file isn't half-written before building on it.</li>
+      <li><strong>Wrong Python interpreter/env</strong> (<code>ModuleNotFoundError</code> after installing) → <code>python -c "import sys; print(sys.executable)"</code>; activate your env.</li>
+      <li><strong>Terminal output looks empty/garbled</strong> → trust the <em>artifact</em> (a file under <code>data/</code>), not the console.</li>
+      <li><strong>Bot-check / 429 from YouTube</strong> → not a code bug; cookies file, or wait &amp; retry, or fetch fewer languages.</li>
+      <li><strong>It over-produces</strong> (150-line <code>.gitignore</code>, extra deps) → "minimal", "only what's used".</li>
+      <li><strong>A refactor changes behavior</strong> → require verified sameness: change the source of truth first, then re-run + <code>git status</code>.</li>
+      <li><strong><code>.sh</code> fails on Linux (<code>^M</code>)</strong> → CRLF endings; fix via <code>.gitattributes</code> (<code>*.sh eol=lf</code>).</li>
+      <li><strong>Container won't build</strong> → usually ffmpeg missing from the image, or a retired base image (404).</li>
+      <li><strong>Change approach, don't re-patch</strong> → after two failed fixes on one approach, ask for the root cause + a different approach.</li>
+      <li><strong>Feed back exact errors</strong> → the single habit that beats everything: paste the real output, ask for a diagnosis before a patch.</li>
+    </ul>
+
+    <div class="note">
+      <strong>Assistant-agnostic + two series.</strong> This is the <strong>Kiro</strong>
+      series (<code>lessons_Kiro/</code>). A parallel <strong>Claude</strong> series may
+      live alongside (e.g. <code>lessons_claude/</code>) — the lessons work with any AI
+      assistant, so either can be followed on its own.
+    </div>
+  </section>
+
+  <footer>
+    Kiro Lessons · generated from the Markdown lessons in <code>lessons_Kiro/</code>
+    (<a href="README.md">index</a> · <a href="kiro_lessons.md">the plan</a>). Nine
+    lessons, ★→★★★★★, from an empty folder to the full <code>learn-better</code> repo.
+  </footer>
+
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose",
+    themeVariables: { fontSize: "14px" } });
+</script>
+</body>
+</html>

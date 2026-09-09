@@ -8,6 +8,43 @@ roadmap.
 
 ---
 
+## Learn to build this with an AI assistant (the `lessons_*` series)
+
+This repo isn't just a toolkit — it's also a worked example of **how to build real
+software, documentation, and infrastructure by collaborating with AI coding
+assistants.** Two parallel tutorial series reconstruct the whole project from an
+empty folder, step by step, teaching the *workflow*: how to prompt effectively,
+review and steer an assistant's output, iterate on errors, and **delegate tasks to
+agents while keeping control by checking what they produce.**
+
+**Why they exist.** The goal is practical AI-collaboration skill:
+
+- **Build tools with AI** — turn an idea ("download YouTube audio, transcribe it
+  locally, summarize it") into working, tested Python by prompting, verifying, and
+  iterating.
+- **Build documentation with AI** — produce README/HTML/config docs and keep them
+  honest as the code evolves.
+- **Delegate to agents by steering + checking** — frame a task, let the assistant
+  draft, then *verify every output* (a file on disk, a passing check) before moving
+  on; know when to re-prompt, when to change approach, and how to recover when the
+  assistant stalls or loses context.
+
+Each lesson is one focused session (~30–90 min), rises in complexity, and pairs a
+plain-language instruction with a ready-to-paste prompt, an expected result, and a
+**Verify** check — plus a "when the AI misbehaves" recovery box.
+
+| Series | Folder | Shape | Open |
+|---|---|---|---|
+| **Kiro** | [`lessons_Kiro/`](lessons_Kiro/README.md) | 9 lessons, early-win pacing (a working tool by Lesson 02), assistant-agnostic | index: [`README.md`](lessons_Kiro/README.md) · visual: [`kiro_lessons.html`](lessons_Kiro/kiro_lessons.html) |
+| **Claude** | [`lessons_Claude/`](lessons_Claude/README.md) | 10 lessons, scaffold-first pacing, framed by *kind of AI task* | index: [`README.md`](lessons_Claude/README.md) · visual: [`claude_lessons.html`](lessons_Claude/claude_lessons.html) |
+
+Both series reach the same end state (this repo); they're two assistants' vantage
+points on the same journey — follow either on its own. The `*_lessons.html` pages
+give a diagram-rich, click-through overview highlighting each lesson's goal,
+prompts, checks, and outputs.
+
+---
+
 ## Dependencies
 
 ### Python packages (installed via `requirements.txt`)
@@ -994,6 +1031,8 @@ learn-better/
 │   └── playlists.json       # channel playlists (git-ignored)
 ├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
 ├── docs/                # video_to_mindmap.md, prompt_building.md (Phase 4 guides)
+├── lessons_Kiro/        # tutorial series (Kiro): 9 lessons + README + kiro_lessons.html
+├── lessons_Claude/      # tutorial series (Claude): 10 lessons + README + claude_lessons.html
 ├── .github/workflows/   # ci.yml — light CI (lint + network-free smoke test)
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
 ├── ignore/              # git-ignored: retired code + todo*.md, mini_todo.md, notes

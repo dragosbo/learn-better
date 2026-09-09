@@ -623,3 +623,42 @@ how_to_test.md is not referred into the readme file. should it be or is its cont
 
 ## 178
 ok update the kiro documents in the chats to reflect all interactions we had
+
+## 179
+Continue [reviewed the CI run: smoke passed, lint failed with F541 f-string errors]
+
+## 180
+here is the feedback for todo5v3. only modify this file. update that the folder for the lessons is called "lessons_kiro" [+ answers: Q1 underscore, Q2 recommended, Q3 A agnostic/portable, Q4 B early win, Q5-Q6 recommended, Q7 yes, Q8 yes, Q9 yes, Q10 yes; more than 10 lessons allowed if needed; question whether lessons are plans; add questions/suggestions at the top]
+
+## 181
+well you lock the decsion but you did not specified the questions or you droped them which makes them not clear. add the questions back an dthen present the selected answer
+
+## 182
+S1 - yes, S2 yes, Q-A yes, Q-B accomodate for both folders. So keep the questions and suggestions and add my feedback. refine the document to avoid contradictions
+
+## 183
+are you done
+
+## 184
+commit to gitlab the latest changes [repo remote is GitHub; pushed there]
+
+## 185
+ok create folder lessons_Kiro. move the file todo5_v3.md in that folder and change its name to kiro_lessons.md proceed afterwards with the work as described in it and check with me the next steps. you will not be able to change files without my approval. you should add or generate files only in the folder lessons_Kiro
+
+## 186
+ok with your proposals. proceed [README index + Lesson 01]
+
+## 187
+ok good proceed [Lesson 02]
+
+## 188
+looks good . you can proceed like this with all the lessons. let me know when is done
+
+## 189
+are you still working / resume
+
+## 190
+review the content of the folder lessons_Kiro and based only on this content adapt README.md. Also create a nice kiro_lessons.html referring all these file, nice diagrams, navigation between lessons. highlight the goals, the prompts, the checks, the outputs,....
+
+## 191
+adapt the kiro file in the chats folder to incorporate our latest interactions

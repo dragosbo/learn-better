@@ -100,6 +100,7 @@
 <div class="layout">
 <nav>
   <a href="#overview">Overview</a>
+  <a href="#lessons">Learn with AI</a>
   <a href="#mindmap">Key ideas mindmap</a>
   <a href="#usecases">Use cases</a>
   <a href="#logic">How it works</a>
@@ -136,6 +137,65 @@
     <div class="card"><h4>Text to speech</h4><p>Voice a summary/transcript with Piper (free, CPU-only). Selectable voice + speed.</p></div>
     <div class="card"><h4>Learn</h4><p>Roadmap toward Obsidian mind-maps and consolidation.</p></div>
   </div>
+</section>
+
+<section id="lessons">
+  <h2>Learn to build this with an AI assistant</h2>
+  <p>
+    Beyond the toolkit itself, this repo ships two <strong>tutorial series</strong> that
+    reconstruct the whole project from an empty folder — a worked example of
+    <strong>how to build software, documentation, and infrastructure by collaborating with
+    AI coding assistants.</strong> The real subject is the <em>workflow</em>: prompt well,
+    review and steer the assistant's output, iterate on errors, and
+    <strong>delegate tasks to agents while staying in control by checking what they
+    produce.</strong>
+  </p>
+  <p>Why the lessons exist — three practical AI-collaboration skills:</p>
+  <div class="cards">
+    <div class="card"><h4>Build tools with AI</h4><p>Turn an idea into working, tested Python by prompting, verifying, and iterating.</p></div>
+    <div class="card"><h4>Build docs with AI</h4><p>Produce README/HTML/config docs and keep them honest as the code evolves.</p></div>
+    <div class="card"><h4>Delegate &amp; check</h4><p>Frame a task, let the agent draft, then <em>verify every output</em> before moving on; know when to re-prompt or change approach, and how to recover from stalls/lost context.</p></div>
+  </div>
+  <p>
+    Each lesson is one focused session (~30–90 min), rises in complexity, and pairs a
+    plain-language instruction with a ready-to-paste prompt, an expected result, and a
+    <strong>Verify</strong> check — plus a "when the AI misbehaves" recovery box. The two
+    series are two assistants' vantage points on the same journey; follow either on its own.
+  </p>
+  <table>
+    <tr><th>Series</th><th>Folder</th><th>Shape</th><th>Open</th></tr>
+    <tr>
+      <td><strong>Kiro</strong></td>
+      <td><code>lessons_Kiro/</code></td>
+      <td>9 lessons · early-win pacing (a working tool by Lesson 02) · assistant-agnostic</td>
+      <td><a href="lessons_Kiro/README.md">index</a> · <a href="lessons_Kiro/kiro_lessons.html">visual (kiro_lessons.html)</a></td>
+    </tr>
+    <tr>
+      <td><strong>Claude</strong></td>
+      <td><code>lessons_Claude/</code></td>
+      <td>10 lessons · scaffold-first · framed by <em>kind of AI task</em></td>
+      <td><a href="lessons_Claude/README.md">index</a> · <a href="lessons_Claude/claude_lessons.html">visual (claude_lessons.html)</a></td>
+    </tr>
+  </table>
+  <div class="mermaid">
+flowchart LR
+  IDEA([An idea]) --> PROMPT["Prompt<br/>(framed, optimized)"]
+  PROMPT --> AGENT{{"AI assistant / agent"}}
+  AGENT --> DRAFT["Draft: code / docs / config"]
+  DRAFT --> CHECK{"Verify the output"}
+  CHECK -->|pass| KEEP[["Working artifact on disk"]]
+  CHECK -->|fail| STEER["Steer: feed exact error,<br/>diagnose, re-prompt"]
+  STEER --> PROMPT
+  KEEP --> REPO([The learn-better repo])
+  style AGENT fill:#1e2740,stroke:#4f9cff,color:#e7ecf5
+  style KEEP fill:#123024,stroke:#38d39f,color:#e7ecf5
+  style STEER fill:#3a2410,stroke:#ffb454,color:#e7ecf5
+  </div>
+  <p>
+    The <code>*_lessons.html</code> pages give a diagram-rich, click-through overview that
+    highlights each lesson's goal, prompts, checks, and outputs. Both series reach the same
+    end state: this repository.
+  </p>
 </section>
 
 <section id="mindmap">
@@ -781,6 +841,8 @@ graph TD
 &#9474;  &#9500;&#9472; wordclouds/             # *.word_cloud.json (git-ignored)
 &#9474;  &#9492;&#9472; playlists.json          # channel playlists (git-ignored)
 &#9500;&#9472; config/                    # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
+&#9500;&#9472; lessons_Kiro/              # tutorial series (Kiro): 9 lessons + README + kiro_lessons.html
+&#9500;&#9472; lessons_Claude/            # tutorial series (Claude): 10 lessons + README + claude_lessons.html
 &#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
 &#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, mini_todo.md, notes
 &#9500;&#9472; wordcloud.html             # renders a word_cloud.json (wordcloud2.js)

@@ -33,15 +33,18 @@ Each lesson is one focused session (~30–90 min), rises in complexity, and pair
 plain-language instruction with a ready-to-paste prompt, an expected result, and a
 **Verify** check — plus a "when the AI misbehaves" recovery box.
 
-| Series | Folder | Shape | Open |
-|---|---|---|---|
-| **Kiro** | [`lessons_Kiro/`](lessons_Kiro/README.md) | 9 lessons, early-win pacing (a working tool by Lesson 02), assistant-agnostic | index: [`README.md`](lessons_Kiro/README.md) · visual: [`kiro_lessons.html`](lessons_Kiro/kiro_lessons.html) |
-| **Claude** | [`lessons_Claude/`](lessons_Claude/README.md) | 10 lessons, scaffold-first pacing, framed by *kind of AI task* | index: [`README.md`](lessons_Claude/README.md) · visual: [`claude_lessons.html`](lessons_Claude/claude_lessons.html) |
+| Series | Folder | Shape | Read | Full app (light) | Quick overview (dark) |
+|---|---|---|---|---|---|
+| **Kiro** | [`lessons_Kiro/`](lessons_Kiro/README.md) | 9 lessons, early-win pacing (a working tool by Lesson 02), assistant-agnostic | [`README.md`](lessons_Kiro/README.md) | [`kiro_lessons_app.html`](kiro_lessons_app.html) | [`lessons_Kiro/kiro_lessons.html`](lessons_Kiro/kiro_lessons.html) |
+| **Claude** | [`lessons_Claude/`](lessons_Claude/README.md) | 10 lessons, scaffold-first pacing, framed by *kind of AI task* | [`README.md`](lessons_Claude/README.md) | [`claude_lessons_app.html`](claude_lessons_app.html) | [`lessons_Claude/claude_lessons.html`](lessons_Claude/claude_lessons.html) |
 
 Both series reach the same end state (this repo); they're two assistants' vantage
-points on the same journey — follow either on its own. The `*_lessons.html` pages
-give a diagram-rich, click-through overview highlighting each lesson's goal,
-prompts, checks, and outputs.
+points on the same journey — follow either on its own. Each series has **two HTML
+views of the same content**: the **full app** (`*_lessons_app.html`, in the repo
+root) is a light-theme, click-through reader with every lesson's prompts, expected
+outputs, and Verify checks embedded inline; the **quick overview**
+(`lessons_*/*_lessons.html`, inside the folder) is a compact dark-theme page with
+Mermaid diagrams that links out to the individual lesson `.md` files.
 
 ---
 
@@ -1031,8 +1034,10 @@ learn-better/
 │   └── playlists.json       # channel playlists (git-ignored)
 ├── config/              # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
 ├── docs/                # video_to_mindmap.md, prompt_building.md (Phase 4 guides)
-├── lessons_Kiro/        # tutorial series (Kiro): 9 lessons + README + kiro_lessons.html
-├── lessons_Claude/      # tutorial series (Claude): 10 lessons + README + claude_lessons.html
+├── lessons_Kiro/        # tutorial series (Kiro): 9 lessons + README + kiro_lessons.html (dark overview)
+├── lessons_Claude/      # tutorial series (Claude): 10 lessons + README + claude_lessons.html (dark overview)
+├── kiro_lessons_app.html   # Kiro curriculum — full click-through reader (light theme)
+├── claude_lessons_app.html # Claude curriculum — full click-through reader (light theme)
 ├── .github/workflows/   # ci.yml — light CI (lint + network-free smoke test)
 ├── chats/               # AI chat logs: kiro_* and claude_* (prompts + conversation)
 ├── ignore/              # git-ignored: retired code + todo*.md, mini_todo.md, notes

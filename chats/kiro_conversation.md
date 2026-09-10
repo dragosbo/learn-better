@@ -1467,6 +1467,52 @@ strictly in the folder; nothing committed.
 **Kiro:** Appended prompts 179-192 (verbatim) to `kiro_prompts.md` and these
 exchanges (summarized) to this file.
 
+## 193. User
+> create a similarly kiro_lessons.html in the root following the pattern of the
+> large claude_lessons.html from the root and based on the material in the
+> lessons_Kiro folder.
+
+**Kiro:** Studied the root `claude_lessons.html` (a ~172 KB light-theme "app": fixed
+270px sidebar, `showPage()` page-switching, collapsible `toggleSection()` section
+cards, inline SVG pipeline diagrams — no Mermaid) and read all nine
+`lessons_Kiro/*.md` in full. Then generated a matching root **`kiro_lessons.html`**
+(~171 KB) grounded strictly in the Kiro material: light theme, sidebar with the 9
+lessons + a mini pipeline SVG (r → w → s+AI → v → a), an overview page with a
+lesson-card grid and full pipeline diagram, and one page per lesson carrying the real
+content — What You'll Build, the Re-orient block, Concepts, a Step-by-step of 45
+Prompt/Expected-output/Verify triples, a "When the AI misbehaves" card, a "Files after
+this lesson" card, and prev/next nav. Built it via a throwaway Python generator
+(deleted after), verified structure (10 pages, 9 lesson sections, balanced tags), and
+left the root `claude_lessons.html` and the dark folder overviews untouched. Nothing
+committed.
+
+## 194. User
+> adapt the youtube.html so it points correctly to all html files in root or folders;
+> clarify the differences between files using the same name; if easier, rename them to
+> distinguish per use case.
+
+**Kiro:** Found two name collisions — `claude_lessons.html` and `kiro_lessons.html`
+each existed in both the root (full click-through apps) and a `lessons_*/` folder
+(compact dark Mermaid overviews). Chose renaming as the cleaner fix: root
+`kiro_lessons.html` → **`kiro_lessons_app.html`**, root `claude_lessons.html` →
+**`claude_lessons_app.html`** (the folder files kept their names, matched by
+folder-relative links). Rewrote the "Learn with AI" table in `youtube.html` with
+separate **Full app (light)** and **Quick overview (dark)** columns linking all four
+lesson pages plus each folder README, added a note explaining the two views differ by
+location and use case, made `wordcloud.html` an actual clickable link (so every root
+HTML file is reachable), and updated the repo-layout tree. Applied the same
+table/layout updates to `README.md` for consistency. Verified all six link targets
+exist. Nothing committed yet.
+
+## 195. User
+> before doing suggestion adapt the kiro files in chat to reflect latest interactions,
+> then do a final commit and push.
+
+**Kiro:** Appended prompts 192-194 (verbatim) to `kiro_prompts.md` and these exchanges
+(summarized) to this file, then committed the whole batch (new root
+`kiro_lessons_app.html`, renamed `claude_lessons_app.html`, edited `youtube.html` /
+`README.md` / chat logs) and pushed to `main` on GitHub.
+
 ---
 
 ## How to regenerate this file on demand

@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>learn-better — AI Curriculum</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  color-scheme: light;
+  --sidebar-w: 270px;
+  --sidebar-bg: #0f172a;
+  --sidebar-hover: #1e293b;
+  --sidebar-active-bg: #1d4ed8;
+  --sidebar-text: #94a3b8;
+  --sidebar-active-text: #fff;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --primary: #1d4ed8;
+  --goal-bg: #eff6ff; --goal-border: #3b82f6; --goal-icon: #2563eb;
+  --prompt-bg: #1e1e2e; --prompt-border: #7c3aed; --prompt-header: #a78bfa; --prompt-text: #cdd6f4;
+  --output-bg: #f0fdf4; --output-border: #22c55e; --output-icon: #16a34a;
+  --verify-bg: #fff7ed; --verify-border: #f97316; --verify-icon: #ea580c;
+  --misbehave-bg: #fef2f2; --misbehave-border: #ef4444; --misbehave-icon: #dc2626;
+  --reorient-bg: #faf5ff; --reorient-border: #a855f7; --reorient-icon: #9333ea;
+  --concept-bg: #f0f9ff; --concept-border: #0ea5e9; --concept-icon: #0284c7;
+  --files-bg: #f8fafc; --files-border: #cbd5e1;
+}
+
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--sidebar-bg);
+  display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh;
+  overflow-y: auto; z-index: 100;
+}
+.sidebar-logo {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-logo h1 { color: #f1f5f9; font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.sidebar-logo p { color: var(--sidebar-text); font-size: 12px; margin-top: 2px; }
+
+.pipeline-mini { padding: 14px 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.pipeline-mini-label { color: var(--sidebar-text); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.pipeline-mini svg { width: 100%; height: 36px; }
+
+.nav-section-label {
+  padding: 12px 18px 4px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #475569;
+}
+.lesson-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 18px; cursor: pointer;
+  color: var(--sidebar-text); font-size: 13px; font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.lesson-link:hover { background: var(--sidebar-hover); color: #e2e8f0; }
+.lesson-link.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); }
+.lesson-link .lesson-num { font-size: 10px; color: #475569; font-weight: 600; min-width: 24px; }
+.lesson-link.active .lesson-num { color: #bfdbfe; }
+.lesson-link .stars { font-size: 9px; margin-left: auto; color: #f59e0b; letter-spacing: -1px; }
+.lesson-link.active .stars { color: #fde68a; }
+.lesson-link .stars-empty { opacity: 0.35; }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar-w); flex: 1; max-width: 900px; padding: 0; }
+
+.page { display: none; padding: 36px 40px 80px; }
+.page.active { display: block; }
+
+/* ── OVERVIEW ── */
+.overview-header { margin-bottom: 32px; }
+.overview-header h2 { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.overview-header p { color: var(--text-muted); font-size: 15px; max-width: 640px; }
+
+.pipeline-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+.pipeline-diagram h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 18px; }
+.pipeline-diagram svg { width: 100%; height: 90px; }
+
+.lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.lesson-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px; cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s;
+}
+.lesson-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--primary); }
+.lesson-card-num { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.lesson-card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.lesson-card-build { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
+.lesson-card-meta { display: flex; gap: 10px; align-items: center; }
+.lesson-card-stars { font-size: 12px; color: #f59e0b; letter-spacing: -1px; }
+.lesson-card-stars .stars-empty { opacity: 0.3; }
+.lesson-card-time { font-size: 11px; color: var(--text-muted); }
+
+/* ── LESSON PAGE ── */
+.lesson-header { margin-bottom: 28px; }
+.lesson-header-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.lesson-badge { background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; margin-top: 3px; }
+.lesson-title { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.lesson-meta { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.meta-chip { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text-muted); }
+.meta-chip svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── SECTION CARDS ── */
+.section-card {
+  border-radius: 10px; margin-bottom: 18px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.section-card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px;
+  cursor: pointer; user-select: none;
+}
+.section-card-header svg { width: 16px; height: 16px; flex-shrink: 0; }
+.section-card-body { padding: 16px; }
+.section-card-body.collapsed { display: none; }
+
+.card-goal { background: var(--goal-bg); border-color: var(--goal-border); }
+.card-goal .section-card-header { color: var(--goal-icon); }
+.card-goal .section-card-body { color: #1e40af; font-size: 14.5px; line-height: 1.6; }
+
+.card-reorient { background: var(--reorient-bg); border-color: var(--reorient-border); }
+.card-reorient .section-card-header { color: var(--reorient-icon); }
+.card-reorient .section-card-body pre { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12.5px; line-height: 1.7; color: #4c1d95; white-space: pre-wrap; word-break: break-word; }
+
+.card-concepts { background: var(--concept-bg); border-color: var(--concept-border); }
+.card-concepts .section-card-header { color: var(--concept-icon); }
+.concept-item { margin-bottom: 12px; }
+.concept-item:last-child { margin-bottom: 0; }
+.concept-title { font-size: 13.5px; font-weight: 700; color: #0c4a6e; margin-bottom: 2px; }
+.concept-body { font-size: 13px; color: #075985; line-height: 1.5; }
+
+.card-misbehaves { background: var(--misbehave-bg); border-color: var(--misbehave-border); }
+.card-misbehaves .section-card-header { color: var(--misbehave-icon); }
+.misbehave-item { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #fecaca; }
+.misbehave-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.misbehave-problem { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 4px; }
+.misbehave-fix { font-size: 13px; color: #7f1d1d; line-height: 1.5; }
+
+.card-files { background: var(--files-bg); border-color: var(--files-border); }
+.card-files .section-card-header { color: #475569; }
+.files-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.file-chip { background: #e2e8f0; color: #334155; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11.5px; padding: 3px 10px; border-radius: 4px; }
+
+/* ── STEP ── */
+.step { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+.step-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.step-num { background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.step-title { font-size: 14.5px; font-weight: 700; color: var(--text); }
+.step-body { padding: 16px 18px; }
+
+.block { margin-bottom: 14px; border-radius: 8px; overflow: hidden; }
+.block:last-child { margin-bottom: 0; }
+
+.block-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px;
+}
+.block-header svg { width: 14px; height: 14px; }
+.block-body { padding: 12px 14px; }
+
+.block-prompt { border: 1px solid var(--prompt-border); }
+.block-prompt .block-header { background: var(--prompt-border); color: #fff; }
+.block-prompt .block-body { background: var(--prompt-bg); }
+.block-prompt pre { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12.5px; color: var(--prompt-text); line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+
+.block-output { border: 1px solid var(--output-border); }
+.block-output .block-header { background: var(--output-bg); color: var(--output-icon); }
+.block-output .block-body { background: var(--output-bg); font-size: 13px; color: #166534; line-height: 1.6; }
+
+.block-verify { border: 1px solid var(--verify-border); }
+.block-verify .block-header { background: var(--verify-bg); color: var(--verify-icon); }
+.block-verify .block-body { background: var(--verify-bg); font-size: 13px; color: #9a3412; line-height: 1.6; }
+.verify-cmd { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px; background: #fed7aa; padding: 6px 10px; border-radius: 4px; margin-top: 6px; display: block; }
+
+/* ── NAV ── */
+.lesson-nav-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 0.15s; text-decoration: none; }
+.nav-btn:hover { background: var(--bg); }
+.nav-btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.nav-btn-primary:hover { background: #1e40af; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 60px; }
+  .sidebar-logo p, .pipeline-mini, .nav-section-label, .lesson-link .lesson-num, .lesson-link .stars { display: none; }
+  .lesson-link { padding: 10px; justify-content: center; }
+  .sidebar-logo { padding: 14px 10px; }
+  .sidebar-logo h1 { font-size: 13px; white-space: nowrap; overflow: hidden; }
+  #main { padding: 0; }
+  .page { padding: 20px 18px 60px; }
+  .lesson-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1>learn-better</h1>
+    <p>AI Curriculum · 10 lessons</p>
+  </div>
+  <div class="pipeline-mini">
+    <div class="pipeline-mini-label">Pipeline</div>
+    
+<svg viewBox="0 0 220 30" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrm" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L5,2.5 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="2" y="5" width="26" height="18" rx="4" fill="#1d4ed8"/>
+  <text x="15" y="17" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" fill="#fff">r</text>
+  <line x1="28" y1="14" x2="38" y2="14" stroke="#475569" stroke-width="1" marker-end="url(#arrm)"/>
+  <rect x="40" y="5" width="26" height="18" rx="4" fill="#4338ca"/>
+  <text x="53" y="17" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" fill="#fff">w</text>
+  <line x1="66" y1="14" x2="76" y2="14" stroke="#475569" stroke-width="1" marker-end="url(#arrm)"/>
+  <rect x="78" y="5" width="26" height="18" rx="4" fill="#b45309"/>
+  <text x="91" y="17" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" fill="#fff">s</text>
+  <line x1="104" y1="14" x2="114" y2="14" stroke="#475569" stroke-width="1" marker-end="url(#arrm)"/>
+  <rect x="116" y="5" width="28" height="18" rx="4" fill="#7e22ce"/>
+  <text x="130" y="17" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" fill="#fff">AI</text>
+  <line x1="144" y1="14" x2="154" y2="14" stroke="#475569" stroke-width="1" marker-end="url(#arrm)"/>
+  <rect x="156" y="5" width="26" height="18" rx="4" fill="#16a34a"/>
+  <text x="169" y="17" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" fill="#fff">v</text>
+  <line x1="182" y1="14" x2="192" y2="14" stroke="#475569" stroke-width="1" marker-end="url(#arrm)"/>
+  <rect x="194" y="5" width="26" height="18" rx="4" fill="#be123c"/>
+  <text x="207" y="17" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" fill="#fff">a</text>
+</svg>
+
+  </div>
+  <button class="lesson-link active" id="nav-overview" onclick="showPage('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Overview</span></button>
+<div class="nav-section-label">Lessons</div>
+<button class="lesson-link" id="nav-lesson-01" onclick="showPage('lesson-01')"><span class="lesson-num">01</span><span>First Contact</span><span class="stars">★☆☆☆☆</span></button>
+<button class="lesson-link" id="nav-lesson-02" onclick="showPage('lesson-02')"><span class="lesson-num">02</span><span>Project Scaffold</span><span class="stars">★★☆☆☆</span></button>
+<button class="lesson-link" id="nav-lesson-03" onclick="showPage('lesson-03')"><span class="lesson-num">03</span><span>Environment Setup</span><span class="stars">★★☆☆☆</span></button>
+<button class="lesson-link" id="nav-lesson-04" onclick="showPage('lesson-04')"><span class="lesson-num">04</span><span>First Working Script</span><span class="stars">★★★☆☆</span></button>
+<button class="lesson-link" id="nav-lesson-05" onclick="showPage('lesson-05')"><span class="lesson-num">05</span><span>Audio and Transcripts</span><span class="stars">★★★☆☆</span></button>
+<button class="lesson-link" id="nav-lesson-06" onclick="showPage('lesson-06')"><span class="lesson-num">06</span><span>Whisper Transcription</span><span class="stars">★★★★☆</span></button>
+<button class="lesson-link" id="nav-lesson-07" onclick="showPage('lesson-07')"><span class="lesson-num">07</span><span>Runners and Automation</span><span class="stars">★★★★☆</span></button>
+<button class="lesson-link" id="nav-lesson-08" onclick="showPage('lesson-08')"><span class="lesson-num">08</span><span>Summaries and Word Clouds</span><span class="stars">★★★★☆</span></button>
+<button class="lesson-link" id="nav-lesson-09" onclick="showPage('lesson-09')"><span class="lesson-num">09</span><span>TTS and Full Pipeline</span><span class="stars">★★★★☆</span></button>
+<button class="lesson-link" id="nav-lesson-10" onclick="showPage('lesson-10')"><span class="lesson-num">10</span><span>Deployment and Handoff</span><span class="stars">★★★★★</span></button>
+
+</nav>
+<div id="main">
+<section id="overview" class="page active">
+  <div class="overview-header">
+    <h2>learn-better — AI Curriculum</h2>
+    <p>A hands-on, 10-lesson course for building a YouTube-to-audio pipeline with an AI coding assistant. Each lesson contains ready-to-paste prompts, expected outputs, and verification steps.</p>
+  </div>
+  <div class="pipeline-diagram">
+    <h3>Full Pipeline</h3>
+    
+<svg viewBox="0 0 840 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <!-- Boxes -->
+  <rect x="10" y="20" width="80" height="40" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="50" y="37" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">r</text>
+  <text x="50" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#3b82f6">download</text>
+  
+  <line x1="90" y1="40" x2="118" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  
+  <rect x="120" y="20" width="80" height="40" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="160" y="37" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#4338ca">w</text>
+  <text x="160" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#6366f1">transcribe</text>
+  
+  <line x1="200" y1="40" x2="228" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  
+  <rect x="230" y="20" width="80" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="270" y="37" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#92400e">s</text>
+  <text x="270" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#b45309">summaries</text>
+  
+  <line x1="310" y1="40" x2="338" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- AI bubble -->
+  <rect x="340" y="14" width="90" height="52" rx="8" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="385" y="35" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" font-weight="700" fill="#7e22ce">✦ AI</text>
+  <text x="385" y="49" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#9333ea">paste prompt</text>
+  <text x="385" y="60" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#9333ea">→ paste result</text>
+
+  <line x1="430" y1="40" x2="458" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="460" y="20" width="80" height="40" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="500" y="37" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#166534">v</text>
+  <text x="500" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#16a34a">TTS speech</text>
+  
+  <line x1="540" y1="40" x2="568" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="570" y="20" width="80" height="40" rx="8" fill="#ffe4e6" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="610" y="37" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#881337">a</text>
+  <text x="610" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#be123c">reencode</text>
+
+  <!-- Also: t runner below -->
+  <rect x="10" y="70" width="0" height="0"/>
+  <!-- Label strip -->
+  <text x="50" y="74" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#94a3b8">also: t (captions)</text>
+  <text x="270" y="74" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#94a3b8">wc (wordcloud)</text>
+  <text x="500" y="74" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#94a3b8">output: .wav</text>
+</svg>
+
+  </div>
+  <div class="lesson-grid"><div class="lesson-card" onclick="showPage('lesson-01')">
+  <div class="lesson-card-num">Lesson 01</div>
+  <div class="lesson-card-title">First Contact</div>
+  <div class="lesson-card-build">Nothing tangible yet — by the end you know how to give an AI assistant useful instructions, get a co...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★<span class="stars-empty">☆☆☆☆</span></span></span>
+    <span class="lesson-card-time">30–45 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-02')">
+  <div class="lesson-card-num">Lesson 02</div>
+  <div class="lesson-card-title">Project Scaffold</div>
+  <div class="lesson-card-build">An empty repo with a sound folder layout, .gitignore, a first README.md, a living plan.md, and the r...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★<span class="stars-empty">☆☆☆</span></span></span>
+    <span class="lesson-card-time">45–60 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-03')">
+  <div class="lesson-card-num">Lesson 03</div>
+  <div class="lesson-card-title">Environment Setup</div>
+  <div class="lesson-card-build">A working Python 3.12 conda environment with all project dependencies installed, plus lib/paths.py —...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★<span class="stars-empty">☆☆☆</span></span></span>
+    <span class="lesson-card-time">45–60 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-04')">
+  <div class="lesson-card-num">Lesson 04</div>
+  <div class="lesson-card-title">First Working Script</div>
+  <div class="lesson-card-build">code/list_playlists.py — a script that lists a channel&#x27;s public playlists and saves them to data/pla...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★<span class="stars-empty">☆☆</span></span></span>
+    <span class="lesson-card-time">60–90 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-05')">
+  <div class="lesson-card-num">Lesson 05</div>
+  <div class="lesson-card-title">Audio and Transcripts</div>
+  <div class="lesson-card-build">code/read_channel.py (audio download) and code/read_transcript.py (caption download), a first config...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★<span class="stars-empty">☆☆</span></span></span>
+    <span class="lesson-card-time">75–90 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-06')">
+  <div class="lesson-card-num">Lesson 06</div>
+  <div class="lesson-card-title">Whisper Transcription</div>
+  <div class="lesson-card-build">code/transcribe_audio.py — config-driven local transcription using faster-whisper, reading from AUDI...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★★<span class="stars-empty">☆</span></span></span>
+    <span class="lesson-card-time">75–90 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-07')">
+  <div class="lesson-card-num">Lesson 07</div>
+  <div class="lesson-card-title">Runners and Automation</div>
+  <div class="lesson-card-build">scripts/init.bat — the setup script that registers all runners on PATH. The complete runner set (c, ...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★★<span class="stars-empty">☆</span></span></span>
+    <span class="lesson-card-time">60–75 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-08')">
+  <div class="lesson-card-num">Lesson 08</div>
+  <div class="lesson-card-title">Summaries and Word Clouds</div>
+  <div class="lesson-card-build">code/make_summaries.py, code/make_wordcloud.py, docs/skill_summary.md, a real lib/textutil.py, and w...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★★<span class="stars-empty">☆</span></span></span>
+    <span class="lesson-card-time">75–90 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-09')">
+  <div class="lesson-card-num">Lesson 09</div>
+  <div class="lesson-card-title">TTS and Full Pipeline</div>
+  <div class="lesson-card-build">The real lib/net.py and lib/youtube.py, code/reencode_audio.py, code/generate_speech.py — completing...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★★<span class="stars-empty">☆</span></span></span>
+    <span class="lesson-card-time">90–120 min</span>
+  </div>
+</div><div class="lesson-card" onclick="showPage('lesson-10')">
+  <div class="lesson-card-num">Lesson 10</div>
+  <div class="lesson-card-title">Deployment and Handoff</div>
+  <div class="lesson-card-build">A .devcontainer/devcontainer.json, a Dockerfile.standalone, .github/workflows/ci.yml, a Google Colab...</div>
+  <div class="lesson-card-meta">
+    <span class="lesson-card-stars"><span class="stars">★★★★★<span class="stars-empty"></span></span></span>
+    <span class="lesson-card-time">90–120 min</span>
+  </div>
+</div></div>
+</section>
+<section id="lesson-01" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 01</span>
+    <h2 class="lesson-title">First Contact</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 30–45 min</span>
+  <span class="meta-chip" style="color:#22c55e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★<span class="stars-empty">☆☆☆☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Long-form explanation, Q&amp;A, orientation</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>Nothing tangible yet — by the end you know how to give an AI assistant useful instructions, get a coherent explanation of an unfamiliar tool, and what to do when the assistant loses its train of thought mid-session.</p><p style="margin-top:10px;font-weight:600">Key outcome: The re-orient pattern that every future lesson relies on.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working through a guided curriculum to build a YouTube transcription and summarisation tool in Python, using an AI assistant as my primary coding tool. I&#x27;m on Lesson 01 — First Contact. We haven&#x27;t created any files yet — this lesson is orientation only. Please continue from where I left off.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">The assistant is a collaborator, not a search engine</div><div class="concept-body">Give it context — what you&#x27;re building, your OS, what already exists — rather than bare questions.</div></div><div class="concept-item"><div class="concept-title">Prompts are repeatable</div><div class="concept-body">A well-structured prompt works consistently. This curriculum shows the optimised versions — prompts that worked after the project was actually built.</div></div><div class="concept-item"><div class="concept-title">Context is fragile; recovery is cheap</div><div class="concept-body">Long sessions accumulate context. When the assistant drifts, paste a short re-orient block and pick up where you left off.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">01.1</span>
+    <span class="step-title">Ask the assistant to explain an unfamiliar tool</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I&#x27;m planning to build a Python tool that downloads YouTube audio and transcripts for local processing. I&#x27;ve heard of yt-dlp, pytube, and scrapetube. Can you explain what each one does, why yt-dlp is now the preferred choice, and what its main advantages are over the others?
+Please be concrete — mention specific things that broke or were retired.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">yt-dlp is the actively-maintained successor. pytube breaks frequently with YouTube API changes. scrapetube broken since ~2025. yt-dlp handles audio, video, subtitles, format merging via ffmpeg, and bot-detection countermeasures. Mentions curl_cffi for TLS fingerprinting.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">No command. Check the answer mentions: yt-dlp active maintenance, pytube fragility, why ffmpeg is needed alongside yt-dlp.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">01.2</span>
+    <span class="step-title">Understand what an AI assistant is good at</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I&#x27;m going to use you as my primary coding assistant to build a Python project from scratch. What kinds of tasks should I give you directly (where you work well without much hand-holding), and where should I be careful or verify your output? Give me practical examples for a Python project that uses yt-dlp, faster-whisper, and Piper TTS.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Good at: explaining concepts, generating boilerplate, config-driven scripts, project structure, documentation. Needs care: current package versions, OS-specific differences, very long agentic tasks.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Answer should mention verification — running the code, checking output files — not just trusting generated output blindly.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">01.3</span>
+    <span class="step-title">Learn the re-orient pattern</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I want to learn how to write a good &quot;re-orient&quot; block — a short paragraph I can paste at the start of a new chat session (or after a long break mid-session) to quickly restore your context about an ongoing project. What should such a block contain? Give me a template I can fill in for a Python CLI project.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Template covering: project name and purpose, current working file or milestone, OS and environment name, one sentence on where to continue.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Template covers: what the project does, what was just created, OS, env name, and where to pick up.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">01.4</span>
+    <span class="step-title">Practise crash recovery</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>(Paste the re-orient block from the top of this lesson verbatim into a new session or fresh browser tab)</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Assistant acknowledges context and asks what to do next or suggests starting Lesson 02. It should not ask you to repeat project details.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">If the assistant responds as if it has context, the pattern works. If it asks clarifying questions, your re-orient block needs more detail.</div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">Very long answer when you asked for something brief</div><div class="misbehave-fix">Add: &quot;Keep your answer to 3–5 bullet points&quot; or &quot;Give me a one-paragraph summary first.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">Assistant confidently states something wrong</div><div class="misbehave-fix">Ask: &quot;Are you sure? My understanding is that pytube is fragile because YouTube frequently changes its internal API. Can you confirm?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">Loses thread mid-session</div><div class="misbehave-fix">Paste the re-orient block. If that doesn&#x27;t help, start a fresh session. Sessions have finite context — earlier info silently drops out once it fills.</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p style="color:var(--text-muted);font-size:13px">No new files created — orientation lesson.</p></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Overview</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-02')">Lesson 02: Project Scaffold <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-02" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 02</span>
+    <h2 class="lesson-title">Project Scaffold</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 45–60 min</span>
+  <span class="meta-chip" style="color:#84cc16"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★<span class="stars-empty">☆☆☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Project planning, multi-file creation, documentation generation</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>An empty repo with a sound folder layout, .gitignore, a first README.md, a living plan.md, and the repo pushed to GitHub.</p><p style="margin-top:10px;font-weight:600">Key outcome: A committed, properly structured repo on GitHub — the foundation for every lesson that follows.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo — a Python tool that downloads YouTube audio and transcripts, transcribes locally with faster-whisper, and generates summaries and word clouds. We&#x27;re on Lesson 02 — Project Scaffold. No code files exist yet — we&#x27;re creating the folder structure, .gitignore, README.md, and plan.md, then pushing to GitHub. OS: Windows. Please continue from [specific point].</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">Give the AI a project vision, not a task list</div><div class="concept-body">Describe the full shape of what you&#x27;re building upfront. The assistant makes better structural decisions than when you describe one file at a time.</div></div><div class="concept-item"><div class="concept-title">Think step by step</div><div class="concept-body">Add &quot;think step by step. List the files you will create before creating them.&quot; to multi-file prompts. Forces planning before acting — dramatically reduces half-finished sets of files.</div></div><div class="concept-item"><div class="concept-title">The planning document belongs in the repo</div><div class="concept-body">A short plan.md recording decisions and reasoning is worth far more than chat notes. The assistant loses context between sessions; a committed plan file doesn&#x27;t.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">02.1</span>
+    <span class="step-title">Design the project structure</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I&#x27;m starting a Python CLI project. Here is what it will do:
+- Download YouTube audio files and auto-generated transcripts using yt-dlp
+- Transcribe audio locally with faster-whisper (no API, no cloud)
+- Generate text summaries of transcripts using an AI API
+- Build word clouds from transcripts
+- Convert summaries to speech with Piper TTS
+- Reencode audio to target bitrate
+- All outputs go to a local data/ folder that is git-ignored
+
+Think step by step. Before proposing a layout, list your assumptions. Then propose a folder structure with one-line descriptions of each folder. Do not create any files yet.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">code/ — main scripts  |  lib/ — reusable helpers  |  scripts/ — one-letter runners (.bat + .sh)  |  data/ — all output (git-ignored)  |  config/ — JSON config files  |  docs/ — supplementary docs  |  notebooks/ — optional Jupyter</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">code/ and lib/ are separate. data/ is its own top-level folder. scripts/ is for runner shortcuts. If helpers and scripts are bundled, push back.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">02.2</span>
+    <span class="step-title">Create the folder structure</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Good. Now give me the exact shell commands to create this structure on Windows (Command Prompt). Use mkdir. Create empty placeholder files where useful so git tracks the folders. Show me one block of commands I can copy and paste.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">mkdir code lib scripts data config docs notebooks<br>type nul &gt; lib\__init__.py<br>type nul &gt; code\.gitkeep<br>type nul &gt; data\.gitkeep</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run `dir /b`. Check that code, lib, scripts, data, config, docs, notebooks all appear.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">02.3</span>
+    <span class="step-title">Create the .gitignore</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I&#x27;m working on Windows, but the project will also run on Linux inside a devcontainer. Generate a .gitignore for a Python project with: ignore entire data/ EXCEPT data/summaries/, standard Python artifacts, conda/venv folders, editor files, OS files. Output only the .gitignore content.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">A .gitignore with a data/ ignore and a !data/summaries/ exception line. The exception line is critical — without it data/summaries/ gets ignored too.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run: findstr /i &quot;summaries&quot; .gitignore<br>You should see !data/summaries/ (or similar).</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">02.4</span>
+    <span class="step-title">Create the first README.md</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write a README.md for this project named learn-better. Include: (1) one-paragraph description — what it does, no YouTube API needed, all transcription local; (2) Prerequisites — Python 3.12, conda, ffmpeg (system binary — NOT pip), yt-dlp, faster-whisper, Piper; (3) Quick Start with placeholder commands; (4) folder layout; (5) no badges, no emojis, no marketing tone.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Plain, readable README with five sections. Prerequisites explicitly calls out ffmpeg must be installed at OS level — NOT via pip.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Read Prerequisites. Confirms: Python 3.12, conda, ffmpeg as system binary (not pip), yt-dlp[default,curl-cffi]. If it says `pip install ffmpeg`, push back.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">02.5</span>
+    <span class="step-title">Create plan.md</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Create a plan.md — living planning document. Sections: ## Goal (one paragraph), ## Stack (table: Component | Tool | Why chosen), ## Open questions (three placeholder questions), ## Decisions log (empty). Output only the plan.md content.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Well-structured markdown with four sections. Stack table has yt-dlp for download, faster-whisper for transcription, Piper for TTS.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open in markdown preview and confirm the table renders correctly.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">02.6</span>
+    <span class="step-title">Initialise git and push to GitHub</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I need to initialise a git repo, make a first commit, and push to a new GitHub repo named learn-better (public). Give me exact commands for Windows Command Prompt. Include: git init, set branch to main, add files, first commit, create GitHub repo with gh CLI, add remote, push.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">git init  |  git checkout -b main  |  git add .gitignore README.md plan.md lib\__init__.py  |  git commit -m &quot;initial scaffold&quot;  |  gh repo create learn-better --public --source=. --remote=origin --push</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">git log --oneline — one commit. Visit github.com/[username]/learn-better and confirm files are there.</code></div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">Deeply nested folder structure</div><div class="misbehave-fix">Push back: &quot;I&#x27;d like to keep this flat. One level of subdirectories under the project root. Can you simplify?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">.gitignore exception for data/summaries/ missing or wrong syntax</div><div class="misbehave-fix">Correct pattern: data/ on one line, then !data/summaries/ on the next. The ! must come after the data/ rule, not before. Show the two lines and ask it to explain why order matters.</div></div><div class="misbehave-item"><div class="misbehave-problem">README filled with emojis, badges, or marketing language</div><div class="misbehave-fix">Add: &quot;No badges, no emojis, no marketing tone. Plain GitHub markdown only.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">gh repo create not available</div><div class="misbehave-fix">Ask: &quot;I don&#x27;t have the GitHub CLI. How do I create the repo on GitHub.com and add the remote manually?&quot;</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">.gitignore</span><span class="file-chip">README.md</span><span class="file-chip">plan.md</span><span class="file-chip">lib/__init__.py</span><span class="file-chip">code/ (placeholder)</span><span class="file-chip">scripts/ (placeholder)</span><span class="file-chip">data/ (git-ignored)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-01')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 01: First Contact</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-03')">Lesson 03: Environment Setup <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-03" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 03</span>
+    <h2 class="lesson-title">Environment Setup</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 45–60 min</span>
+  <span class="meta-chip" style="color:#84cc16"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★<span class="stars-empty">☆☆☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Recommendation + reasoning, command generation, file creation</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>A working Python 3.12 conda environment with all project dependencies installed, plus lib/paths.py — the file that tells every script where its outputs go.</p><p style="margin-top:10px;font-weight:600">Key outcome: lib/paths.py — the single source of truth for all output paths in the project.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 03 — Environment Setup. The repo already exists with .gitignore, README.md, and plan.md. We have NOT yet created the conda environment or any Python files. OS: Windows. Please continue from where I left off.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">ffmpeg is a system binary — not a Python package</div><div class="concept-body">Must be installed at OS level (conda-forge handles this cleanly). pip install ffmpeg installs a stub that does NOT include the binary — causes silent failures in yt-dlp and Whisper.</div></div><div class="concept-item"><div class="concept-title">One constants file, one source of truth for paths</div><div class="concept-body">lib/paths.py defines every output folder as a named constant. Every script imports from it. Change one file, all scripts stay in sync.</div></div><div class="concept-item"><div class="concept-title">Commit configuration, not data</div><div class="concept-body">requirements.txt and lib/paths.py are committed. data/ is git-ignored (except data/summaries/). Never commit audio, transcripts, or model weights.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">03.1</span>
+    <span class="step-title">Ask for environment strategy</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I&#x27;m setting up a Python project on Windows. The project uses yt-dlp, faster-whisper, and Piper TTS. I need to decide between conda + pip, plain pip + venv, and uv. What are the trade-offs for this specific toolset? Pay special attention to ffmpeg, which some of these tools require as a system binary.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">conda preferred — can install ffmpeg as real binary (no separate installer on Windows). Plain pip/venv cannot install ffmpeg. uv also cannot. For this project, conda + pip is the cleanest path on Windows.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Answer explicitly mentions that pip install ffmpeg installs a Python wrapper stub, NOT the real ffmpeg binary, and that this causes yt-dlp mp3 conversion to silently fail.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">03.2</span>
+    <span class="step-title">Create the conda environment</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Give me the exact conda commands to:
+1. Create a new environment named learn-better with Python 3.12
+2. Activate it
+3. Install ffmpeg from conda-forge (not pip)
+4. Verify ffmpeg is correctly installed
+OS: Windows, Command Prompt.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">conda create -n learn-better python=3.12 -y<br>conda activate learn-better<br>conda install -c conda-forge ffmpeg -y<br>ffmpeg -version</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run ffmpeg -version. You should see a version string like ffmpeg version 7.x.x. If not found, check you&#x27;re in the learn-better env.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">03.3</span>
+    <span class="step-title">Understand why ffmpeg cannot use pip</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Why does `pip install ffmpeg` not work for a project that uses yt-dlp to download and convert audio? What actually happens when you run that command, and what should you do instead on Windows?</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">pip install ffmpeg installs a Python package with only Python bindings — NOT the actual C binary. yt-dlp invokes ffmpeg as subprocess.run([&quot;ffmpeg&quot;, ...]). If the binary isn&#x27;t on PATH, yt-dlp silently falls back to webm/m4a instead of mp3 with no clear error. Fix: conda install -c conda-forge ffmpeg.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">No command. Key test is later when r.bat downloads audio — if output is .mp3 (not .m4a or .webm), ffmpeg is working.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">03.4</span>
+    <span class="step-title">Create requirements.txt</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Create requirements.txt with minimum-version pins (&gt;=, not ==) for: youtube-transcript-api&gt;=0.6,&lt;1; yt-dlp[default,curl-cffi]&gt;=2024.4.9; curl_cffi&gt;=0.7; pandas&gt;=2.0,&lt;3; ipykernel&gt;=6.29,&lt;7; faster-whisper&gt;=1.0; piper-tts&gt;=1.2. Add a comment block noting ffmpeg is a SYSTEM DEPENDENCY. Do NOT include pytube or scrapetube.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">A commented requirements.txt with 7 dependencies and a prominent comment block explaining the ffmpeg system dependency with conda-forge, winget, and apt install commands.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">pip install -r requirements.txt (watch for errors; faster-whisper may download several hundred MB on first install — expected).</code></div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">03.5</span>
+    <span class="step-title">Smoke-test the environment</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Give me a short Python one-liner to verify that yt-dlp, faster-whisper, and curl_cffi all imported correctly in the learn-better environment.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">python -c &quot;import yt_dlp, faster_whisper, curl_cffi; print(&#x27;All imports OK&#x27;)&quot;</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run with learn-better env active. You should see: All imports OK</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">03.6</span>
+    <span class="step-title">Create lib/paths.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Create lib/paths.py defining output folder constants: DATA_DIR, AUDIO_DIR, AUDIO_REENCODED_DIR, TRANSCRIPT_DIR, GENERATED_TRANSCRIPT_DIR, WORDCLOUD_DIR, TTS_OUTPUT_DIR, SUMMARY_DIR. Use os.path.join(). Add a module docstring explaining this is the single source of truth. Note that data/summaries/ is the one exception that IS git-tracked.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Clean paths.py with 8 constants, docstring, and git-tracking note. Pattern: DATA_DIR = &quot;data&quot;, AUDIO_DIR = os.path.join(&quot;data&quot;, &quot;audio&quot;), ...</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">python -c &quot;from lib.paths import AUDIO_DIR, SUMMARY_DIR; print(AUDIO_DIR, SUMMARY_DIR)&quot;</code><br>Expected: data\audio data\summaries</div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">Assistant suggests pip install ffmpeg or pip install ffmpeg-python</div><div class="misbehave-fix">Push back: &quot;These are Python packages that wrap ffmpeg — they don&#x27;t install the binary itself. Can you show me the conda-forge install command?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">pip install fails on faster-whisper or CTranslate2</div><div class="misbehave-fix">Ask: &quot;pip is failing to install faster-whisper on Windows x86-64 Python 3.12. Is there a pre-built wheel? Usually pip install faster-whisper --prefer-binary resolves it.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">Assistant pins versions with == instead of &gt;=</div><div class="misbehave-fix">Ask: &quot;Can you use minimum-version pins (&gt;=) instead of exact pins? This is a development project.&quot;</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">requirements.txt</span><span class="file-chip">lib/__init__.py (from L02)</span><span class="file-chip">lib/paths.py (new)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-02')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 02: Project Scaffold</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-04')">Lesson 04: First Working Script <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-04" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 04</span>
+    <h2 class="lesson-title">First Working Script</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 60–90 min</span>
+  <span class="meta-chip" style="color:#f59e0b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★<span class="stars-empty">☆☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Multi-file creation, config design, debugging from an error message</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>code/list_playlists.py — a script that lists a channel&#x27;s public playlists and saves them to data/playlists.json, plus runner pair scripts/p.bat and scripts/p.sh.</p><p style="margin-top:10px;font-weight:600">Key outcome: The full debug cycle: paste error → understand it → fix it → re-run. A skill used in every lesson after this.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 04 — First Working Script. The environment is set up (learn-better conda env, Python 3.12, ffmpeg, all packages). The last files we created were requirements.txt and lib/paths.py. We have NOT yet written any scripts in code/ or scripts/. OS: Windows. Conda env: learn-better.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">Config at the top of the file</div><div class="concept-body">All tunable parameters live in a clearly-marked all-caps config block at the top — not buried in function bodies. Easy to scan and change without reading the implementation.</div></div><div class="concept-item"><div class="concept-title">Feed the actual error message back</div><div class="concept-body">When a script fails, copy-paste the full traceback. Never paraphrase. The exact error text (exception type, file name, line number) is what the assistant uses to diagnose.</div></div><div class="concept-item"><div class="concept-title">Ask for diagnosis before asking for a patch</div><div class="concept-body">After pasting an error, ask &quot;what does this error mean?&quot; before &quot;how do I fix it?&quot; You learn more and can catch symptom-not-cause fixes.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">04.1</span>
+    <span class="step-title">Discuss the script&#x27;s purpose and design</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I want to write a Python script called code/list_playlists.py. Its job:
+- Accept a YouTube channel handle (@handle) or URL as a config variable
+- List all public playlists for that channel using yt-dlp
+- Optionally list videos inside each playlist, up to VIDEO_LIMIT per playlist
+- Count total videos per playlist (optional, controlled by a flag)
+- Save result as JSON to data/playlists.json
+
+The project has lib/paths.py. lib/net.py and lib/youtube.py are not written yet — stub them.
+
+Tell me: what config variables will this script need at the top, and what should the JSON output structure look like? Think step by step. Do not write code yet.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Config: CHANNEL, LIST_VIDEOS_FOR, VIDEO_LIMIT, COUNT_VIDEOS. JSON: list of objects with id, title, url, video_count, videos[].</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Config block has at least CHANNEL, VIDEO_LIMIT, COUNT_VIDEOS. If LIST_VIDEOS_FOR is missing, ask for it — it controls which playlists get expanded.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">04.2</span>
+    <span class="step-title">Generate the script and runners</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Now write code/list_playlists.py with config block at top (CHANNEL, LIST_VIDEOS_FOR, VIDEO_LIMIT, COUNT_VIDEOS), imports (os, json, lib.net, lib.youtube, lib.paths.DATA_DIR), and logic that: calls net.apply_no_proxy_env() first, fetches playlists, optionally fetches videos, writes JSON with json.dump. Also write scripts/p.bat and scripts/p.sh.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Three files. list_playlists.py with config at top and net.apply_no_proxy_env() called before any network work. p.bat: call conda activate learn-better / python code\list_playlists.py. p.sh: shebang + activate + python code/list_playlists.py.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">from lib import net, youtube is present. net.apply_no_proxy_env() appears before any yt-dlp call. Output path uses os.path.join(DATA_DIR, &quot;playlists.json&quot;).</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">04.3</span>
+    <span class="step-title">Save files and first run</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>(Run: python code\list_playlists.py after setting CHANNEL to a real handle)</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Either: success (playlists.json created) | ImportError on lib.net or lib.youtube (stubs missing) | Other error — proceed to debug cycle.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">data/playlists.json exists with at least one playlist entry. Valid JSON (VS Code highlights syntax errors).</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">04.4</span>
+    <span class="step-title">Iterate and fix — the debug cycle</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I ran code/list_playlists.py and got this error:
+
+[paste the full traceback here — every line]
+
+What does this error mean? What is the most likely cause?</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Assistant identifies error type and explains it in plain terms. For ImportError on lib.net, it explains the module doesn&#x27;t exist yet and offers to create a stub.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">After fix, re-run and copy-paste any new error. Repeat until script runs cleanly.</div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">Hardcodes output path instead of using DATA_DIR</div><div class="misbehave-fix">Push back: &quot;The project uses lib/paths.py as the single source of truth. Can you change to os.path.join(DATA_DIR, &#x27;playlists.json&#x27;)?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">Script runs but playlists.json contains empty list []</div><div class="misbehave-fix">Two causes: (1) wrong channel handle — verify it in browser; (2) channel has no public playlists.</div></div><div class="misbehave-item"><div class="misbehave-problem">403 or 429 HTTP error</div><div class="misbehave-fix">YouTube rate-limits unauthenticated requests. Wait a few minutes and retry. lib/net.py (Lesson 09) has COOKIES_FROM_BROWSER option.</div></div><div class="misbehave-item"><div class="misbehave-problem">p.bat uses python3 instead of python</div><div class="misbehave-fix">On Windows with conda, correct command is python. Push back: &quot;On Windows with conda, the command is python, not python3.&quot;</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">code/list_playlists.py</span><span class="file-chip">scripts/p.bat</span><span class="file-chip">scripts/p.sh</span><span class="file-chip">lib/net.py (stub)</span><span class="file-chip">data/playlists.json (generated, git-ignored)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-03')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 03: Environment Setup</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-05')">Lesson 05: Audio and Transcripts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-05" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 05</span>
+    <h2 class="lesson-title">Audio and Transcripts</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 75–90 min</span>
+  <span class="meta-chip" style="color:#f59e0b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★<span class="stars-empty">☆☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Multi-file creation, config design, format options reasoning</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>code/read_channel.py (audio download) and code/read_transcript.py (caption download), a first config/config_transcribe.json, and runner shortcuts r.bat/r.sh and t.bat/t.sh.</p><p style="margin-top:10px;font-weight:600">Key outcome: Two download modes kept deliberately separate: audio (large, slow) and captions (free, fast). You often need one without the other.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 05 — Audio and Transcripts. Files so far: lib/paths.py, lib/net.py (stub), code/list_playlists.py, scripts/p.bat, scripts/p.sh. We have NOT yet written read_channel.py, read_transcript.py, or any config files. OS: Windows. Conda env: learn-better.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">Two download modes, two scripts</div><div class="concept-body">Audio download (read_channel.py) and caption download (read_transcript.py) are deliberately separate. Transcripts are free and fast; audio is large and slow.</div></div><div class="concept-item"><div class="concept-title">Selection by playlist, channel URL, or search</div><div class="concept-body">Both scripts support three input modes — playlist ID, channel handle, or search string. Only one needs to be non-empty. Priority: PLAYLIST_ID → CHANNEL → SEARCH.</div></div><div class="concept-item"><div class="concept-title">Config files extend top-of-file defaults</div><div class="concept-body">Top-of-file variables are the defaults. If a JSON config file is passed or exists at a well-known path, it overrides those defaults. Cleaner than editing the Python file each time.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">05.1</span>
+    <span class="step-title">Discuss the two-script design</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I want to write two scripts: read_channel.py (downloads audio) and read_transcript.py (downloads captions). Both support three selection modes: playlist ID, channel handle, or search query. Both call lib.net.apply_no_proxy_env() before any network calls. Before writing code: list the config variables each script needs, and explain the selection priority.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">read_channel.py config: PLAYLIST_ID, CHANNEL, SEARCH, LIMIT, DOWNLOAD, AUDIO_FORMAT, AUDIO_QUALITY. read_transcript.py config: PLAYLIST_ID, CHANNEL, SEARCH, LIMIT. Priority: PLAYLIST_ID → CHANNEL → SEARCH.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Both configs include all four selection variables. If LIMIT is missing, push back — without it a channel query fetches every video.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">05.2</span>
+    <span class="step-title">Generate code/read_channel.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/read_channel.py with config block (PLAYLIST_ID, CHANNEL, SEARCH, LIMIT, DOWNLOAD, AUDIO_FORMAT=&quot;mp3&quot;, AUDIO_QUALITY=&quot;192&quot;), imports including AUDIO_DIR from lib.paths, and logic: net.apply_no_proxy_env() first, build URL, list videos, download if DOWNLOAD=True. Use AUDIO_DIR from lib.paths — do not hardcode the path.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Clean script matching spec. Config at top, net.apply_no_proxy_env() as first executable line, AUDIO_DIR used throughout.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">from lib.paths import AUDIO_DIR (not DATA_DIR). net.apply_no_proxy_env() before any yt-dlp call. DOWNLOAD=True controls dry-run.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">05.3</span>
+    <span class="step-title">Generate code/read_transcript.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/read_transcript.py with config block (PLAYLIST_ID, CHANNEL, SEARCH, LIMIT), import TRANSCRIPT_DIR from lib.paths, and logic: net.apply_no_proxy_env() first, build URL, list videos, call youtube.download_transcript with languages from textutil.load_languages() — do not hardcode [&quot;en&quot;,&quot;fr&quot;,&quot;ro&quot;].</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Mirrors read_channel.py structure but uses TRANSCRIPT_DIR and calls download_transcript. Languages come from textutil.load_languages().</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">from lib.paths import TRANSCRIPT_DIR. Languages loaded via textutil.load_languages(), not hardcoded. net.apply_no_proxy_env() is first.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">05.4</span>
+    <span class="step-title">Generate runner pairs</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write runner shortcut files: scripts/r.bat + r.sh for read_channel.py, scripts/t.bat + t.sh for read_transcript.py. .bat pattern: call conda activate learn-better / python code\&lt;script&gt;.py. .sh pattern: #!/usr/bin/env bash / conda activate / python.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Four files. .bat files use &#x27;call conda activate&#x27; (not just &#x27;conda activate&#x27;) — call is required or the script exits immediately after conda returns.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open scripts/r.bat. Confirm it has &#x27;call conda activate&#x27; (not just &#x27;conda activate&#x27;). Missing call is a common .bat mistake.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">05.5</span>
+    <span class="step-title">Create config/config_transcribe.json</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Create config/config_transcribe.json with keys matching read_transcript.py config: playlist_id, channel, search, limit. Output only valid JSON — JSON doesn&#x27;t support comments.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Valid JSON with four keys: {&quot;playlist_id&quot;: &quot;&quot;, &quot;channel&quot;: &quot;@handle&quot;, &quot;search&quot;: &quot;&quot;, &quot;limit&quot;: 10}</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">python -c &quot;import json; json.load(open(&#x27;config/config_transcribe.json&#x27;)); print(&#x27;valid JSON&#x27;)&quot;</code></div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">Hardcodes [&quot;en&quot;,&quot;fr&quot;,&quot;ro&quot;] instead of textutil.load_languages()</div><div class="misbehave-fix">Push back: &quot;Language list should come from textutil.load_languages(), not hardcoded. Later the user configures it in code/languages.json.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">.bat file missing &#x27;call&#x27; before conda activate</div><div class="misbehave-fix">In .bat files, conda activate is itself a script. Without call, the parent script exits after conda finishes and python never runs.</div></div><div class="misbehave-item"><div class="misbehave-problem">download_transcript silently writes nothing</div><div class="misbehave-fix">Not all channels have auto-generated captions. Ask: &quot;What flag does yt-dlp use to list available subtitle tracks?&quot; (Answer: yt-dlp --list-subs &lt;url&gt;)</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">code/read_channel.py</span><span class="file-chip">code/read_transcript.py</span><span class="file-chip">scripts/r.bat, r.sh</span><span class="file-chip">scripts/t.bat, t.sh</span><span class="file-chip">config/config_transcribe.json</span><span class="file-chip">lib/textutil.py (stub)</span><span class="file-chip">lib/youtube.py (stub)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-04')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 04: First Working Script</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-06')">Lesson 06: Whisper Transcription <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-06" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 06</span>
+    <h2 class="lesson-title">Whisper Transcription</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 75–90 min</span>
+  <span class="meta-chip" style="color:#ef4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★★<span class="stars-empty">☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Config design, multi-file creation, import order reasoning</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>code/transcribe_audio.py — config-driven local transcription using faster-whisper, reading from AUDIO_DIR and writing to GENERATED_TRANSCRIPT_DIR.</p><p style="margin-top:10px;font-weight:600">Key outcome: Critical import order rule: net.apply_no_proxy_env() MUST be called before `from faster_whisper import WhisperModel`.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 06 — Whisper Transcription. Files so far: lib/paths.py, lib/net.py (stub), code/read_channel.py, code/read_transcript.py, runners r/t.bat/sh. We have NOT yet written transcribe_audio.py. OS: Windows. Conda env: learn-better.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">faster-whisper is config-driven</div><div class="concept-body">model_size, device, compute_type, task, language are all runtime config — not hardcoded. A JSON config file lets you switch models without touching Python.</div></div><div class="concept-item"><div class="concept-title">Output goes to GENERATED_TRANSCRIPT_DIR — not TRANSCRIPT_DIR</div><div class="concept-body">Whisper outputs go to GENERATED_TRANSCRIPT_DIR (data/generated_transcripts/). TRANSCRIPT_DIR (data/transcripts/) is for caption downloads. Mixing these breaks the comparison script in Lesson 07.</div></div><div class="concept-item"><div class="concept-title">Import order matters for proxy bypass</div><div class="concept-body">net.apply_no_proxy_env() must be called BEFORE from faster_whisper import WhisperModel. faster-whisper initialises network-aware code at import time. Wrong order causes proxy config to be silently ignored.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">06.1</span>
+    <span class="step-title">Design the config structure</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>I want to write code/transcribe_audio.py — a script that transcribes audio files with faster-whisper. Before writing code, tell me: what config variables should live at the top of the file, and what should the config/config_transcribe.json keys be? The script needs to select which audio files to transcribe and which Whisper model settings to use.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Config: select_by (&quot;playlist&quot;/&quot;channel&quot;/&quot;search&quot;), select (the value), model_size (e.g. &quot;small&quot;), device (&quot;cpu&quot;/&quot;cuda&quot;), compute_type (&quot;int8&quot;/&quot;float16&quot;), task (&quot;transcribe&quot;/&quot;translate&quot;), language (&quot;en&quot; or null).</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Config has all six Whisper-specific keys plus the selection block. If device and compute_type are missing, ask for them.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">06.2</span>
+    <span class="step-title">Generate transcribe_audio.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/transcribe_audio.py. CRITICAL import order requirement:
+1. import net from lib
+2. call net.apply_no_proxy_env()
+3. ONLY THEN: from faster_whisper import WhisperModel
+
+Config block: select_by, select, model_size, device, compute_type, task, language. Logic: load config from config/config_transcribe.json (sys.argv[1] override), list matching audio files from AUDIO_DIR, transcribe each with WhisperModel, write output to GENERATED_TRANSCRIPT_DIR (NOT TRANSCRIPT_DIR).</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Script with import order exactly as specified. WhisperModel loaded with model_size, device, compute_type. Output path uses GENERATED_TRANSCRIPT_DIR.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">net.apply_no_proxy_env() appears before from faster_whisper import WhisperModel in the file. Output dir is GENERATED_TRANSCRIPT_DIR, not TRANSCRIPT_DIR.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">06.3</span>
+    <span class="step-title">Add the w runner</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write scripts/w.bat and scripts/w.sh — the runner pair for transcribe_audio.py. Follow the same pattern as r.bat/r.sh. Pass through any command-line arguments (%* for bat, $@ for sh) so you can specify a config file override.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">w.bat: call conda activate learn-better / python code\transcribe_audio.py %*<br>w.sh: shebang + activate + python code/transcribe_audio.py $@</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open w.bat. Confirm it has &#x27;call conda activate&#x27; and %* at the end for argument passthrough.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">06.4</span>
+    <span class="step-title">Test transcription</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>(Run: python code\transcribe_audio.py — after downloading 1–2 audio files with r.bat)</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Files appear in data/generated_transcripts/ as .txt files. First run downloads the Whisper model (~hundreds of MB). Transcription on CPU takes 2–10 minutes per hour of audio.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">dir data\generated_transcripts — .txt files with audio basenames. Open one and confirm it contains readable sentences.</code></div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">from faster_whisper import WhisperModel appears before net.apply_no_proxy_env()</div><div class="misbehave-fix">CRITICAL: &quot;The import order must be: (1) import net, (2) net.apply_no_proxy_env(), (3) from faster_whisper import WhisperModel. Can you move the WhisperModel import below the apply_no_proxy_env() call?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">Script writes to TRANSCRIPT_DIR instead of GENERATED_TRANSCRIPT_DIR</div><div class="misbehave-fix">These are different folders: TRANSCRIPT_DIR is for caption downloads, GENERATED_TRANSCRIPT_DIR is for Whisper output. Mixing them breaks the comparison script in Lesson 07.</div></div><div class="misbehave-item"><div class="misbehave-problem">Model size &#x27;large&#x27; chosen — takes hours on CPU</div><div class="misbehave-fix">For first test, push back: &quot;Can you set the default model_size to &#x27;small&#x27; in the config? Large models take hours on CPU.&quot;</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">code/transcribe_audio.py</span><span class="file-chip">scripts/w.bat, w.sh</span><span class="file-chip">config/config_transcribe.json (updated)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-05')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 05: Audio and Transcripts</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-07')">Lesson 07: Runners and Automation <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-07" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 07</span>
+    <h2 class="lesson-title">Runners and Automation</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 60–75 min</span>
+  <span class="meta-chip" style="color:#ef4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★★<span class="stars-empty">☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Multi-file creation, automation scripting, diff/comparison script</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>scripts/init.bat — the setup script that registers all runners on PATH. The complete runner set (c, s, d, wc, v, a). code/compare_transcripts.py — accuracy validation.</p><p style="margin-top:10px;font-weight:600">Key outcome: init.bat uses %~dp0scripts (the script&#x27;s own directory), not %CD%\scripts. Getting this wrong makes runners fail for anyone who opens a terminal in a different folder.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 07 — Runners and Automation. We have runners r, t, p, w (bat+sh pairs). We have NOT yet written init.bat, the remaining runners (c, s, d, wc, v, a), or compare_transcripts.py. OS: Windows.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">init.bat uses %~dp0 not %CD%</div><div class="concept-body">%~dp0 expands to the directory of the batch file itself. %CD% expands to the current working directory. If the user runs init.bat from a different folder, %CD% breaks; %~dp0 always works.</div></div><div class="concept-item"><div class="concept-title">Runner argument passthrough</div><div class="concept-body">Some runners pass all arguments through to Python (%*, $@). Others (like d for download) run with fixed config only. Know which do and don&#x27;t.</div></div><div class="concept-item"><div class="concept-title">compare_transcripts.py measures accuracy</div><div class="concept-body">Uses Python&#x27;s difflib.SequenceMatcher to compute similarity ratio between human captions (TRANSCRIPT_DIR) and Whisper output (GENERATED_TRANSCRIPT_DIR). ~95% similarity is the target.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">07.1</span>
+    <span class="step-title">Create scripts/init.bat</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write scripts/init.bat — a setup script that adds the scripts/ folder to the PATH for the current terminal session. The script must use %~dp0scripts as the path (the directory relative to the batch file itself, not %CD%\scripts). Also create init.sh for Linux/macOS.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">init.bat:<br>@echo off<br>set &quot;PATH=%~dp0scripts;%PATH%&quot;<br>echo Runners registered: r t p w c s d wc v a<br><br>init.sh:<br>export PATH=&quot;$(dirname &quot;$0&quot;)/scripts:$PATH&quot;</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run: scripts\init.bat. Then: where r.bat — should resolve to your scripts/ folder. If &#x27;where r.bat&#x27; fails, %~dp0 path is wrong.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">07.2</span>
+    <span class="step-title">Create remaining runner pairs</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write all remaining runner pairs (bat + sh). Runners needed:
+- c.bat/c.sh: runs code/list_playlists.py (the channel/playlist script)
+- s.bat/s.sh: runs code/make_summaries.py (pass args through: %*, $@)
+- d.bat/d.sh: runs code/read_channel.py (do NOT pass %* — fixed config only)
+- wc.bat/wc.sh: runs code/make_wordcloud.py (pass args through)
+- v.bat/v.sh: runs code/generate_speech.py (pass args through)
+- a.bat/a.sh: runs code/reencode_audio.py (pass args through)</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Twelve files. d.bat/d.sh do NOT have %* or $@ — they run with fixed config. All others have argument passthrough.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open d.bat and confirm it does NOT end with %*. Open s.bat and confirm it DOES end with %*.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">07.3</span>
+    <span class="step-title">Create code/compare_transcripts.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/compare_transcripts.py that:
+- Reads caption transcripts from TRANSCRIPT_DIR
+- Reads Whisper transcripts from GENERATED_TRANSCRIPT_DIR
+- Matches files by base name
+- Uses difflib.SequenceMatcher to compute similarity ratio for each matched pair
+- Prints a table: filename | similarity% | status (OK if &gt;= 0.90, REVIEW if &lt; 0.90)
+- Prints overall average similarity at the end
+Import TRANSCRIPT_DIR and GENERATED_TRANSCRIPT_DIR from lib.paths.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Script using difflib.SequenceMatcher(None, a, b).ratio() for each matched pair. Table printed to stdout. Unmatched files listed at the end.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run: python code\compare_transcripts.py — if you have at least one matching pair, you should see a table row with a similarity percentage around 0.85–0.98.</div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">init.bat uses %CD%\scripts instead of %~dp0scripts</div><div class="misbehave-fix">CRITICAL: %CD% is the current working directory, not the script&#x27;s location. If the user runs init.bat from the wrong folder, it breaks. Push back: &quot;Please use %~dp0scripts — that expands to the directory of the batch file itself.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">d.bat includes %* argument passthrough</div><div class="misbehave-fix">d (download) should run with fixed config only — passing arguments could change what gets downloaded unexpectedly. Push back: &quot;d.bat should NOT pass %* through. Remove the argument passthrough.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">compare_transcripts.py compares wrong directories</div><div class="misbehave-fix">Verify it uses TRANSCRIPT_DIR (captions, data/transcripts/) for ground truth and GENERATED_TRANSCRIPT_DIR (Whisper, data/generated_transcripts/) for comparison. Swapping them gives meaningless results.</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">scripts/init.bat, init.sh</span><span class="file-chip">scripts/c, s, d, wc, v, a (.bat + .sh)</span><span class="file-chip">code/compare_transcripts.py</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-06')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 06: Whisper Transcription</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-08')">Lesson 08: Summaries and Word Clouds <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-08" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 08</span>
+    <h2 class="lesson-title">Summaries and Word Clouds</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 75–90 min</span>
+  <span class="meta-chip" style="color:#ef4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★★<span class="stars-empty">☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Multi-file creation, text processing, HTML generation</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>code/make_summaries.py, code/make_wordcloud.py, docs/skill_summary.md, a real lib/textutil.py, and wordcloud.html (browser-based word cloud viewer).</p><p style="margin-top:10px;font-weight:600">Key outcome: make_summaries.py prints paste-ready prompts to stdout — it does NOT call any AI. You are the AI relay.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 08 — Summaries and Word Clouds. All runners exist (init.bat, r, t, p, w, c, s, d, wc, v, a). We have NOT yet written make_summaries.py, make_wordcloud.py, skill_summary.md, or the real lib/textutil.py. OS: Windows.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">make_summaries.py prints prompts — it doesn&#x27;t call AI</div><div class="concept-body">The script reads transcripts and outputs ready-to-paste instructions. You copy the output, paste into your AI assistant, and paste the result back. This keeps the pipeline AI-provider agnostic.</div></div><div class="concept-item"><div class="concept-title">skill_summary.md is a reusable instruction template</div><div class="concept-body">Contains {{TITLE}} and {{TRANSCRIPT}} placeholders. make_summaries.py substitutes these and prints the filled prompt. You can edit skill_summary.md to change how every future summary is generated.</div></div><div class="concept-item"><div class="concept-title">Pure stdlib word cloud — no external rendering library</div><div class="concept-body">collections.Counter + re.findall(r&#x27;\b[a-z]{3,}\b&#x27;, text.lower()). Outputs .word_cloud.json files. Browser-based wordcloud2.js renders them — no matplotlib required.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">08.1</span>
+    <span class="step-title">Create docs/skill_summary.md</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write docs/skill_summary.md — a reusable instruction template for generating summaries. It should use {{TITLE}} and {{TRANSCRIPT}} as placeholders. The instruction should ask for: a 3–5 sentence plain-language summary, 5 key concepts as bullet points, and one recommended action the listener could take. Keep it concise — this is the prompt that will be filled and pasted into an AI assistant.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">A short markdown file with two placeholders and clear instructions for the three output sections.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open the file. Confirm {{TITLE}} and {{TRANSCRIPT}} are present as exact strings (the substitution code looks for these literally).</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">08.2</span>
+    <span class="step-title">Create code/make_summaries.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/make_summaries.py that:
+- Reads all .txt files from TRANSCRIPT_DIR and/or GENERATED_TRANSCRIPT_DIR
+- Loads docs/skill_summary.md as a template
+- Substitutes {{TITLE}} and {{TRANSCRIPT}} for each file
+- Prints each filled prompt to stdout (separated by &#x27;---&#x27;)
+- Does NOT call any AI API — it just prints
+- Saves each filled prompt to SUMMARY_DIR/&lt;base&gt;.prompt.txt
+Import path constants from lib.paths.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Script that reads transcripts, fills template, prints to stdout, saves .prompt.txt files. No API call anywhere in the code.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run: python code\make_summaries.py — you should see filled prompts printed to the terminal. data/summaries/*.prompt.txt files should appear.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">08.3</span>
+    <span class="step-title">Create code/make_wordcloud.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/make_wordcloud.py that:
+- Reads all .txt transcripts from TRANSCRIPT_DIR and/or GENERATED_TRANSCRIPT_DIR
+- Counts words using collections.Counter and re.findall(r&#x27;\b[a-z]{3,}\b&#x27;, text.lower())
+- Excludes common stopwords (the, and, is, in, to, of, a, that, it, this, for, on, are, was, with, as, be, at, by, from, or, but)
+- Writes output as JSON to WORDCLOUD_DIR/&lt;base&gt;.word_cloud.json
+  Format: [{&quot;text&quot;: &quot;word&quot;, &quot;value&quot;: count}, ...] — top 100 words
+Import WORDCLOUD_DIR from lib.paths. Use only stdlib (no third-party libraries).</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Pure stdlib script. Output JSON in wordcloud2.js-compatible format: list of {text, value} objects sorted by value desc.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run: python code\make_wordcloud.py — data/wordclouds/*.word_cloud.json files appear. Open one: should be valid JSON list of objects.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">08.4</span>
+    <span class="step-title">Create wordcloud.html</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write wordcloud.html — a self-contained browser page that renders word cloud JSON files from data/wordclouds/. It should:
+- List available .word_cloud.json files (hard-coded list or fetch from a local server)
+- Load and display a word cloud using wordcloud2.js from CDN (https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js)
+- Have a file selector to switch between word clouds
+- Be self-contained (no build step)
+Note: for local file access, the page needs to be served from a simple HTTP server (python -m http.server).</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">A clean HTML file that loads wordcloud2.js from CDN and renders data from the JSON files. Selector or links to switch between word clouds.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">python -m http.server 8000, open localhost:8000/wordcloud.html in browser — word cloud renders.</code></div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">08.5</span>
+    <span class="step-title">Create the real lib/textutil.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write the real lib/textutil.py (replacing the stub from Lesson 05) with these functions: load_languages() — returns list from code/languages.json (fallback: [&quot;en&quot;, &quot;fr&quot;, &quot;ro&quot;]), safe_filename(text) — strips Windows-illegal chars, clean_text(text) — strips VTT/HTML tags and decodes HTML entities using html.unescape() and re.sub(). Use only stdlib.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Real implementation of three functions. load_languages() reads a JSON file with fallback. clean_text() handles VTT timestamp lines (WEBVTT header, 00:00:00.000 --&gt; patterns) and HTML tags.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">python -c &quot;from lib.textutil import clean_text; print(clean_text(&#x27;&lt;b&gt;Hello &amp;amp; world&lt;/b&gt;&#x27;))&quot; — output: Hello &amp; world</code></div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">make_summaries.py includes an API call (openai.ChatCompletion, requests.post, etc.)</div><div class="misbehave-fix">Push back: &quot;This script should NOT call any AI API. It should only print the filled prompt to stdout. The human pastes the output into an AI assistant manually.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">make_wordcloud.py imports matplotlib or wordcloud library</div><div class="misbehave-fix">The word cloud should use only stdlib (collections.Counter + json). The rendering happens in the browser via wordcloud2.js. Ask: &quot;Can you remove the matplotlib/wordcloud import and use only collections.Counter and json?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">wordcloud.html tries to read files directly with fetch() from file:// protocol</div><div class="misbehave-fix">Browsers block file:// requests. The page must be served with python -m http.server. Add a note in the HTML comments explaining this.</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">code/make_summaries.py</span><span class="file-chip">code/make_wordcloud.py</span><span class="file-chip">docs/skill_summary.md</span><span class="file-chip">lib/textutil.py (real)</span><span class="file-chip">wordcloud.html</span><span class="file-chip">data/summaries/*.prompt.txt (generated)</span><span class="file-chip">data/wordclouds/*.word_cloud.json (generated)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-07')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 07: Runners and Automation</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-09')">Lesson 09: TTS and Full Pipeline <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-09" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 09</span>
+    <h2 class="lesson-title">TTS and Full Pipeline</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 90–120 min</span>
+  <span class="meta-chip" style="color:#ef4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★★<span class="stars-empty">☆</span></span> complexity</span>
+  <span class="meta-chip">AI tasks: Multi-file creation, audio processing, end-to-end integration</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>The real lib/net.py and lib/youtube.py, code/reencode_audio.py, code/generate_speech.py — completing the full pipeline from download to spoken summary.</p><p style="margin-top:10px;font-weight:600">Key outcome: Full pipeline: init → r → w → s (paste to AI) → v. Each runner is one letter. TTS text priority: summary &gt; caption transcript &gt; Whisper transcript.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo. We&#x27;re on Lesson 09 — TTS and Full Pipeline. We have all runners, make_summaries.py, make_wordcloud.py. lib/net.py and lib/youtube.py are still stubs. We have NOT yet written generate_speech.py or reencode_audio.py. OS: Windows.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">TTS text priority: summary &gt; caption &gt; Whisper</div><div class="concept-body">generate_speech.py looks for a summary first (data/summaries/), then caption transcript, then Whisper transcript. This ensures the best available text is spoken.</div></div><div class="concept-item"><div class="concept-title">lib/net.py handles proxy and cookies</div><div class="concept-body">COOKIES_FROM_BROWSER (default: None) — if set to &#x27;chrome&#x27;, &#x27;firefox&#x27;, etc., yt-dlp authenticates using your browser&#x27;s stored cookies. Needed for age-restricted or members-only content.</div></div><div class="concept-item"><div class="concept-title">reencode_audio.py normalises bitrate</div><div class="concept-body">Converts any audio format to a target bitrate (default 64kbps mono) for TTS playback. Uses ffmpeg subprocess — not a Python ffmpeg library.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">09.1</span>
+    <span class="step-title">Write the real lib/net.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write the real lib/net.py (replacing the stub). It should define: apply_no_proxy_env() — sets NO_PROXY and no_proxy environment variables to bypass corporate proxies; get_ydl_opts(cookies_from_browser=None) — returns a yt-dlp options dict with no_check_certificates and optional cookiesfrombrowser. Document the COOKIES_FROM_BROWSER setting.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Two functions. apply_no_proxy_env() sets os.environ[&#x27;NO_PROXY&#x27;] = &#x27;*&#x27; and os.environ[&#x27;no_proxy&#x27;] = &#x27;*&#x27;. get_ydl_opts() returns a dict with &#x27;no_check_certificates&#x27;: True and optionally &#x27;cookiesfrombrowser&#x27;.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">python -c &quot;from lib.net import apply_no_proxy_env, get_ydl_opts; apply_no_proxy_env(); print(get_ydl_opts())&quot; — prints options dict.</code></div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">09.2</span>
+    <span class="step-title">Write the real lib/youtube.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write the real lib/youtube.py (replacing the stub). Functions needed: build_url(playlist_id, channel, search, limit) → (label, url); list_videos(url, limit) → [(vid_id, title), ...] using yt-dlp with extract_flat=True; download_audio(vid_id, output_dir, audio_format, audio_quality) using yt-dlp; download_transcript(vid_id, title, languages, output_dir) using youtube_transcript_api.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Four functions using yt-dlp (YoutubeDL) and youtube_transcript_api. list_videos uses extract_flat mode. download_transcript tries languages in order, writes &lt;title&gt;.&lt;lang&gt;.txt.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">python code\read_channel.py (with DOWNLOAD=False and LIMIT=3) — should list 3 video titles without downloading.</code></div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">09.3</span>
+    <span class="step-title">Create code/reencode_audio.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/reencode_audio.py that reads audio files from AUDIO_DIR, reencodes each to a target bitrate (default 64kbps mono) using ffmpeg subprocess, and writes to AUDIO_REENCODED_DIR. Config: INPUT_DIR (default AUDIO_DIR), OUTPUT_DIR (default AUDIO_REENCODED_DIR), BITRATE (default &#x27;64k&#x27;), CHANNELS (default 1). Use subprocess.run([&#x27;ffmpeg&#x27;, ...]) — not a Python ffmpeg library.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Script using subprocess.run([&#x27;ffmpeg&#x27;, &#x27;-i&#x27;, input_path, &#x27;-b:a&#x27;, BITRATE, &#x27;-ac&#x27;, str(CHANNELS), output_path]) for each file. Output dir created if missing.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Run with one audio file. Check output file size is significantly smaller than input.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">09.4</span>
+    <span class="step-title">Create code/generate_speech.py</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write code/generate_speech.py that:
+- For each video base name, find the best available text: data/summaries/ first, then TRANSCRIPT_DIR, then GENERATED_TRANSCRIPT_DIR
+- Call piper TTS via subprocess: piper --model &lt;model_path&gt; --output_file &lt;output_path&gt;
+- Config: PIPER_MODEL (path to .onnx model file), OUTPUT_DIR (TTS_OUTPUT_DIR from lib.paths)
+- Skip any video that already has a .wav output
+Pass arguments through from command line (sys.argv).</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Script with text priority logic. Calls piper via subprocess.run([&#x27;piper&#x27;, &#x27;--model&#x27;, PIPER_MODEL, &#x27;--output_file&#x27;, out_path], input=text). TTS_OUTPUT_DIR used for output.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Install a piper model (see piper-tts docs). Run: python code\generate_speech.py — .wav files appear in data/tts_output/.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">09.5</span>
+    <span class="step-title">Run the full pipeline end-to-end</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>(Manual pipeline run — not a prompt to the AI)</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">init.bat → r (download audio) → w (transcribe) → s (print prompts, paste to AI, save summaries) → v (generate speech). Output: .wav files in data/tts_output/.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Play a .wav file from data/tts_output/. You should hear the summary text spoken. If silent or garbled, check PIPER_MODEL path in config.</div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">lib/youtube.py uses requests instead of yt-dlp for video listing</div><div class="misbehave-fix">yt-dlp handles authentication, rate limiting, and format selection. Don&#x27;t replace it with raw requests. Push back: &quot;Please use yt-dlp&#x27;s YoutubeDL class for video listing, not requests.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">generate_speech.py imports piper as a Python library</div><div class="misbehave-fix">Piper is called as a subprocess command, not imported as a library. Push back: &quot;Piper is invoked via subprocess.run([&#x27;piper&#x27;, ...]), not imported. Can you change to subprocess?&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">reencode_audio.py uses ffmpeg-python or ffmpeg library</div><div class="misbehave-fix">Must use subprocess.run([&#x27;ffmpeg&#x27;, ...]). Push back: &quot;Please use subprocess.run() with the ffmpeg binary — not a Python ffmpeg library.&quot;</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">lib/net.py (real)</span><span class="file-chip">lib/youtube.py (real)</span><span class="file-chip">code/reencode_audio.py</span><span class="file-chip">code/generate_speech.py</span><span class="file-chip">data/tts_output/*.wav (generated)</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-08')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 08: Summaries and Word Clouds</button><button class="nav-btn nav-btn-primary" onclick="showPage('lesson-10')">Lesson 10: Deployment and Handoff <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</section>
+<section id="lesson-10" class="page">
+<div class="lesson-header">
+  <div class="lesson-header-top">
+    <span class="lesson-badge">Lesson 10</span>
+    <h2 class="lesson-title">Deployment and Handoff</h2>
+  </div>
+  
+<div class="lesson-meta">
+  <span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 90–120 min</span>
+  <span class="meta-chip" style="color:#7c3aed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> <span class="stars">★★★★★<span class="stars-empty"></span></span> complexity</span>
+  <span class="meta-chip">AI tasks: DevOps config generation, CI workflow, notebook creation, documentation</span>
+</div>
+</div>
+<div class="section-card card-goal">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> What You&#x27;ll Build <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><p>A .devcontainer/devcontainer.json, a Dockerfile.standalone, .github/workflows/ci.yml, a Google Colab notebook, and docs/troubleshooting.md. Final git tag v1.0-curriculum.</p><p style="margin-top:10px;font-weight:600">Key outcome: ffmpeg in devcontainer: apt-get install ffmpeg — NOT pip. CI uses ubuntu-latest with network-free smoke tests only.</p></div>
+</div>
+<div class="section-card card-reorient">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Re-orient the AI <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><pre>I&#x27;m working on the learn-better repo — a Python tool that downloads YouTube audio and transcripts, transcribes locally with faster-whisper, generates summaries and word clouds, and synthesises TTS audio. We&#x27;re on Lesson 10 — Deployment and Handoff. All code is complete. We need devcontainer config, CI, Colab notebook, and troubleshooting docs. OS: Windows.</pre></div>
+</div>
+<div class="section-card card-concepts">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Concepts <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="concept-item"><div class="concept-title">devcontainer installs ffmpeg via apt, not pip</div><div class="concept-body">The devcontainer JSON uses postCreateCommand or a Dockerfile to run apt-get install ffmpeg. pip install ffmpeg in a container installs the Python stub — same trap as on Windows.</div></div><div class="concept-item"><div class="concept-title">CI runs lint + network-free smoke test only</div><div class="concept-body">The smoke test runs python -c &quot;import yt_dlp, faster_whisper, curl_cffi&quot; — no actual YouTube calls. Network calls in CI are unreliable and slow. Actual download tests belong in manual QA.</div></div><div class="concept-item"><div class="concept-title">Google Colab needs CUDA compute type</div><div class="concept-body">On Colab with a T4 GPU, set device=&#x27;cuda&#x27; and compute_type=&#x27;float16&#x27; in the transcription config. On CPU-only Colab, use device=&#x27;cpu&#x27;, compute_type=&#x27;int8&#x27;.</div></div></div>
+</div>
+<h3 style="font-size:15px;font-weight:700;color:var(--text);margin:24px 0 12px">Step-by-step</h3>
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">10.1</span>
+    <span class="step-title">Create .devcontainer/devcontainer.json</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write .devcontainer/devcontainer.json for VS Code devcontainer / GitHub Codespaces. Requirements:
+- Base image: mcr.microsoft.com/devcontainers/python:3.12
+- postCreateCommand: apt-get update &amp;&amp; apt-get install -y ffmpeg &amp;&amp; pip install -r requirements.txt
+- forwardPorts: 8000 (for wordcloud.html HTTP server)
+- Name: learn-better
+Do NOT use pip install ffmpeg — use apt-get install ffmpeg.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">{&quot;name&quot;: &quot;learn-better&quot;, &quot;image&quot;: &quot;mcr.microsoft.com/devcontainers/python:3.12&quot;, &quot;postCreateCommand&quot;: &quot;apt-get update &amp;&amp; apt-get install -y ffmpeg &amp;&amp; pip install -r requirements.txt&quot;, &quot;forwardPorts&quot;: [8000]}</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open in VS Code with Remote-Containers extension. Container builds. Run: ffmpeg -version inside container terminal.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">10.2</span>
+    <span class="step-title">Create Dockerfile.standalone</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write Dockerfile.standalone for running the project without VS Code devcontainer. Base image: python:3.12-slim. Install: apt-get install -y ffmpeg, then pip install -r requirements.txt. Set WORKDIR /app. COPY requirements.txt first (for layer caching), then copy the rest. Default CMD: bash.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">FROM python:3.12-slim | RUN apt-get update &amp;&amp; apt-get install -y ffmpeg | COPY requirements.txt . | RUN pip install -r requirements.txt | COPY . . | CMD [&quot;bash&quot;]</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body"><code class="verify-cmd">docker build -f Dockerfile.standalone -t learn-better . (requires Docker desktop). Run: docker run --rm learn-better ffmpeg -version.</code></div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">10.3</span>
+    <span class="step-title">Create .github/workflows/ci.yml</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write .github/workflows/ci.yml for GitHub Actions CI. Jobs: (1) lint with flake8 on ubuntu-latest Python 3.12; (2) smoke-test that runs python -c &quot;import yt_dlp, faster_whisper, curl_cffi; print(&#x27;imports OK&#x27;)&quot; — NO actual YouTube downloads in CI. Install: pip install -r requirements.txt but with apt-get install ffmpeg first.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">CI with two jobs. Smoke test runs only: python -c &quot;import yt_dlp, faster_whisper, curl_cffi; print(&#x27;imports OK&#x27;)&quot;. No actual downloads or transcription in CI.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Push to GitHub. Actions tab shows both jobs green. If flake8 fails, fix the reported lines (usually line length E501 — add # noqa: E501).</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">10.4</span>
+    <span class="step-title">Create Google Colab notebook</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write a Jupyter notebook (learn_better_colab.ipynb) for running learn-better on Google Colab. Cells: (1) install deps: !apt-get install -y ffmpeg &amp;&amp; !pip install -r requirements.txt; (2) clone the repo; (3) set config and run transcription with device=&#x27;cuda&#x27;, compute_type=&#x27;float16&#x27;; (4) display transcript output; (5) run summaries. Add markdown cells explaining GPU vs CPU settings.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">Notebook with 5+ cells. First cell installs ffmpeg via apt. GPU config cell sets device=&#x27;cuda&#x27;, compute_type=&#x27;float16&#x27; with a note to change to &#x27;cpu&#x27;/&#x27;int8&#x27; for CPU-only Colab.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Upload to Google Colab. Run all cells on a T4 GPU instance. Transcription should run significantly faster than local CPU.</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">10.5</span>
+    <span class="step-title">Create docs/troubleshooting.md</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Write docs/troubleshooting.md — a table of common errors with diagnosis and fix. Cover: (1) ffmpeg not found; (2) ImportError on faster_whisper; (3) yt-dlp 403/429 error; (4) empty transcripts.json; (5) piper TTS silent output; (6) conda not recognized in Command Prompt; (7) devcontainer ffmpeg missing after rebuild.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">A markdown table or structured list with Problem | Likely cause | Fix for each of the 7 issues.</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Open in markdown preview. All 7 issues present. Fixes are actionable (specific commands).</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <span class="step-num">10.6</span>
+    <span class="step-title">Final git tag</span>
+  </div>
+  <div class="step-body"><div class="block block-prompt">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Prompt</div>
+  <div class="block-body"><pre>Give me the git commands to make a final commit with all deployment files, then tag the release v1.0-curriculum and push the tag to GitHub.</pre></div>
+</div><div class="block block-output">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expected Output</div>
+  <div class="block-body">git add .devcontainer/ Dockerfile.standalone .github/ learn_better_colab.ipynb docs/<br>git commit -m &quot;add devcontainer, CI, Colab notebook, troubleshooting docs&quot;<br>git tag v1.0-curriculum<br>git push origin v1.0-curriculum</div>
+</div><div class="block block-verify">
+  <div class="block-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Verify</div>
+  <div class="block-body">Visit github.com/[username]/learn-better/releases or /tags — v1.0-curriculum tag appears.</div>
+</div></div>
+</div>
+<div class="section-card card-misbehaves">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> When the AI Misbehaves <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body collapsed"><div class="misbehave-item"><div class="misbehave-problem">devcontainer uses pip install ffmpeg instead of apt-get install ffmpeg</div><div class="misbehave-fix">CRITICAL: &quot;postCreateCommand must use apt-get install -y ffmpeg, not pip install ffmpeg. pip installs a Python stub without the real binary.&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">CI workflow includes actual YouTube download tests</div><div class="misbehave-fix">Push back: &quot;No actual YouTube calls in CI — they are slow, unreliable, and may be rate-limited. Replace with: python -c &#x27;import yt_dlp; print(&quot;yt-dlp OK&quot;)&#x27;&quot;</div></div><div class="misbehave-item"><div class="misbehave-problem">Dockerfile.standalone uses pip install ffmpeg</div><div class="misbehave-fix">Same as devcontainer — must be apt-get install -y ffmpeg in the RUN layer. Push back immediately.</div></div></div>
+</div>
+<div class="section-card card-files">
+  <div class="section-card-header" onclick="toggleSection(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Files After This Lesson <span style="margin-left:auto;opacity:0.6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+  <div class="section-card-body"><div class="files-list"><span class="file-chip">.devcontainer/devcontainer.json</span><span class="file-chip">Dockerfile.standalone</span><span class="file-chip">.github/workflows/ci.yml</span><span class="file-chip">learn_better_colab.ipynb</span><span class="file-chip">docs/troubleshooting.md</span></div></div>
+</div>
+<div class="lesson-nav-footer"><button class="nav-btn" onclick="showPage('lesson-09')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Lesson 09: TTS and Full Pipeline</button></div>
+</section>
+</div>
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.lesson-link').forEach(l => l.classList.remove('active'));
+  var page = document.getElementById(id);
+  if (page) page.classList.add('active');
+  var navId = id === 'overview' ? 'nav-overview' : 'nav-' + id;
+  var navEl = document.getElementById(navId);
+  if (navEl) { navEl.classList.add('active'); navEl.scrollIntoView({block:'nearest'}); }
+  window.scrollTo(0,0);
+}
+
+function toggleSection(header) {
+  var body = header.nextElementSibling;
+  body.classList.toggle('collapsed');
+}
+
+// Handle hash navigation
+window.addEventListener('DOMContentLoaded', function() {
+  var hash = window.location.hash.replace('#','');
+  if (hash) showPage(hash);
+});
+</script>
+</body>
+</html>

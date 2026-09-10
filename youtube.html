@@ -163,20 +163,35 @@
     series are two assistants' vantage points on the same journey; follow either on its own.
   </p>
   <table>
-    <tr><th>Series</th><th>Folder</th><th>Shape</th><th>Open</th></tr>
+    <tr><th>Series</th><th>Folder</th><th>Shape</th><th>Read</th><th>Full app <span class="tag">light</span></th><th>Quick overview <span class="tag">dark</span></th></tr>
     <tr>
       <td><strong>Kiro</strong></td>
       <td><code>lessons_Kiro/</code></td>
       <td>9 lessons · early-win pacing (a working tool by Lesson 02) · assistant-agnostic</td>
-      <td><a href="lessons_Kiro/README.md">index</a> · <a href="lessons_Kiro/kiro_lessons.html">visual (kiro_lessons.html)</a></td>
+      <td><a href="lessons_Kiro/README.md">README</a></td>
+      <td><a href="kiro_lessons_app.html">kiro_lessons_app.html</a></td>
+      <td><a href="lessons_Kiro/kiro_lessons.html">lessons_Kiro/kiro_lessons.html</a></td>
     </tr>
     <tr>
       <td><strong>Claude</strong></td>
       <td><code>lessons_Claude/</code></td>
       <td>10 lessons · scaffold-first · framed by <em>kind of AI task</em></td>
-      <td><a href="lessons_Claude/README.md">index</a> · <a href="lessons_Claude/claude_lessons.html">visual (claude_lessons.html)</a></td>
+      <td><a href="lessons_Claude/README.md">README</a></td>
+      <td><a href="claude_lessons_app.html">claude_lessons_app.html</a></td>
+      <td><a href="lessons_Claude/claude_lessons.html">lessons_Claude/claude_lessons.html</a></td>
     </tr>
   </table>
+  <div class="note">
+    <strong>Two HTML views per series — same content, different depth.</strong> The
+    <strong>Full app</strong> (<code>*_lessons_app.html</code>, in the repo root) is a
+    light-theme, click-through curriculum with <em>every</em> lesson's re-orient block,
+    ready-to-paste prompts, expected outputs, and Verify checks embedded inline. The
+    <strong>Quick overview</strong> (<code>&lt;folder&gt;/*_lessons.html</code>, inside each
+    <code>lessons_*/</code> folder) is a compact dark-theme page with Mermaid diagrams and a
+    lesson-card grid that links out to the individual <code>.md</code> files. The two files
+    share a base name but differ by <strong>location</strong> (root vs. folder) and
+    <strong>use case</strong> (self-contained reader vs. diagram index).
+  </div>
   <div class="mermaid">
 flowchart LR
   IDEA([An idea]) --> PROMPT["Prompt<br/>(framed, optimized)"]
@@ -192,9 +207,10 @@ flowchart LR
   style STEER fill:#3a2410,stroke:#ffb454,color:#e7ecf5
   </div>
   <p>
-    The <code>*_lessons.html</code> pages give a diagram-rich, click-through overview that
-    highlights each lesson's goal, prompts, checks, and outputs. Both series reach the same
-    end state: this repository.
+    Both the full apps (<code>*_lessons_app.html</code>) and the folder overviews
+    (<code>lessons_*/*_lessons.html</code>) highlight each lesson's goal, prompts, checks, and
+    outputs — pick the reader for study or the overview for a quick map. Both series reach the
+    same end state: this repository.
   </p>
 </section>
 
@@ -666,7 +682,7 @@ wc config\config_wordcloud.merge.json :: merge: ONE cloud from many transcripts<
 
   <h3>Render it</h3>
   <p>
-    Open <code>wordcloud.html</code>, click <strong>Load a JSON</strong>, and pick a file
+    Open <a href="wordcloud.html"><code>wordcloud.html</code></a>, click <strong>Load a JSON</strong>, and pick a file
     from <code>data/wordclouds/</code>. Word size scales with frequency. (Opening from
     disk uses the picker; to use the <code>?file=</code> URL param instead, serve the
     folder with <code>python -m http.server</code>.)
@@ -841,8 +857,10 @@ graph TD
 &#9474;  &#9500;&#9472; wordclouds/             # *.word_cloud.json (git-ignored)
 &#9474;  &#9492;&#9472; playlists.json          # channel playlists (git-ignored)
 &#9500;&#9472; config/                    # run configs: config_transcribe*.json, config_wordcloud*.json, config_reencode.json, config_tts*.json
-&#9500;&#9472; lessons_Kiro/              # tutorial series (Kiro): 9 lessons + README + kiro_lessons.html
-&#9500;&#9472; lessons_Claude/            # tutorial series (Claude): 10 lessons + README + claude_lessons.html
+&#9500;&#9472; lessons_Kiro/              # tutorial series (Kiro): 9 lessons + README + kiro_lessons.html (dark overview)
+&#9500;&#9472; lessons_Claude/            # tutorial series (Claude): 10 lessons + README + claude_lessons.html (dark overview)
+&#9500;&#9472; kiro_lessons_app.html      # Kiro curriculum, full click-through reader (light theme)
+&#9500;&#9472; claude_lessons_app.html    # Claude curriculum, full click-through reader (light theme)
 &#9500;&#9472; chats/                     # AI chat logs: kiro_* and claude_* (prompts + conversation)
 &#9500;&#9472; ignore/                    # git-ignored: retired code + todo.md, mini_todo.md, notes
 &#9500;&#9472; wordcloud.html             # renders a word_cloud.json (wordcloud2.js)

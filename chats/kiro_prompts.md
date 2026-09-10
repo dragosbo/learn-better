@@ -662,3 +662,10 @@ review the content of the folder lessons_Kiro and based only on this content ada
 
 ## 191
 adapt the kiro file in the chats folder to incorporate our latest interactions
+
+## 192
+create a similarly kiro_lessons.html in the root following the pattern of the large claude_lessons.html from the root and based on the material in the kiro_lessons folder
+## 193
+adapt the youtube.html so that it points correctly to all html files in root or folders. clarify the differences between files using the same name. if you think it easier create different names to distinguish them per use case
+## 194
+before doing suggestion adapt the kiro files in chat to reflect latest interactions. then do a final commit and push
